@@ -67,3 +67,13 @@ earnlytics/
 **项目启动日期**: 2026年2月  
 **当前状态**: 准备启动  
 **下一步**: 阅读 `doc/执行计划1-MVP启动.md`
+
+## Getting Started
+
+First, run the development server:
+
+```bash
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
