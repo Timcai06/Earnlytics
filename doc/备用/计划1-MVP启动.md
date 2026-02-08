@@ -1,15 +1,44 @@
 # 计划1：MVP启动
 
-> 目标：2周内上线可访问的MVP，验证产品可行性  
-> 时间：Week 1-2（10个工作日）  
-> 成本：¥0
+> **目标**: 基于Pencil设计稿，2周内完成前端开发并部署  
+> **时间**: Week 1-2（10个工作日）  
+> **设计稿**: [pencil-earnlytics.pen](../pencil-earnlytics.pen) - 13页完整设计 ✅  
+> **成本**: ¥0
+
+---
+
+## 设计稿基础
+
+### 已完成的设计资产
+
+**13个页面设计**（详见设计文件）:
+- Landing Page (ZAmlV) - 营销首页
+- Sign Up Page (VxmOF) - 注册页
+- Login Page (mmO4y) - 登录页
+- Home Page (VrH0K) - 用户首页
+- Calendar Page (J0KoA) - 财报日历
+- Companies Directory (SIzPO) - 公司目录
+- Earnings Detail (dBqfg) - 财报详情
+- User Profile (NAQg7) - 用户设置
+- 404 Page (3gD89) - 错误页
+- About Us (6Mu38) - 关于我们
+- Component States (BX743) - 组件状态规范
+- Responsive Design (c0Eox) - 响应式设计规范
+- Shared Header (GA7Uf) - 共享头部组件
+
+**Design Token 系统**:
+- 颜色: primary (#2563EB), background (#FAFAFA), surface (#FFFFFF) 等
+- 间距: 4px/8px/12px/16px/24px/32px/48px/64px/80px 系统
+- 圆角: 6px/8px/12px/16px 层级
+- 字体: Inter，标题 48px/40px/32px/24px/20px
 
 ---
 
 ## 阶段目标
 
-✅ 搭建完整技术栈  
-✅ 手动填充5家公司数据  
+✅ 基于设计稿实现 7 个核心页面  
+✅ Design Token 系统代码化  
+✅ 共享组件库搭建 (Header/Footer/Card/Button)  
 ✅ 部署到Vercel可访问  
 ✅ 获取首批用户反馈  
 
