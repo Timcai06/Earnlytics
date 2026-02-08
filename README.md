@@ -1,79 +1,97 @@
-# Earnlytics 项目文档
+# Earnlytics
 
-> AI驱动的美国科技公司财报分析平台
+> AI-driven US tech company earnings analysis platform with Chinese summaries.
 
-## 📂 文档结构（两级分类）
+## 📂 Project Structure
 
 ```
 earnlytics/
-├── README.md              # 本文档 - 总览与导航
-│
-├── 计划/                  # 执行计划文档（按顺序阅读）
-│   ├── 项目简介.md
-│   ├── 计划1-MVP启动.md      # 🎯 从这里开始！
-│   ├── 计划2-AI自动化.md
-│   ├── 计划3-规模化.md
-│   ├── 计划4-增长优化.md
-│   └── 计划5-商业化.md
-│
-├── 策略/                  # 运营策略文档
-│   ├── 路线图.md
-│   └── 运营策略.md
-│
-└── 技术/                  # 技术实现文档
-    ├── 架构设计.md
-    ├── 数据模型.md
-    ├── API文档.md
-    └── 部署运维.md
+├── AGENTS.md                 # AI assistant knowledge base
+├── README.md                 # This file
+├── .gitignore                # Root gitignore (minimal)
+├── doc/                      # Chinese documentation
+│   ├── 计划/                 # Execution plans
+│   ├── 策略/                 # Strategy docs
+│   ├── 技术/                 # Technical docs
+│   └── 备用/                 #备用资源
+├── earnlytics-web/           # Next.js 16 frontend ⬅️ Main codebase
+│   ├── AGENTS.md            # Frontend-specific guidelines
+│   ├── src/
+│   │   ├── app/             # App Router pages
+│   │   ├── components/      # React components
+│   │   │   ├── ui/          # shadcn/ui primitives
+│   │   │   ├── layout/      # Header, Footer
+│   │   │   └── sections/    # Page sections
+│   │   └── lib/             # Utilities
+│   ├── public/              # Static assets
+│   └── package.json         # Dependencies
+└── pencil-earnlytics.pen    # Design file (13 pages)
 ```
 
-## 🚀 快速开始
+## 🚀 Quick Start
 
-**新手路线**（推荐）：
-1. **阅读** → `计划/项目简介.md` - 了解项目全貌
-2. **执行** → `计划/计划1-MVP启动.md` - 开始第一个任务
-3. **参考** → `技术/架构设计.md` - 理解技术架构
-4. **开发** → `技术/数据模型.md` 和 `技术/API文档.md`
+```bash
+# Frontend development
+cd earnlytics-web && npm run dev
 
-## 📋 执行计划概览
+# Build
+cd earnlytics-web && npm run build
 
-| 计划 | 时间 | 目标 | 收入预期 |
-|------|------|------|---------|
-| 计划1 | Week 1-2 | MVP上线，5家公司 | ¥0 |
-| 计划2 | Week 3-4 | 自动化系统，10家公司 | ¥0 |
-| 计划3 | Month 2 | 30家公司，AdSense | $0-10 |
-| 计划4 | Month 3 | SEO优化，流量增长 | $50+ |
-| 计划5 | Month 4-6 | 商业化验证 | $500+ |
+# Lint
+cd earnlytics-web && npm run lint
+```
 
-## 🛠 技术栈
+## 🛠 Tech Stack
 
-- **前端**: Next.js 14 + Tailwind CSS + shadcn/ui
-- **后端**: Vercel Serverless
-- **数据库**: Supabase PostgreSQL
-- **AI**: DeepSeek API
-- **数据源**: FMP API + SEC EDGAR
-- **自动化**: GitHub Actions
+| Layer | Technology |
+|-------|------------|
+| Frontend | Next.js 16 + React 19 + TypeScript 5 |
+| Styling | Tailwind CSS 4 + shadcn/ui |
+| Icons | Lucide React |
+| Path alias | `@/*` → `./src/*` |
+| Backend | Vercel Serverless |
+| Database | Supabase PostgreSQL |
+| AI | DeepSeek API |
+| Data | FMP API + SEC EDGAR |
 
-## 💰 成本预算
+## 📋 Development Plans
 
-| 阶段 | 月成本 | 主要支出 |
-|------|--------|---------|
-| MVP阶段 | ¥0 | 全部使用免费额度 |
-| 自动化阶段 | ¥1-2 | DeepSeek API |
-| 规模化阶段 | ¥10-20 | 可能的数据库升级 |
+| Phase | Timeline | Goal |
+|-------|----------|------|
+| 计划1 | Week 1-2 | MVP launch, 5 companies |
+| 计划2 | Week 3-4 | Automation, 10 companies |
+| 计划3 | Month 2 | 30 companies, AdSense |
+| 计划4 | Month 3 | SEO, traffic growth |
+| 计划5 | Month 4-6 | Commercialization |
+
+## 💰 Cost Budget
+
+| Phase | Monthly Cost | Main Expense |
+|-------|--------------|--------------|
+| MVP | ¥0 | Free tier |
+| Automation | ¥1-2 | DeepSeek API |
+| Scale | ¥10-20 | Potential DB upgrade |
+
+## 📚 Documentation (Chinese)
+
+| Path | Content |
+|------|---------|
+| `doc/计划/` | Execution plans |
+| `doc/策略/` | Strategy documents |
+| `doc/技术/` | Technical documentation |
+
+## ⚠️ Anti-Patterns
+
+- **Never** run `create-next-app` in root directory
+- **Never** add duplicate `.gitignore` rules
+
+## 📝 Notes
+
+- Uses DOVE VPN proxy (HTTP 7897) for GitHub access
+- Doc folder uses Chinese naming (计划, 技术, 策略)
+- All frontend configs reside in `earnlytics-web/`
 
 ---
 
-**项目启动日期**: 2026年2月  
-**当前状态**: 准备启动  
-**下一步**: 阅读 `doc/执行计划1-MVP启动.md`
-
-## Getting Started
-
-First, run the development server:
-
-```bash
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+**Status**: Development in progress  
+**Branch**: main
