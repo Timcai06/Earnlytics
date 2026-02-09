@@ -1,0 +1,47 @@
+name: Update Earnings Data
+
+on:
+  schedule:
+    - cron: '0 */4 * * *'
+  workflow_dispatch:
+
+jobs:
+  update-data:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: earnlytics-web/package-lock.json
+    
+    - name: Install dependencies
+      working-directory: ./earnlytics-web
+      run: npm ci
+    
+    - name: Fetch earnings data
+      working-directory: ./earnlytics-web
+      env:
+        FMP_API_KEY: ${{ secrets.FMP_API_KEY }}
+        NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+        SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      run: npm run fetch:earnings
+    
+    - name: Run AI analysis
+      working-directory: ./earnlytics-web
+      env:
+        DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+        DEEPSEEK_API_URL: ${{ secrets.DEEPSEEK_API_URL }}
+        NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+        SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      run: npm run analyze:batch
+    
+    - name: Trigger Vercel deployment
+      if: success()
+      run: |
+        curl -X POST "${{ secrets.VERCEL_DEPLOY_HOOK }}" || echo "Deploy hook failed but continuing"
