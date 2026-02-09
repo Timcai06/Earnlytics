@@ -36,7 +36,7 @@ async function debugFetch() {
   console.log('\n=== 测试 FMP API ===')
   try {
     const url = `${fmpApiUrl}/income-statement/AAPL?apikey=${fmpApiKey}&limit=1`
-    console.log('请求 URL:', url.replace(fmpApiKey, '***'))
+    console.log('请求 URL:', fmpApiKey ? url.replace(fmpApiKey, '***') : url)
     
     const response = await fetch(url)
     console.log('响应状态:', response.status)
