@@ -1,44 +1,49 @@
 import Link from "next/link";
 
-export default function NotFound() {
+export default function NotFoundPage() {
   return (
-    <div className="flex flex-1 flex-col items-center justify-center bg-[#FAFAFA] px-4 py-20 text-center">
-      <div className="relative mb-8">
-        <h1 className="text-[160px] font-bold leading-none text-border opacity-50">
+    <div className="flex flex-1 flex-col">
+      {/* Not Found Content */}
+      <section className="flex flex-1 flex-col items-center justify-center bg-background px-20 py-20">
+        {/* Large 404 */}
+        <span className="mb-4 text-[160px] font-bold leading-none text-[#27272A] opacity-50">
           404
-        </h1>
-      </div>
+        </span>
 
-      <h2 className="mb-4 text-[36px] font-bold text-slate-900">
-        页面未找到
-      </h2>
+        <h1 className="mb-4 text-4xl font-bold text-white">页面未找到</h1>
+        <p className="mb-8 text-lg text-[#A1A1AA]">
+          抱歉，您访问的页面不存在或已被移除
+        </p>
 
-      <p className="mb-8 max-w-md text-lg text-slate-500">
-        抱歉，您访问的页面不存在或已被移除
-      </p>
+        {/* Buttons */}
+        <div className="flex gap-4">
+          <Link
+            href="/"
+            className="rounded-lg bg-primary px-8 py-3.5 text-base font-semibold text-white transition-colors hover:bg-primary-hover"
+          >
+            返回首页
+          </Link>
+          <Link
+            href="/companies"
+            className="rounded-lg border border-[#6366F1] bg-[rgba(99,102,241,0.15)] px-8 py-3.5 text-base font-medium text-[#E0E7FF] shadow-[0_0_15px_rgba(99,102,241,0.19)] transition-colors hover:bg-[rgba(99,102,241,0.25)]"
+          >
+            浏览公司目录
+          </Link>
+        </div>
 
-      <div className="flex items-center gap-4">
-        <Link
-          href="/"
-          className="inline-flex items-center justify-center rounded-lg bg-primary px-8 py-3.5 text-base font-semibold text-white transition-colors hover:bg-primary-hover"
-        >
-          返回首页
-        </Link>
-        <Link
-          href="/companies"
-          className="inline-flex items-center justify-center rounded-lg border border-border bg-white px-8 py-3.5 text-base font-semibold text-slate-700 transition-colors hover:bg-slate-50"
-        >
-          浏览公司目录
-        </Link>
-      </div>
-
-      <div className="mt-12 flex items-end gap-2">
-        <div className="h-16 w-1 rounded-full bg-border" />
-        <div className="h-24 w-1 rounded-full bg-border" />
-        <div className="h-20 w-1 rounded-full bg-border" />
-        <div className="h-28 w-1 rounded-full bg-primary" />
-        <div className="h-12 w-1 rounded-full bg-border" />
-      </div>
+        {/* Decoration */}
+        <div className="mt-16 h-24 w-48">
+          <svg viewBox="0 0 200 100" className="h-full w-full">
+            <path
+              d="M0,50 Q50,10 100,50 T200,50"
+              fill="none"
+              stroke="#27272A"
+              strokeWidth="3"
+            />
+            <circle cx="100" cy="50" r="6" fill="#6366F1" />
+          </svg>
+        </div>
+      </section>
     </div>
   );
 }

@@ -1,244 +1,130 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
-import { User, CreditCard, Bell, Camera } from "lucide-react";
-
-const tabs = [
-  { id: "profile", label: "个人信息", icon: User },
-  { id: "subscription", label: "订阅管理", icon: CreditCard },
-  { id: "notifications", label: "通知偏好", icon: Bell },
-];
 
 export default function ProfilePage() {
-  const [activeTab, setActiveTab] = useState("profile");
+  const [activeTab, setActiveTab] = "personal";
 
   return (
-    <div className="min-h-screen bg-background">
-      <section className="px-20 py-20">
-        <div className="mx-auto max-w-4xl">
-          <h1 className="mb-4 text-[40px] font-bold text-text-primary">
+    <div className="flex flex-col">
+      {/* Profile Hero */}
+      <section className="bg-background px-20 pt-20 pb-10">
+        <div className="mx-auto max-w-3xl">
+          <h1 className="mb-4 text-[40px] font-bold text-white drop-shadow-[0_0_30px_rgba(99,102,241,0.25)]">
             账户设置
           </h1>
-          <p className="text-lg text-text-secondary">
-            管理您的个人信息和偏好设置
-          </p>
+          <p className="text-lg text-[#A1A1AA]">管理您的个人信息和订阅偏好</p>
         </div>
       </section>
 
-      <section className="px-20 pb-20">
-        <div className="mx-auto max-w-4xl">
-          <div className="flex gap-8">
-            <div className="w-64 shrink-0">
-              <div className="rounded-xl border border-border bg-surface p-2">
-                {tabs.map((tab) => {
-                  const Icon = tab.icon;
-                  return (
-                    <button
-                      key={tab.id}
-                      onClick={() => setActiveTab(tab.id)}
-                      className={`flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition-colors ${
-                        activeTab === tab.id
-                          ? "bg-primary text-white"
-                          : "text-text-secondary hover:bg-slate-100"
-                      }`}
-                    >
-                      <Icon className="h-5 w-5" />
-                      <span className="font-medium">{tab.label}</span>
-                    </button>
-                  );
-                })}
+      {/* Profile Content */}
+      <section className="bg-background px-20 pb-20">
+        <div className="mx-auto max-w-3xl">
+          {/* Tab Navigation */}
+          <div className="mb-8 flex gap-2">
+            {["个人信息", "订阅管理", "通知偏好"].map((tab, index) => (
+              <button
+                key={tab}
+                className={`rounded-lg px-6 py-3 text-[15px] font-medium ${
+                  index === 0
+                    ? "border border-[#6366F1] bg-primary text-white"
+                    : "border border-border bg-transparent text-[#A1A1AA]"
+                }`}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
+
+          {/* Profile Card */}
+          <div className="rounded-2xl border border-[#6366F1] bg-surface-secondary p-8 shadow-[0_0_30px_rgba(99,102,241,0.19)]">
+            {/* Avatar Section */}
+            <div className="mb-8 flex items-center gap-6">
+              <div className="flex h-24 w-24 items-center justify-center rounded-full border-2 border-[#6366F1] bg-[rgba(99,102,241,0.2)] text-3xl font-bold text-[#818CF8]">
+                张
+              </div>
+              <button className="rounded-lg border border-[#6366F1] bg-[rgba(99,102,241,0.15)] px-4 py-2 text-sm font-medium text-[#E0E7FF] shadow-[0_0_10px_rgba(99,102,241,0.13)]">
+                更换头像
+              </button>
+            </div>
+
+            {/* Form Fields */}
+            <div className="mb-8 space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="name" className="text-sm font-medium text-white">
+                  姓名
+                </Label>
+                <Input
+                  id="name"
+                  type="text"
+                  defaultValue="张三"
+                  className="h-12 border-[#3F3F46] bg-[#111111] px-4 text-white"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-sm font-medium text-white">
+                  邮箱地址
+                </Label>
+                <Input
+                  id="email"
+                  type="email"
+                  defaultValue="zhangsan@example.com"
+                  disabled
+                  className="h-12 border-[#3F3F46] bg-[#111111] px-4 text-[#A1A1AA]"
+                />
+                <p className="text-xs text-[#71717A]">邮箱地址不可修改</p>
               </div>
             </div>
 
-            <div className="flex-1">
-              {activeTab === "profile" && (
-                <div className="rounded-xl border border-border bg-surface p-8">
-                  <h2 className="mb-6 text-xl font-semibold text-text-primary">
-                    个人信息
-                  </h2>
-
-                  <div className="mb-8 flex items-center gap-6">
-                    <div className="flex h-20 w-20 items-center justify-center rounded-full bg-slate-100">
-                      <User className="h-10 w-10 text-slate-400" />
-                    </div>
-                    <Button variant="outline" className="gap-2">
-                      <Camera className="h-4 w-4" />
-                      更换头像
-                    </Button>
-                  </div>
-
-                  <div className="space-y-6">
-                    <div className="grid grid-cols-2 gap-6">
-                      <div className="space-y-2">
-                        <Label htmlFor="name">姓名</Label>
-                        <Input
-                          id="name"
-                          placeholder="请输入姓名"
-                          defaultValue="张三"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="email">邮箱</Label>
-                        <Input
-                          id="email"
-                          type="email"
-                          placeholder="请输入邮箱"
-                          defaultValue="zhangsan@example.com"
-                        />
-                      </div>
-                    </div>
-
-                    <Separator />
-
-                    <div>
-                      <h3 className="mb-4 text-lg font-medium text-text-primary">
-                        修改密码
-                      </h3>
-                      <div className="space-y-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="currentPassword">当前密码</Label>
-                          <Input
-                            id="currentPassword"
-                            type="password"
-                            placeholder="请输入当前密码"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="newPassword">新密码</Label>
-                          <Input
-                            id="newPassword"
-                            type="password"
-                            placeholder="请输入新密码"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="confirmPassword">确认新密码</Label>
-                          <Input
-                            id="confirmPassword"
-                            type="password"
-                            placeholder="请再次输入新密码"
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex justify-end">
-                      <Button>保存更改</Button>
-                    </div>
-                  </div>
+            {/* Password Section */}
+            <div className="mb-8 border-t border-border pt-8">
+              <h3 className="mb-6 text-lg font-semibold text-white">修改密码</h3>
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <Label htmlFor="oldPassword" className="text-sm font-medium text-white">
+                    当前密码
+                  </Label>
+                  <Input
+                    id="oldPassword"
+                    type="password"
+                    placeholder="••••••••"
+                    className="h-12 border-[#3F3F46] bg-[#111111] px-4 text-white placeholder:text-[#71717A]"
+                  />
                 </div>
-              )}
 
-              {activeTab === "subscription" && (
-                <div className="rounded-xl border border-border bg-surface p-8">
-                  <h2 className="mb-6 text-xl font-semibold text-text-primary">
-                    订阅管理
-                  </h2>
-                  <div className="rounded-lg border border-border bg-slate-50 p-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium text-text-primary">
-                          当前计划
-                        </p>
-                        <p className="text-2xl font-bold text-text-primary">
-                          免费版
-                        </p>
-                        <p className="mt-1 text-sm text-text-secondary">
-                          基础功能永久免费
-                        </p>
-                      </div>
-                      <Button>升级到 Pro</Button>
-                    </div>
-                  </div>
-                  <div className="mt-6">
-                    <h3 className="mb-3 font-medium text-text-primary">
-                      包含功能
-                    </h3>
-                    <ul className="space-y-2 text-text-secondary">
-                      <li className="flex items-center gap-2">
-                        <span className="text-green-600">✓</span>
-                        查看所有公司财报
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <span className="text-green-600">✓</span>
-                        AI 财报摘要
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <span className="text-green-600">✓</span>
-                        财报日历
-                      </li>
-                    </ul>
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="newPassword" className="text-sm font-medium text-white">
+                    新密码
+                  </Label>
+                  <Input
+                    id="newPassword"
+                    type="password"
+                    placeholder="至少8位字符"
+                    className="h-12 border-[#3F3F46] bg-[#111111] px-4 text-white placeholder:text-[#71717A]"
+                  />
                 </div>
-              )}
 
-              {activeTab === "notifications" && (
-                <div className="rounded-xl border border-border bg-surface p-8">
-                  <h2 className="mb-6 text-xl font-semibold text-text-primary">
-                    通知偏好
-                  </h2>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between rounded-lg border border-border p-4">
-                      <div>
-                        <p className="font-medium text-text-primary">
-                          财报提醒
-                        </p>
-                        <p className="text-sm text-text-secondary">
-                          关注的财报发布前邮件提醒
-                        </p>
-                      </div>
-                      <label className="relative inline-flex cursor-pointer items-center">
-                        <input
-                          type="checkbox"
-                          className="peer sr-only"
-                          defaultChecked
-                        />
-                        <div className="peer h-6 w-11 rounded-full bg-slate-200 peer-checked:bg-primary"></div>
-                        <div className="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white transition-all peer-checked:left-[22px]"></div>
-                      </label>
-                    </div>
-                    <div className="flex items-center justify-between rounded-lg border border-border p-4">
-                      <div>
-                        <p className="font-medium text-text-primary">
-                          每周摘要
-                        </p>
-                        <p className="text-sm text-text-secondary">
-                          每周一发送本周财报预告
-                        </p>
-                      </div>
-                      <label className="relative inline-flex cursor-pointer items-center">
-                        <input
-                          type="checkbox"
-                          className="peer sr-only"
-                          defaultChecked
-                        />
-                        <div className="peer h-6 w-11 rounded-full bg-slate-200 peer-checked:bg-primary"></div>
-                        <div className="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white transition-all peer-checked:left-[22px]"></div>
-                      </label>
-                    </div>
-                    <div className="flex items-center justify-between rounded-lg border border-border p-4">
-                      <div>
-                        <p className="font-medium text-text-primary">
-                          产品更新
-                        </p>
-                        <p className="text-sm text-text-secondary">
-                          新功能和改进通知
-                        </p>
-                      </div>
-                      <label className="relative inline-flex cursor-pointer items-center">
-                        <input type="checkbox" className="peer sr-only" />
-                        <div className="peer h-6 w-11 rounded-full bg-slate-200 peer-checked:bg-primary"></div>
-                        <div className="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white transition-all peer-checked:left-[22px]"></div>
-                      </label>
-                    </div>
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="confirmPassword" className="text-sm font-medium text-white">
+                    确认新密码
+                  </Label>
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    placeholder="再次输入新密码"
+                    className="h-12 border-[#3F3F46] bg-[#111111] px-4 text-white placeholder:text-[#71717A]"
+                  />
                 </div>
-              )}
+              </div>
             </div>
+
+            {/* Save Button */}
+            <button className="h-12 w-full rounded-lg bg-primary text-base font-semibold text-white shadow-[0_4px_20px_rgba(99,102,241,0.6)] transition-colors hover:bg-primary-hover">
+              保存更改
+            </button>
           </div>
         </div>
       </section>

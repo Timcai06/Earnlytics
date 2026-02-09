@@ -1,113 +1,140 @@
-"use client";
-
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Zap, Bot, Gem, Send } from "lucide-react";
-
-const values = [
-  {
-    icon: Zap,
-    title: "极速分析",
-    description:
-      "财报发布后1小时内生成AI分析，让您第一时间掌握公司动态",
-  },
-  {
-    icon: Bot,
-    title: "AI 驱动",
-    description:
-      "利用最先进的AI技术，将复杂的财务数据转化为易懂的中文摘要",
-  },
-  {
-    icon: Gem,
-    title: "完全免费",
-    description:
-      "基础功能永久免费，让每位投资者都能获得专业的财报分析",
-  },
-];
+import Link from "next/link";
 
 export default function AboutPage() {
+  const missions = [
+    {
+      icon: "AI",
+      title: "AI 驱动",
+      description: "利用人工智能技术，快速分析海量财报数据，提取关键洞察",
+      border: "border-[#6366F1]",
+      shadow: "shadow-[0_0_20px_rgba(99,102,241,0.13)]",
+      iconBg: "bg-[rgba(99,102,241,0.15)]",
+      iconColor: "text-primary",
+    },
+    {
+      icon: "中",
+      title: "中文友好",
+      description: "为中国投资者提供母语财报解读，消除语言障碍",
+      border: "border-[#22C55E]",
+      shadow: "shadow-[0_0_20px_rgba(34,197,94,0.13)]",
+      iconBg: "bg-[rgba(34,197,94,0.15)]",
+      iconColor: "text-[#22C55E]",
+    },
+    {
+      icon: "¥",
+      title: "完全免费",
+      description: "基础功能永久免费，降低投资信息获取门槛",
+      border: "border-[#3B82F6]",
+      shadow: "shadow-[0_0_20px_rgba(59,130,246,0.13)]",
+      iconBg: "bg-[rgba(59,130,246,0.15)]",
+      iconColor: "text-[#3B82F6]",
+    },
+  ];
+
   return (
-    <div className="min-h-screen bg-background">
-      <section className="px-20 py-20 text-center">
-        <div className="mx-auto max-w-3xl">
-          <h1 className="mb-6 text-[48px] font-bold text-text-primary">
+    <div className="flex flex-col">
+      {/* About Hero */}
+      <section className="bg-background px-20 py-28">
+        <div className="mx-auto max-w-4xl text-center">
+          <div className="mb-6 inline-flex items-center rounded-2xl bg-[rgba(99,102,241,0.15)] px-4 py-2">
+            <span className="text-sm font-semibold text-[#818CF8]">关于我们</span>
+          </div>
+          <h1 className="mb-6 text-[56px] font-bold text-white drop-shadow-[0_0_30px_rgba(99,102,241,0.25)]">
             关于 Earnlytics
           </h1>
-          <p className="text-xl leading-relaxed text-text-secondary">
-            我们是一家专注于美国科技公司财报分析的AI驱动平台。
-            通过先进的人工智能技术，我们将复杂的财务数据转化为
-            简单易懂的中文摘要，帮助中国投资者快速了解科技巨头的业绩表现。
+          <p className="mb-8 text-2xl text-[#A1A1AA]">让财报分析变得简单易懂</p>
+          <p className="mx-auto max-w-2xl text-lg leading-relaxed text-[#A1A1AA]">
+            Earnlytics 是一个专注于美国科技公司财报分析的平台。
+            我们利用人工智能技术，为中国投资者提供快速、准确、易懂的财报解读服务。
           </p>
         </div>
       </section>
 
-      <section className="bg-white px-20 py-20">
+      {/* Mission Section */}
+      <section className="bg-surface px-20 py-20">
         <div className="mx-auto max-w-6xl">
-          <h2 className="mb-12 text-center text-[32px] font-bold text-text-primary">
+          <h2 className="mb-12 text-center text-[40px] font-bold text-white">
             我们的使命
           </h2>
+
           <div className="grid grid-cols-3 gap-8">
-            {values.map((value, index) => {
-              const Icon = value.icon;
-              return (
-                <div
-                  key={index}
-                  className="rounded-xl border border-border bg-surface p-8 text-center"
-                >
-                  <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-primary/10">
-                    <Icon className="h-7 w-7 text-primary" />
-                  </div>
-                  <h3 className="mb-3 text-xl font-semibold text-text-primary">
-                    {value.title}
-                  </h3>
-                  <p className="text-text-secondary">{value.description}</p>
+            {missions.map((mission) => (
+              <div
+                key={mission.title}
+                className={`rounded-2xl border ${mission.border} bg-surface-secondary p-8 ${mission.shadow}`}
+              >
+                <div className={`mb-4 flex h-16 w-16 items-center justify-center rounded-xl ${mission.iconBg}`}>
+                  <span className={`text-2xl font-bold ${mission.iconColor}`}>
+                    {mission.icon}
+                  </span>
                 </div>
-              );
-            })}
+                <h3 className="mb-3 text-2xl font-bold text-white">{mission.title}</h3>
+                <p className="text-base leading-relaxed text-[#A1A1AA]">
+                  {mission.description}
+                </p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      <section className="px-20 py-20">
-        <div className="mx-auto max-w-2xl">
-          <h2 className="mb-8 text-center text-[32px] font-bold text-text-primary">
+      {/* Contact Section */}
+      <section className="bg-surface px-20 py-20">
+        <div className="mx-auto max-w-6xl">
+          <h2 className="mb-12 text-center text-[40px] font-bold text-white">
             联系我们
           </h2>
-          <div className="rounded-xl border border-border bg-surface p-8">
-            <form className="space-y-6">
-              <div className="grid grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label htmlFor="name">姓名</Label>
-                  <Input id="name" placeholder="请输入您的姓名" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="email">邮箱</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="请输入您的邮箱"
+
+          <div className="grid grid-cols-2 gap-16">
+            {/* Contact Info */}
+            <div>
+              <h3 className="mb-8 text-2xl font-bold text-white">联系方式</h3>
+              <div>
+                <p className="mb-2 text-sm font-medium text-[#A1A1AA]">邮箱</p>
+                <Link
+                  href="mailto:contact@earnlytics.com"
+                  className="text-lg text-primary hover:underline"
+                >
+                  contact@earnlytics.com
+                </Link>
+              </div>
+            </div>
+
+            {/* Contact Form */}
+            <div className="rounded-2xl border border-[#6366F1] bg-surface-secondary p-8 shadow-[0_0_30px_rgba(99,102,241,0.19)]">
+              <div className="space-y-4">
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-white">
+                    姓名
+                  </label>
+                  <input
+                    type="text"
+                    className="h-12 w-full rounded-lg border border-border bg-[#111111] px-4 text-white"
                   />
                 </div>
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-white">
+                    邮箱
+                  </label>
+                  <input
+                    type="email"
+                    className="h-12 w-full rounded-lg border border-border bg-[#111111] px-4 text-white"
+                  />
+                </div>
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-white">
+                    留言
+                  </label>
+                  <textarea
+                    rows={4}
+                    className="w-full rounded-lg border border-border bg-[#111111] px-4 py-3 text-white"
+                  />
+                </div>
+                <button className="h-12 w-full rounded-lg bg-primary text-base font-semibold text-white shadow-[0_4px_20px_rgba(99,102,241,0.6)] transition-colors hover:bg-primary-hover">
+                  发送留言
+                </button>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="subject">主题</Label>
-                <Input id="subject" placeholder="请输入主题" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="message">消息</Label>
-                <textarea
-                  id="message"
-                  placeholder="请输入您的消息"
-                  rows={5}
-                  className="flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                />
-              </div>
-              <Button className="w-full gap-2">
-                <Send className="h-4 w-4" />
-                发送消息
-              </Button>
-            </form>
+            </div>
           </div>
         </div>
       </section>
