@@ -1,124 +1,202 @@
 import Link from "next/link";
+import { notFound } from "next/navigation";
+import { supabase } from "@/lib/supabase";
+import type { EarningWithAnalysis } from "@/types/database";
 
-export default function EarningsDetailPage() {
+interface Props {
+  params: Promise<{ id: string }>;
+}
+
+async function getEarnings(symbol: string): Promise<EarningWithAnalysis | null> {
+  const { data: company } = await supabase
+    .from("companies")
+    .select("id, symbol, name, sector")
+    .eq("symbol", symbol.toUpperCase())
+    .single();
+
+  if (!company) return null;
+
+  const { data: earnings } = await supabase
+    .from("earnings")
+    .select(`
+      *,
+      ai_analyses (*)
+    `)
+    .eq("company_id", company.id)
+    .order("report_date", { ascending: false })
+    .limit(1)
+    .single();
+
+  if (!earnings) return null;
+
+  return {
+    ...earnings,
+    companies: company,
+  };
+}
+
+function formatCurrency(value: number | null): string {
+  if (value === null || value === undefined) return "N/A";
+  if (value >= 1e12) return `$${(value / 1e12).toFixed(1)}T`;
+  if (value >= 1e9) return `$${(value / 1e9).toFixed(1)}B`;
+  if (value >= 1e6) return `$${(value / 1e6).toFixed(1)}M`;
+  return `$${value.toLocaleString()}`;
+}
+
+function getSentimentStyle(sentiment: string | null) {
+  switch (sentiment) {
+    case "positive":
+      return {
+        bg: "bg-[rgba(34,197,94,0.15)]",
+        text: "text-[#16A34A]",
+        label: "积极",
+      };
+    case "negative":
+      return {
+        bg: "bg-[rgba(239,68,68,0.15)]",
+        text: "text-[#EF4444]",
+        label: "消极",
+      };
+    default:
+      return {
+        bg: "bg-[rgba(161,161,170,0.15)]",
+        text: "text-[#A1A1AA]",
+        label: "中性",
+      };
+  }
+}
+
+export default async function EarningsDetailPage({ params }: Props) {
+  const { id } = await params;
+  const earnings = await getEarnings(id);
+
+  if (!earnings) {
+    notFound();
+  }
+
+  const company = earnings.companies;
+  const analysis = earnings.ai_analyses;
+  const sentimentStyle = getSentimentStyle(analysis?.sentiment || null);
+
   return (
     <div className="flex flex-col">
-      {/* Detail Hero */}
-      <section className="bg-background px-20 py-16">
+      <section className="bg-background px-4 py-12 sm:px-6 sm:py-16 lg:px-20">
         <div className="mx-auto max-w-6xl">
-          <div className="flex items-center gap-6">
-            <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-black text-4xl">
-              🍎
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-6">
+            <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-2xl bg-black text-3xl sm:h-20 sm:w-20 sm:text-4xl">
+              {company.symbol[0]}
             </div>
             <div className="flex-1">
-              <h1 className="text-3xl font-bold text-white">Apple Inc.</h1>
-              <div className="mt-2 flex gap-5 text-sm text-[#A1A1AA]">
-                <span>AAPL</span>
-                <span>Q1 FY2026</span>
-                <span>发布日期: 2026-01-28</span>
+              <h1 className="text-2xl font-bold text-white sm:text-3xl">{company.name}</h1>
+              <div className="mt-2 flex flex-wrap gap-3 text-sm text-[#A1A1AA] sm:gap-5">
+                <span>{company.symbol}</span>
+                <span>Q{earnings.fiscal_quarter} FY{earnings.fiscal_year}</span>
+                <span>发布日期: {earnings.report_date}</span>
               </div>
             </div>
-            <span className="rounded-2xl bg-[rgba(34,197,94,0.15)] px-4 py-1.5 text-sm font-semibold text-[#16A34A]">
-              ✓ 积极
+            <span className={`w-fit rounded-2xl ${sentimentStyle.bg} px-4 py-1.5 text-sm font-semibold ${sentimentStyle.text}`}>
+              {sentimentStyle.label}
             </span>
           </div>
         </div>
       </section>
 
-      {/* Breadcrumb */}
-      <div className="bg-surface px-20 py-8">
-        <div className="mx-auto max-w-6xl flex items-center gap-2 text-sm">
+      <div className="bg-surface px-4 py-6 sm:px-6 lg:px-20">
+        <div className="mx-auto flex max-w-6xl items-center gap-2 text-sm">
           <Link href="/home" className="text-[#A1A1AA]">首页</Link>
           <span className="text-[#3F3F46]">/</span>
-          <Link href="/earnings" className="text-[#A1A1AA]">财报</Link>
+          <Link href="/companies" className="text-[#A1A1AA]">公司</Link>
           <span className="text-[#3F3F46]">/</span>
-          <span className="font-medium text-white">Apple Q1 2026</span>
+          <span className="font-medium text-white">{company.symbol} Q{earnings.fiscal_quarter} FY{earnings.fiscal_year}</span>
         </div>
       </div>
 
-      {/* Detail Content */}
-      <section className="bg-background px-20 pb-24">
+      <section className="bg-background px-4 pb-16 sm:px-6 sm:pb-24 lg:px-20">
         <div className="mx-auto max-w-4xl">
-          {/* Metrics Grid */}
-          <div className="mb-8 grid grid-cols-4 gap-5">
+          <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-4 sm:gap-5">
             {[
-              { label: "营收", value: "$119.6B", change: "+8.2% YoY", color: "border-[#6366F1]", shadow: "shadow-[0_0_15px_rgba(99,102,241,0.13)]" },
-              { label: "每股收益 (EPS)", value: "$2.18", change: "超预期 预期 $2.10", color: "border-[#22C55E]", shadow: "shadow-[0_0_15px_rgba(34,197,94,0.13)]" },
-              { label: "净利润", value: "$33.9B", change: "+11.5% YoY", color: "border-[#22C55E]", shadow: "shadow-[0_0_15px_rgba(34,197,94,0.13)]" },
-              { label: "毛利率", value: "46.2%", change: "+1.2% YoY", color: "border-[#3B82F6]", shadow: "shadow-[0_0_15px_rgba(59,130,246,0.13)]" },
+              { label: "营收", value: formatCurrency(earnings.revenue), change: earnings.revenue_yoy_growth ? `+${earnings.revenue_yoy_growth}% YoY` : "N/A", color: "border-[#6366F1]", shadow: "shadow-[0_0_15px_rgba(99,102,241,0.13)]" },
+              { label: "每股收益 (EPS)", value: earnings.eps ? `$${earnings.eps}` : "N/A", change: earnings.eps_estimate ? `预期 $${earnings.eps_estimate}` : "", color: "border-[#22C55E]", shadow: "shadow-[0_0_15px_rgba(34,197,94,0.13)]" },
+              { label: "净利润", value: formatCurrency(earnings.net_income), change: "", color: "border-[#22C55E]", shadow: "shadow-[0_0_15px_rgba(34,197,94,0.13)]" },
+              { label: "EPS超预期", value: earnings.eps_surprise ? `${earnings.eps_surprise > 0 ? '+' : ''}${earnings.eps_surprise}` : "N/A", change: "", color: "border-[#3B82F6]", shadow: "shadow-[0_0_15px_rgba(59,130,246,0.13)]" },
             ].map((metric) => (
-              <div key={metric.label} className={`rounded-xl border ${metric.color} bg-surface-secondary p-7 ${metric.shadow}`}>
-                <p className="mb-3 text-sm text-[#A1A1AA]">{metric.label}</p>
-                <p className="mb-2 text-[40px] font-bold text-white drop-shadow-[0_0_20px_rgba(99,102,241,0.25)]">
+              <div key={metric.label} className={`rounded-xl border ${metric.color} bg-surface-secondary p-4 sm:p-7 ${metric.shadow}`}>
+                <p className="mb-2 text-xs text-[#A1A1AA] sm:mb-3 sm:text-sm">{metric.label}</p>
+                <p className="mb-1 text-xl font-bold text-white drop-shadow-[0_0_20px_rgba(99,102,241,0.25)] sm:mb-2 sm:text-[32px]">
                   {metric.value}
                 </p>
-                <p className="text-sm text-[#22C55E]">{metric.change}</p>
+                {metric.change && (
+                  <p className="text-xs text-[#22C55E] sm:text-sm">{metric.change}</p>
+                )}
               </div>
             ))}
           </div>
 
-          {/* AI Summary */}
-          <div className="mb-8 rounded-xl border-2 border-[#6366F1] bg-[rgba(99,102,241,0.1)] p-7 shadow-[0_0_30px_rgba(99,102,241,0.25)]">
-            <div className="mb-5 flex items-center gap-3">
-              <span className="text-2xl">🤖</span>
-              <h2 className="text-2xl font-bold text-[#818CF8] drop-shadow-[0_0_20px_rgba(99,102,241,0.5)]">
-                AI 分析摘要
-              </h2>
+          {analysis ? (
+            <>
+              <div className="mb-8 rounded-xl border-2 border-[#6366F1] bg-[rgba(99,102,241,0.1)] p-5 shadow-[0_0_30px_rgba(99,102,241,0.25)] sm:p-7">
+                <div className="mb-4 flex items-center gap-3 sm:mb-5">
+                  <span className="text-xl sm:text-2xl">🤖</span>
+                  <h2 className="text-xl font-bold text-[#818CF8] drop-shadow-[0_0_20px_rgba(99,102,241,0.5)] sm:text-2xl">
+                    AI 分析摘要
+                  </h2>
+                </div>
+                <p className="leading-relaxed text-sm text-[#E0E7FF] sm:text-base">
+                  {analysis.summary}
+                </p>
+              </div>
+
+              {analysis.highlights && analysis.highlights.length > 0 && (
+                <div className="mb-8 rounded-xl border border-[#22C55E] bg-[rgba(34,197,94,0.1)] p-5 sm:p-7">
+                  <h3 className="mb-3 text-base font-bold text-[#15803D] sm:mb-4 sm:text-lg">✨ 核心亮点</h3>
+                  <ul className="space-y-2 sm:space-y-3">
+                    {analysis.highlights.map((item, i) => (
+                      <li key={i} className="flex items-start gap-2 text-sm text-[#DCFCE7] sm:gap-3 sm:text-base">
+                        <span className="text-[#22C55E]">•</span>
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {analysis.concerns && analysis.concerns.length > 0 && (
+                <div className="mb-8 rounded-xl border border-[#EF4444] bg-[rgba(239,68,68,0.1)] p-5 sm:p-7">
+                  <h3 className="mb-3 text-base font-bold text-[#991B1B] sm:mb-4 sm:text-lg">⚠️ 关注点</h3>
+                  <ul className="space-y-2 sm:space-y-3">
+                    {analysis.concerns.map((item, i) => (
+                      <li key={i} className="flex items-start gap-2 text-sm text-[#FECACA] sm:gap-3 sm:text-base">
+                        <span className="text-[#EF4444]">•</span>
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="mb-8 rounded-xl border-2 border-[#6366F1] bg-[rgba(99,102,241,0.1)] p-7 shadow-[0_0_30px_rgba(99,102,241,0.25)]">
+              <div className="flex items-center justify-center gap-3 py-8">
+                <span className="text-2xl">🤖</span>
+                <p className="text-[#818CF8]">AI 分析正在生成中...</p>
+              </div>
             </div>
-            <p className="leading-relaxed text-[#E0E7FF]">
-              苹果 Q1 财报表现强劲，营收和利润均超市场预期。iPhone 销售保持稳健增长，服务业务继续成为亮点，同比增长 15%。大中华区市场虽有所承压，但整体表现仍优于预期。公司对下季度给出积极指引，预计营收将达到 $90-93B。
-            </p>
-          </div>
+          )}
 
-          {/* Highlights */}
-          <div className="mb-8 rounded-xl border border-[#22C55E] bg-[rgba(34,197,94,0.1)] p-7">
-            <h3 className="mb-4 text-lg font-bold text-[#15803D]">✨ 核心亮点</h3>
-            <ul className="space-y-3">
-              {[
-                "服务业务营收创历史新高，达到 $23.1B，同比增长 15%",
-                "iPhone 营收 $69.7B，超出分析师预期，显示需求依然强劲",
-                "毛利率提升至 46.2%，运营效率持续优化",
-              ].map((item, i) => (
-                <li key={i} className="flex items-start gap-3 text-[#DCFCE7]">
-                  <span className="text-[#22C55E]">•</span>
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Concerns */}
-          <div className="mb-8 rounded-xl border border-[#EF4444] bg-[rgba(239,68,68,0.1)] p-7">
-            <h3 className="mb-4 text-lg font-bold text-[#991B1B]">⚠️ 关注点</h3>
-            <ul className="space-y-3">
-              {[
-                "大中华区营收下降 8%，地缘政治风险持续",
-                "Mac 和 iPad 销售疲软，同比分别下降 5% 和 10%",
-              ].map((item, i) => (
-                <li key={i} className="flex items-start gap-3 text-[#FECACA]">
-                  <span className="text-[#EF4444]">•</span>
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Historical Charts Placeholder */}
-          <div className="mb-8 rounded-xl border border-border bg-surface-secondary p-7">
-            <h3 className="mb-6 text-xl font-bold text-white">历史业绩趋势</h3>
-            <div className="flex h-72 items-center justify-center rounded-lg bg-background">
-              <p className="text-[#A1A1AA]">📊 营收趋势图（最近8个季度）</p>
+          <div className="mb-8 rounded-xl border border-border bg-surface-secondary p-5 sm:p-7">
+            <h3 className="mb-4 text-lg font-bold text-white sm:mb-6 sm:text-xl">历史业绩趋势</h3>
+            <div className="flex h-48 items-center justify-center rounded-lg bg-background sm:h-72">
+              <p className="text-sm text-[#A1A1AA] sm:text-base">📊 即将上线</p>
             </div>
           </div>
 
-          {/* Feedback */}
-          <div className="rounded-xl border border-border bg-surface p-7">
-            <h3 className="mb-5 text-lg font-semibold text-white">这篇分析有帮助吗？</h3>
-            <div className="flex gap-4">
-              <button className="rounded-lg border border-border bg-surface-secondary px-6 py-3 text-white hover:bg-[#27272A]">
+          <div className="rounded-xl border border-border bg-surface p-5 sm:p-7">
+            <h3 className="mb-4 text-base font-semibold text-white sm:mb-5 sm:text-lg">这篇分析有帮助吗？</h3>
+            <div className="flex gap-3 sm:gap-4">
+              <button className="rounded-lg border border-border bg-surface-secondary px-4 py-2 text-sm text-white hover:bg-[#27272A] sm:px-6 sm:py-3">
                 👍 有帮助
               </button>
-              <button className="rounded-lg border border-border bg-surface-secondary px-6 py-3 text-white hover:bg-[#27272A]">
+              <button className="rounded-lg border border-border bg-surface-secondary px-4 py-2 text-sm text-white hover:bg-[#27272A] sm:px-6 sm:py-3">
                 👎 需要改进
               </button>
             </div>
