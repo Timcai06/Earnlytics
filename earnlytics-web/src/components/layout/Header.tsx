@@ -15,16 +15,16 @@ export default function Header() {
   ];
 
   return (
-    <header className="sticky top-0 z-50 h-20 border-b border-border bg-white">
+    <header className="sticky top-0 z-50 h-[87px] border-b border-border bg-background/80 backdrop-blur-md">
       <div className="flex h-full items-center justify-between px-20">
         {/* Left Group: Logo + Nav */}
-        <div className="flex items-center gap-16">
+        <div className="flex items-center gap-12">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-900">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#0F172A]">
               <BarChart3 className="h-5 w-5 text-white" />
             </div>
-            <span className="text-2xl font-bold text-slate-900">Earnlytics</span>
+            <span className="text-2xl font-bold text-white">Earnlytics</span>
           </Link>
 
           {/* Navigation */}
@@ -33,8 +33,8 @@ export default function Header() {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`text-[15px] font-medium transition-colors hover:text-slate-900 ${
-                  pathname === item.href ? "text-slate-900" : "text-slate-500"
+                className={`text-[15px] font-medium leading-none transition-colors hover:text-white ${
+                  pathname === item.href ? "text-white" : "text-text-secondary"
                 }`}
               >
                 {item.label}
@@ -46,7 +46,7 @@ export default function Header() {
         {/* Right: CTA Button */}
         <Link
           href="/signup"
-          className="rounded-lg bg-primary px-6 py-3 text-[15px] font-semibold text-white transition-colors hover:bg-primary-hover"
+          className="rounded-lg border border-[#818CF8] bg-primary px-6 py-3 text-[15px] font-semibold leading-none text-white shadow-[0_0_24px_rgba(99,102,241,0.67)] transition-colors hover:bg-primary-hover"
         >
           免费订阅
         </Link>

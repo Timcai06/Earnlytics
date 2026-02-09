@@ -6,14 +6,14 @@ export default function Footer() {
   const footerLinks = [
     { label: "关于我们", href: "/about" },
     { label: "隐私政策", href: "/privacy" },
-    { label: "联系我们", href: "/contact" },
+    { label: "使用条款", href: "/terms" },
   ];
 
   return (
-    <footer className="bg-slate-900 py-10 px-20">
+    <footer className="bg-background px-20 py-10">
       <div className="flex items-center justify-between">
         {/* Left: Copyright */}
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-text-tertiary">
           © {currentYear} Earnlytics. All rights reserved.
         </p>
 
@@ -23,7 +23,7 @@ export default function Footer() {
             <Link
               key={link.href}
               href={link.href}
-              className="text-sm text-gray-500 transition-colors hover:text-gray-400"
+              className="text-sm text-text-tertiary transition-colors hover:text-text-secondary"
             >
               {link.label}
             </Link>
