@@ -1,8 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useState } from "react";
 import { BotIcon, LoaderIcon, XCircleIcon, SparklesIcon, AlertTriangleIcon, BarChart3Icon, ThumbsUpIcon, ThumbsDownIcon } from "@/components/icons";
 
 interface EarningWithAnalysis {
@@ -52,47 +51,45 @@ function getSentimentStyle(sentiment: string | null) {
   }
 }
 
+function getSymbolFromUrl(): string | null {
+  if (typeof window === 'undefined') return null;
+  const params = new URLSearchParams(window.location.search);
+  return params.get('symbol');
+}
+
 function EarningsContent() {
-  const searchParams = useSearchParams();
-  const symbol = searchParams.get("symbol");
-  
+  const [symbol, setSymbol] = useState<string | null>(null);
   const [earnings, setEarnings] = useState<EarningWithAnalysis | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    console.log("[EarningsPage] useEffect triggered, symbol:", symbol);
-    
+    const sym = getSymbolFromUrl();
+    setSymbol(sym);
+  }, []);
+
+  useEffect(() => {
     if (!symbol) {
-      setError("未提供股票代码");
-      setLoading(false);
+      if (!loading) setError("未提供股票代码");
       return;
     }
 
     async function fetchEarnings() {
       try {
-        console.log("[EarningsPage] Fetching earnings data...");
         const response = await fetch('/api/earnings');
-        console.log("[EarningsPage] Response status:", response.status);
-        
         if (!response.ok) throw new Error(`Failed to fetch earnings: ${response.status}`);
         
         const data = await response.json();
-        console.log("[EarningsPage] Data received, earnings count:", data.earnings?.length);
-        
         const earning = data.earnings.find(
           (e: EarningWithAnalysis) => symbol && e.companies.symbol.toLowerCase() === symbol.toLowerCase()
         );
         
         if (earning) {
-          console.log("[EarningsPage] Found earning for symbol:", symbol);
           setEarnings(earning);
         } else {
-          console.log("[EarningsPage] No earning found for symbol:", symbol);
           setError('未找到该股票的财报数据');
         }
       } catch (e) {
-        console.error("[EarningsPage] Error fetching:", e);
         setError(e instanceof Error ? e.message : '加载失败');
       } finally {
         setLoading(false);
@@ -269,21 +266,6 @@ function EarningsContent() {
   );
 }
 
-function LoadingState() {
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <LoaderIcon className="mx-auto mb-4 h-10 w-10 animate-spin text-[#818CF8]" />
-        <p className="text-[#A1A1AA]">加载中...</p>
-      </div>
-    </div>
-  );
-}
-
 export default function EarningsPage() {
-  return (
-    <Suspense fallback={<LoadingState />}>
-      <EarningsContent />
-    </Suspense>
-  );
+  return <EarningsContent />;
 }
