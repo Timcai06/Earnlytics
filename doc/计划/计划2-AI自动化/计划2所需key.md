@@ -1,5 +1,0 @@
-deepseek api key:sk-eb9bd37f772141e2a55a5ace60a4ce66
-fmp api key:KAsCR02pUvLLqfyLnt1llUq5vuq8vUuG
-vercel deploy hook:https://earnlytics-ebon.vercel.app/
-supabase URL:https://sdbdvtnhidifpdtyziwu.supabase.co
-supabase Key:eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNkYmR2dG5oaWRpZnBkdHl6aXd1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA0NTMyNjksImV4cCI6MjA4NjAyOTI2OX0.qqwH4ObruEroG6NOIVk1b_yC_wpsaDGMl21We5dHT0M
