@@ -267,5 +267,22 @@ function EarningsContent() {
 }
 
 export default function EarningsPage() {
+  const [mounted, setMounted] = useState(false);
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+  
+  if (!mounted) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="text-center">
+          <LoaderIcon className="mx-auto mb-4 h-10 w-10 animate-spin text-[#818CF8]" />
+          <p className="text-[#A1A1AA]">加载中...</p>
+        </div>
+      </div>
+    );
+  }
+  
   return <EarningsContent />;
 }
