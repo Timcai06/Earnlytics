@@ -1,8 +1,21 @@
 # EARNLYTICS KNOWLEDGE BASE
 
-**Generated:** 2026-02-08 13:20
-**Commit:** 6bb5790
+**Generated:** 2026-02-10
+**Current Status:** Plan 2 Complete (100%) → Ready for Plan 3
 **Branch:** main
+
+## PROJECT STATUS
+
+| Phase | Status | Completion | Key Deliverables |
+|-------|--------|------------|------------------|
+| **Plan 1: MVP** | ✅ Complete | 100% | 10 pages, Vercel deployed |
+| **Plan 2: AI Automation** | ✅ Complete | 100% | DeepSeek AI, 23 earnings analyzed, GitHub Actions |
+| **Plan 3: Scale** | 🚀 Ready | 0% | Expand to 30 companies, email subscription, SEO |
+
+**Production:** https://earnlytics-ebon.vercel.app  
+**GitHub:** https://github.com/Timcai06/Earnlytics
+
+---
 
 ## OVERVIEW
 
@@ -12,56 +25,158 @@ AI-driven US tech company earnings analysis platform with Chinese summaries. Mon
 
 ```
 earnlytics/
-├── doc/                    # Project docs (Chinese)
-├── earnlytics-web/          # Next.js 16 frontend
+├── doc/                           # Project docs (Chinese)
+│   ├── 计划/                       # Plan documents
+│   │   ├── 计划1-MVP启动/
+│   │   ├── 计划2-AI自动化/
+│   │   ├── 计划3-规模化/
+│   │   └── 00-项目总览.md
+│   └── 项目状态报告-20260210.md    # Current status report
+├── earnlytics-web/                # Next.js 16 frontend
 │   ├── src/
-│   │   ├── app/            # App Router (page.tsx per route)
+│   │   ├── app/                   # App Router
+│   │   │   ├── earnings/[symbol]/ # Dynamic route for earnings
+│   │   │   ├── companies/         # Company list page
+│   │   │   └── api/               # API routes
 │   │   ├── components/
-│   │   │   ├── ui/         # shadcn/ui primitives
-│   │   │   ├── layout/     # Header, Footer
-│   │   │   └── sections/  # Page sections
-│   │   └── lib/            # Utils (cn helper)
-│   └── public/
-└── pencil-earnlytics.pen    # Design file (13 pages)
+│   │   │   ├── ui/                # shadcn/ui primitives
+│   │   │   ├── icons/             # SVG icon library
+│   │   │   └── layout/            # Header, Footer
+│   │   └── lib/                   # Utils (cn helper, ai.ts, supabase.ts)
+│   ├── scripts/                   # Data scripts
+│   │   ├── fetch-earnings.ts
+│   │   └── analyze-batch.ts
+│   └── supabase/migrations/       # Database schema
+├── pencil-earnlytics.pen          # Design file (13 pages)
+├── PLAN2部署指南.md               # Deployment guide
+└── PLAN2数据验证指南.md           # Data validation guide
 ```
 
 ## WHERE TO LOOK
 
 | Task | Location | Notes |
 |------|----------|-------|
-| Add page | `earnlytics-web/src/app/[name]/page.tsx` | App Router |
+| Add page | `earnlytics-web/src/app/[name]/page.tsx` | App Router, dynamic routes use `[param]` |
 | Add UI component | `earnlytics-web/src/components/ui/` | shadcn/ui |
-| Modify layout | `earnlytics-web/src/components/layout/` | Header/Footer |
-| Design reference | `pencil-earnlytics.pen` | Pencil design file |
-| Project plans | `doc/计划/` | Chinese planning docs |
+| Add icon | `earnlytics-web/src/components/icons/` | SVG icons (replaced all emoji) |
+| AI analysis logic | `earnlytics-web/src/lib/ai.ts` | DeepSeek integration |
+| Database schema | `earnlytics-web/supabase/migrations/` | SQL migrations |
+| Data scripts | `earnlytics-web/scripts/` | fetch-earnings.ts, analyze-batch.ts |
+| API routes | `earnlytics-web/src/app/api/*/` | Serverless functions |
+| Design reference | `pencil-earnlytics.pen` | 13-page Pencil design file |
+| Plan documents | `doc/计划/` | Chinese planning docs |
+| Deployment guide | `PLAN2部署指南.md` | Step-by-step deployment |
 
 ## TECH STACK
 
 - **Frontend:** Next.js 16 + React 19 + TypeScript 5
 - **Styling:** Tailwind CSS 4 + shadcn/ui
-- **Icons:** Lucide React
+- **Icons:** Lucide React + Custom SVG icons
 - **Path alias:** `@/*` → `./src/*`
+
+### Backend & Infrastructure
+- **Hosting:** Vercel Serverless
+- **Database:** Supabase PostgreSQL
+- **AI Service:** DeepSeek API (¥0.002/1K tokens)
+- **Data Source:** Financial Modeling Prep (FMP) API
+- **Automation:** GitHub Actions (every 4 hours)
 
 ## ANTI-PATTERNS (THIS PROJECT)
 
-- **Never** run `create-next-app` in root directory (creates duplicate config)
-- **Never** add `.gitignore` rules that overlap with `earnlytics-web/.gitignore`
+### NEVER Do These
+- ❌ Run `create-next-app` in root directory (creates duplicate config)
+- ❌ Add API keys to git (use environment variables)
+- ❌ Use `as any`, `@ts-ignore`, `@ts-expect-error`
+- ❌ Add `.gitignore` rules that overlap with `earnlytics-web/.gitignore`
+- ❌ Commit `.env.local` or files containing secrets
+
+### ALWAYS Do These
+- ✅ Use SVG icons from `src/components/icons/`
+- ✅ Follow shadcn/ui patterns for components
+- ✅ Update progress documents when completing tasks
+- ✅ Use dynamic routes for parameterized pages
+- ✅ Test build before committing
 
 ## COMMANDS
 
 ```bash
-# Frontend development
-cd earnlytics-web && npm run dev
+# Development
+cd earnlytics-web && npm run dev          # Start dev server (localhost:3000)
 
-# Build
-cd earnlytics-web && npm run build
+# Data Operations
+npm run fetch:earnings                    # Fetch latest earnings from FMP
+npm run analyze:batch                     # Generate AI analysis (batch of 5)
 
-# Lint
-cd earnlytics-web && npm run lint
+# Build & Deploy
+npm run build                             # Production build
+npm run lint                              # Lint check
 ```
+
+## CURRENT SYSTEM STATE
+
+### Database Status
+| Table | Records | Status |
+|-------|---------|--------|
+| companies | 10 | ✅ Complete |
+| earnings | 23 | ✅ Complete |
+| ai_analyses | 5+ | 🔄 Ongoing (can run more) |
+
+### Key Architecture Decisions
+
+#### 1. Dynamic Routing for Earnings
+**Changed from:** `/earnings?symbol=aapl` (query params)  
+**Changed to:** `/earnings/aapl` (dynamic route)  
+**Reason:** Next.js 15 params are Promises, simpler to use dynamic segments  
+**Implementation:** `src/app/earnings/[symbol]/page.tsx` using `React.use()` to unwrap params
+
+#### 2. SVG Icons Instead of Emoji
+**All emoji replaced with SVG components**  
+**Location:** `src/components/icons/index.tsx`  
+**Benefits:** Consistent styling, better performance, no platform differences
+
+#### 3. AI Analysis Batch Processing
+**Approach:** Process 5 earnings at a time  
+**Reason:** Control API costs, manageable execution time  
+**Command:** `npm run analyze:batch` (run multiple times for all data)
+
+## KNOWN ISSUES & SOLUTIONS
+
+| Issue | Solution | File |
+|-------|----------|------|
+| useSearchParams returns null | Use dynamic route `[symbol]` instead | `earnings/[symbol]/page.tsx` |
+| params is Promise in Next.js 15 | Use `React.use()` to unwrap | `earnings/[symbol]/page.tsx` |
+| Environment variables in scripts | Use dotenv to load `.env.local` | `scripts/*.ts` |
+| API keys leaked to git | 1) Delete file, 2) Rotate keys, 3) Add to `.gitignore` | Already fixed |
+
+## NEXT STEPS (PLAN 3)
+
+### Immediate Tasks
+1. **Expand to 30 companies**
+   - Add 20 more tech companies to database
+   - Update `scripts/fetch-earnings.ts` SYMBOLS array
+   - Run `npm run fetch:earnings` to get new data
+
+2. **Email Subscription Feature**
+   - Create subscription form component
+   - Integrate SendGrid or similar service
+   - Add email notification for new earnings
+
+3. **SEO Optimization**
+   - Add meta tags to all pages
+   - Create sitemap.xml
+   - Add structured data (JSON-LD)
+   - Optimize for keywords: "美股财报", "科技公司", "AI分析"
 
 ## NOTES
 
 - Project uses DOVE VPN proxy (HTTP 7897) for GitHub access
 - Doc folder uses Chinese naming conventions (计划, 技术, 策略)
 - Root `.gitignore` is minimal; full rules in `earnlytics-web/.gitignore`
+- Monthly AI cost: ~¥0.2-1 (extremely low cost)
+- All API keys must be rotated if accidentally committed
+- Dynamic routes use `[symbol]` format, accessed via `React.use(params)` in Next.js 15
+
+---
+
+**Last Updated:** 2026-02-10  
+**Session Context:** Plan 2 complete (100%), ready for Plan 3 scale-out
