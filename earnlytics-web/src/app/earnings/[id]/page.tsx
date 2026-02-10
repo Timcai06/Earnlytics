@@ -100,12 +100,16 @@ function getSentimentStyle(sentiment: string | null) {
 }
 
 export default async function EarningsDetailPage({ params }: Props) {
+  console.log("[EarningsDetailPage] Rendering with params:", params);
+  
   const id = params?.id;
   
   if (!id) {
+    console.error("[EarningsDetailPage] No id provided");
     notFound();
   }
   
+  console.log("[EarningsDetailPage] Looking up earnings for:", id);
   const earnings = await getEarnings(id);
 
   if (!earnings) {
