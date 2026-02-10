@@ -33,7 +33,7 @@ interface EarningWithAnalysis {
 }
 
 interface Props {
-  params: Promise<{ symbol: string }>;
+  params: { symbol: string };
 }
 
 function formatCurrency(value: number | null): string {
@@ -56,20 +56,12 @@ function getSentimentStyle(sentiment: string | null) {
 }
 
 export default function EarningsPage({ params }: Props) {
-  const [symbol, setSymbol] = useState<string | null>(null);
+  const symbol = params.symbol;
   const [earnings, setEarnings] = useState<EarningWithAnalysis | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    params.then(p => {
-      setSymbol(p.symbol);
-    });
-  }, [params]);
-
-  useEffect(() => {
-    if (!symbol) return;
-
     async function fetchData() {
       try {
         const response = await fetch('/api/earnings');
@@ -77,7 +69,7 @@ export default function EarningsPage({ params }: Props) {
         
         const data = await response.json();
         const earning = data.earnings.find(
-          (e: EarningWithAnalysis) => symbol && e.companies.symbol.toLowerCase() === symbol.toLowerCase()
+          (e: EarningWithAnalysis) => e.companies.symbol.toLowerCase() === symbol.toLowerCase()
         );
         
         if (earning) {
