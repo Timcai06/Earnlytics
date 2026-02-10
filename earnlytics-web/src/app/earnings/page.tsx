@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState, Suspense } from "react";
 import { BotIcon, LoaderIcon, XCircleIcon, SparklesIcon, AlertTriangleIcon, BarChart3Icon, ThumbsUpIcon, ThumbsDownIcon } from "@/components/icons";
 
 interface EarningWithAnalysis {
@@ -51,34 +52,28 @@ function getSentimentStyle(sentiment: string | null) {
   }
 }
 
-function getSymbolFromUrl(): string | null {
-  if (typeof window === 'undefined') return null;
-  const params = new URLSearchParams(window.location.search);
-  return params.get('symbol');
-}
-
 function EarningsContent() {
+  const searchParams = useSearchParams();
+  const symbol = searchParams.get('symbol');
   const [earnings, setEarnings] = useState<EarningWithAnalysis | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!symbol) {
+      setError("未提供股票代码");
+      setLoading(false);
+      return;
+    }
+
     async function fetchData() {
       try {
-        const symbol = getSymbolFromUrl();
-        
-        if (!symbol) {
-          setError("未提供股票代码");
-          setLoading(false);
-          return;
-        }
-
         const response = await fetch('/api/earnings');
         if (!response.ok) throw new Error(`Failed to fetch earnings: ${response.status}`);
         
         const data = await response.json();
         const earning = data.earnings.find(
-          (e: EarningWithAnalysis) => e.companies.symbol.toLowerCase() === symbol.toLowerCase()
+          (e: EarningWithAnalysis) => e.companies.symbol.toLowerCase() === symbol!.toLowerCase()
         );
         
         if (earning) {
@@ -94,7 +89,7 @@ function EarningsContent() {
     }
 
     fetchData();
-  }, []);
+  }, [symbol]);
 
   if (loading) {
     return (
@@ -102,7 +97,6 @@ function EarningsContent() {
         <div className="text-center">
           <LoaderIcon className="mx-auto mb-4 h-10 w-10 animate-spin text-[#818CF8]" />
           <p className="text-[#A1A1AA]">加载中...</p>
-          <p className="mt-2 text-xs text-[#64748B]">DEBUG: symbol={getSymbolFromUrl() || 'null'}</p>
         </div>
       </div>
     );
@@ -264,23 +258,21 @@ function EarningsContent() {
   );
 }
 
-export default function EarningsPage() {
-  const [mounted, setMounted] = useState(false);
-  
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-  
-  if (!mounted) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="text-center">
-          <LoaderIcon className="mx-auto mb-4 h-10 w-10 animate-spin text-[#818CF8]" />
-          <p className="text-[#A1A1AA]">加载中...</p>
-        </div>
+function LoadingState() {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-background">
+      <div className="text-center">
+        <LoaderIcon className="mx-auto mb-4 h-10 w-10 animate-spin text-[#818CF8]" />
+        <p className="text-[#A1A1AA]">加载中...</p>
       </div>
-    );
-  }
-  
-  return <EarningsContent />;
+    </div>
+  );
+}
+
+export default function EarningsPage() {
+  return (
+    <Suspense fallback={<LoadingState />}>
+      <EarningsContent />
+    </Suspense>
+  );
 }
