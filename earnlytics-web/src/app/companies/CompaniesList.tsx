@@ -190,7 +190,7 @@ export default function CompaniesList({ companies }: CompaniesListProps) {
                       </p>
                     </div>
                     <Link
-                      href={`/earnings?symbol=${company.symbol.toLowerCase()}`}
+                      href={`/earnings/${company.symbol.toLowerCase()}`}
                       className="rounded-lg border border-[#6366F1] bg-[rgba(99,102,241,0.15)] px-4 py-2 text-sm font-semibold text-[#818CF8] sm:px-5 sm:py-2.5"
                     >
                       查看财报 →

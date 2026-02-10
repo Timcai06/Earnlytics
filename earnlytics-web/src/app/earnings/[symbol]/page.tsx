@@ -1,8 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useState } from "react";
 import { BotIcon, LoaderIcon, XCircleIcon, SparklesIcon, AlertTriangleIcon, BarChart3Icon, ThumbsUpIcon, ThumbsDownIcon } from "@/components/icons";
 
 interface EarningWithAnalysis {
@@ -33,6 +32,10 @@ interface EarningWithAnalysis {
   } | null;
 }
 
+interface Props {
+  params: { symbol: string };
+}
+
 function formatCurrency(value: number | null): string {
   if (value === null || value === undefined) return "N/A";
   if (value >= 1e12) return `$${(value / 1e12).toFixed(1)}T`;
@@ -52,9 +55,8 @@ function getSentimentStyle(sentiment: string | null) {
   }
 }
 
-function EarningsContent() {
-  const searchParams = useSearchParams();
-  const symbol = searchParams.get('symbol');
+export default function EarningsPage({ params }: Props) {
+  const symbol = params.symbol;
   const [earnings, setEarnings] = useState<EarningWithAnalysis | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -73,7 +75,7 @@ function EarningsContent() {
         
         const data = await response.json();
         const earning = data.earnings.find(
-          (e: EarningWithAnalysis) => e.companies.symbol.toLowerCase() === symbol!.toLowerCase()
+          (e: EarningWithAnalysis) => e.companies.symbol.toLowerCase() === symbol.toLowerCase()
         );
         
         if (earning) {
@@ -255,24 +257,5 @@ function EarningsContent() {
         </div>
       </section>
     </div>
-  );
-}
-
-function LoadingState() {
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <LoaderIcon className="mx-auto mb-4 h-10 w-10 animate-spin text-[#818CF8]" />
-        <p className="text-[#A1A1AA]">加载中...</p>
-      </div>
-    </div>
-  );
-}
-
-export default function EarningsPage() {
-  return (
-    <Suspense fallback={<LoadingState />}>
-      <EarningsContent />
-    </Suspense>
   );
 }
