@@ -4,7 +4,7 @@ import { supabase } from "@/lib/supabase";
 import type { EarningWithAnalysis } from "@/types/database";
 
 interface Props {
-  params: Promise<{ id: string }>;
+  params: { id: string };
 }
 
 async function getEarnings(symbol: string): Promise<EarningWithAnalysis | null> {
@@ -67,7 +67,7 @@ function getSentimentStyle(sentiment: string | null) {
 }
 
 export default async function EarningsDetailPage({ params }: Props) {
-  const { id } = await params;
+  const { id } = params;
   const earnings = await getEarnings(id);
 
   if (!earnings) {
