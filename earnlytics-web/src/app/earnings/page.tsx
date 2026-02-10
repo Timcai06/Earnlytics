@@ -58,30 +58,27 @@ function getSymbolFromUrl(): string | null {
 }
 
 function EarningsContent() {
-  const [symbol, setSymbol] = useState<string | null>(null);
   const [earnings, setEarnings] = useState<EarningWithAnalysis | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const sym = getSymbolFromUrl();
-    setSymbol(sym);
-  }, []);
-
-  useEffect(() => {
-    if (!symbol) {
-      if (!loading) setError("未提供股票代码");
-      return;
-    }
-
-    async function fetchEarnings() {
+    async function fetchData() {
       try {
+        const symbol = getSymbolFromUrl();
+        
+        if (!symbol) {
+          setError("未提供股票代码");
+          setLoading(false);
+          return;
+        }
+
         const response = await fetch('/api/earnings');
         if (!response.ok) throw new Error(`Failed to fetch earnings: ${response.status}`);
         
         const data = await response.json();
         const earning = data.earnings.find(
-          (e: EarningWithAnalysis) => symbol && e.companies.symbol.toLowerCase() === symbol.toLowerCase()
+          (e: EarningWithAnalysis) => e.companies.symbol.toLowerCase() === symbol.toLowerCase()
         );
         
         if (earning) {
@@ -96,8 +93,8 @@ function EarningsContent() {
       }
     }
 
-    fetchEarnings();
-  }, [symbol]);
+    fetchData();
+  }, []);
 
   if (loading) {
     return (
