@@ -8,31 +8,64 @@ interface Props {
 }
 
 async function getEarnings(symbol: string): Promise<EarningWithAnalysis | null> {
-  const { data: company } = await supabase
-    .from("companies")
-    .select("id, symbol, name, sector")
-    .eq("symbol", symbol.toUpperCase())
-    .single();
+  if (!symbol || typeof symbol !== "string") {
+    console.error("[getEarnings] Invalid symbol:", symbol);
+    return null;
+  }
+  
+  const normalizedSymbol = symbol.toUpperCase().trim();
+  console.log("[getEarnings] Looking up company:", normalizedSymbol);
+  
+  try {
+    const { data: company, error: companyError } = await supabase
+      .from("companies")
+      .select("id, symbol, name, sector")
+      .eq("symbol", normalizedSymbol)
+      .single();
 
-  if (!company) return null;
+    if (companyError) {
+      console.error("[getEarnings] Company query error:", companyError.message);
+      return null;
+    }
 
-  const { data: earnings } = await supabase
-    .from("earnings")
-    .select(`
-      *,
-      ai_analyses (*)
-    `)
-    .eq("company_id", company.id)
-    .order("report_date", { ascending: false })
-    .limit(1)
-    .single();
+    if (!company) {
+      console.error("[getEarnings] Company not found:", normalizedSymbol);
+      return null;
+    }
 
-  if (!earnings) return null;
+    console.log("[getEarnings] Found company:", company.name, "ID:", company.id);
 
-  return {
-    ...earnings,
-    companies: company,
-  };
+    const { data: earnings, error: earningsError } = await supabase
+      .from("earnings")
+      .select(`
+        *,
+        ai_analyses (*)
+      `)
+      .eq("company_id", company.id)
+      .order("report_date", { ascending: false })
+      .limit(1)
+      .single();
+
+    if (earningsError) {
+      console.error("[getEarnings] Earnings query error:", earningsError.message);
+      return null;
+    }
+
+    if (!earnings) {
+      console.error("[getEarnings] No earnings found for company:", normalizedSymbol);
+      return null;
+    }
+
+    console.log("[getEarnings] Found earnings for:", normalizedSymbol);
+
+    return {
+      ...earnings,
+      companies: company,
+    };
+  } catch (e) {
+    console.error("[getEarnings] Unexpected error:", e);
+    return null;
+  }
 }
 
 function formatCurrency(value: number | null): string {
@@ -67,7 +100,12 @@ function getSentimentStyle(sentiment: string | null) {
 }
 
 export default async function EarningsDetailPage({ params }: Props) {
-  const { id } = params;
+  const id = params?.id;
+  
+  if (!id) {
+    notFound();
+  }
+  
   const earnings = await getEarnings(id);
 
   if (!earnings) {

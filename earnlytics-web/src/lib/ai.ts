@@ -1,7 +1,6 @@
 import { z } from 'zod'
 import type { AIAnalysisResult, EarningWithCompany } from '@/types/database'
 
-const deepseekApiKey = process.env.DEEPSEEK_API_KEY
 const deepseekApiUrl = process.env.DEEPSEEK_API_URL || 'https://api.deepseek.com/v1/chat/completions'
 
 const AnalysisResultSchema = z.object({
@@ -33,6 +32,7 @@ const SYSTEM_PROMPT = `你是一个专业的财务分析师，擅长分析美国
 export async function analyzeEarnings(
   earning: EarningWithCompany
 ): Promise<{ result: AIAnalysisResult; tokensUsed: number; costUsd: number }> {
+  const deepseekApiKey = process.env.DEEPSEEK_API_KEY
   if (!deepseekApiKey) {
     throw new Error('DEEPSEEK_API_KEY not configured')
   }
