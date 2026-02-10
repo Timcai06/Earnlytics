@@ -1,3 +1,8 @@
+import { config } from 'dotenv'
+import { resolve } from 'path'
+
+config({ path: resolve(process.cwd(), '.env.local') })
+
 import { createClient } from '@supabase/supabase-js'
 import type { FMPIncomeStatement, FMPEarningsCalendar } from '../src/types/database'
 

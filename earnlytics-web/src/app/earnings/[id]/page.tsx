@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import type { EarningWithAnalysis } from "@/types/database";
+import { BotIcon, SparklesIcon, AlertTriangleIcon, BarChart3Icon, ThumbsUpIcon, ThumbsDownIcon } from "@/components/icons";
 
 interface Props {
   params: { id: string };
@@ -178,7 +179,7 @@ export default async function EarningsDetailPage({ params }: Props) {
             <>
               <div className="mb-8 rounded-xl border-2 border-[#6366F1] bg-[rgba(99,102,241,0.1)] p-5 shadow-[0_0_30px_rgba(99,102,241,0.25)] sm:p-7">
                 <div className="mb-4 flex items-center gap-3 sm:mb-5">
-                  <span className="text-xl sm:text-2xl">🤖</span>
+                  <BotIcon className="h-6 w-6 text-[#818CF8] sm:h-7 sm:w-7" />
                   <h2 className="text-xl font-bold text-[#818CF8] drop-shadow-[0_0_20px_rgba(99,102,241,0.5)] sm:text-2xl">
                     AI 分析摘要
                   </h2>
@@ -190,7 +191,10 @@ export default async function EarningsDetailPage({ params }: Props) {
 
               {analysis.highlights && analysis.highlights.length > 0 && (
                 <div className="mb-8 rounded-xl border border-[#22C55E] bg-[rgba(34,197,94,0.1)] p-5 sm:p-7">
-                  <h3 className="mb-3 text-base font-bold text-[#15803D] sm:mb-4 sm:text-lg">✨ 核心亮点</h3>
+                  <h3 className="mb-3 flex items-center gap-2 text-base font-bold text-[#15803D] sm:mb-4 sm:text-lg">
+                    <SparklesIcon className="h-5 w-5" />
+                    核心亮点
+                  </h3>
                   <ul className="space-y-2 sm:space-y-3">
                     {analysis.highlights.map((item, i) => (
                       <li key={i} className="flex items-start gap-2 text-sm text-[#DCFCE7] sm:gap-3 sm:text-base">
@@ -204,7 +208,10 @@ export default async function EarningsDetailPage({ params }: Props) {
 
               {analysis.concerns && analysis.concerns.length > 0 && (
                 <div className="mb-8 rounded-xl border border-[#EF4444] bg-[rgba(239,68,68,0.1)] p-5 sm:p-7">
-                  <h3 className="mb-3 text-base font-bold text-[#991B1B] sm:mb-4 sm:text-lg">⚠️ 关注点</h3>
+                  <h3 className="mb-3 flex items-center gap-2 text-base font-bold text-[#991B1B] sm:mb-4 sm:text-lg">
+                    <AlertTriangleIcon className="h-5 w-5" />
+                    关注点
+                  </h3>
                   <ul className="space-y-2 sm:space-y-3">
                     {analysis.concerns.map((item, i) => (
                       <li key={i} className="flex items-start gap-2 text-sm text-[#FECACA] sm:gap-3 sm:text-base">
@@ -219,7 +226,7 @@ export default async function EarningsDetailPage({ params }: Props) {
           ) : (
             <div className="mb-8 rounded-xl border-2 border-[#6366F1] bg-[rgba(99,102,241,0.1)] p-7 shadow-[0_0_30px_rgba(99,102,241,0.25)]">
               <div className="flex items-center justify-center gap-3 py-8">
-                <span className="text-2xl">🤖</span>
+                <BotIcon className="h-6 w-6 animate-pulse text-[#818CF8]" />
                 <p className="text-[#818CF8]">AI 分析正在生成中...</p>
               </div>
             </div>
@@ -227,19 +234,22 @@ export default async function EarningsDetailPage({ params }: Props) {
 
           <div className="mb-8 rounded-xl border border-border bg-surface-secondary p-5 sm:p-7">
             <h3 className="mb-4 text-lg font-bold text-white sm:mb-6 sm:text-xl">历史业绩趋势</h3>
-            <div className="flex h-48 items-center justify-center rounded-lg bg-background sm:h-72">
-              <p className="text-sm text-[#A1A1AA] sm:text-base">📊 即将上线</p>
+            <div className="flex h-48 items-center justify-center gap-2 rounded-lg bg-background sm:h-72">
+              <BarChart3Icon className="h-5 w-5 text-[#A1A1AA]" />
+              <p className="text-sm text-[#A1A1AA] sm:text-base">即将上线</p>
             </div>
           </div>
 
           <div className="rounded-xl border border-border bg-surface p-5 sm:p-7">
             <h3 className="mb-4 text-base font-semibold text-white sm:mb-5 sm:text-lg">这篇分析有帮助吗？</h3>
             <div className="flex gap-3 sm:gap-4">
-              <button className="rounded-lg border border-border bg-surface-secondary px-4 py-2 text-sm text-white hover:bg-[#27272A] sm:px-6 sm:py-3">
-                👍 有帮助
+              <button className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface-secondary px-4 py-2 text-sm text-white hover:bg-[#27272A] sm:px-6 sm:py-3">
+                <ThumbsUpIcon className="h-4 w-4" />
+                有帮助
               </button>
-              <button className="rounded-lg border border-border bg-surface-secondary px-4 py-2 text-sm text-white hover:bg-[#27272A] sm:px-6 sm:py-3">
-                👎 需要改进
+              <button className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface-secondary px-4 py-2 text-sm text-white hover:bg-[#27272A] sm:px-6 sm:py-3">
+                <ThumbsDownIcon className="h-4 w-4" />
+                需要改进
               </button>
             </div>
           </div>

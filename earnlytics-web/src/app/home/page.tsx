@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AppleIcon } from "@/components/icons";
 
 export default function HomePage() {
   const earnings = [
@@ -51,8 +52,8 @@ export default function HomePage() {
                 href={`/earnings/${item.ticker}`}
                 className="flex items-center gap-6 rounded-xl border border-[#6366F1] bg-surface-secondary p-6 transition-colors hover:bg-surface"
               >
-                <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-black text-2xl">
-                  🍎
+                <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-black text-white">
+                  <AppleIcon className="h-8 w-8" />
                 </div>
                 <div className="flex-1">
                   <h3 className="text-xl font-semibold text-white">{item.company}</h3>

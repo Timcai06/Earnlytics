@@ -1,24 +1,25 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { ZapIcon, BotIcon, DiamondIcon, AppleIcon, WindowIcon, SearchIcon, CpuIcon, MetaIcon } from "@/components/icons";
 
 export default function LandingPage() {
   const features = [
     {
-      icon: "⚡",
+      icon: <ZapIcon className="h-10 w-10 text-[#6366F1]" />,
       title: "极速分析",
       description: "财报发布后1小时内完成AI分析，快速把握投资机会",
       borderColor: "border-[#6366F1]",
       shadowColor: "shadow-[0_0_20px_rgba(99,102,241,0.13)]",
     },
     {
-      icon: "🤖",
+      icon: <BotIcon className="h-10 w-10 text-[#22C55E]" />,
       title: "AI 智能解读",
       description: "复杂财务数据转化为通俗易懂的中文摘要",
       borderColor: "border-[#22C55E]",
       shadowColor: "shadow-[0_0_20px_rgba(34,197,94,0.13)]",
     },
     {
-      icon: "💎",
+      icon: <DiamondIcon className="h-10 w-10 text-[#3B82F6]" />,
       title: "完全免费",
       description: "基础功能永久免费，无需注册即可访问",
       borderColor: "border-[#3B82F6]",
@@ -33,11 +34,11 @@ export default function LandingPage() {
   ];
 
   const companies = [
-    { emoji: "🍎", name: "Apple", border: "border-[#3F3F46]" },
-    { emoji: "🪟", name: "Microsoft", border: "border-[#3B82F6]" },
-    { emoji: "🔍", name: "Google", border: "border-[#22C55E]" },
-    { emoji: "🟢", name: "NVIDIA", border: "border-[#76B900]" },
-    { emoji: "Ⓜ️", name: "Meta", border: "border-[#6366F1]" },
+    { icon: <AppleIcon className="h-8 w-8" />, name: "Apple", border: "border-[#3F3F46]" },
+    { icon: <WindowIcon className="h-8 w-8" />, name: "Microsoft", border: "border-[#3B82F6]" },
+    { icon: <SearchIcon className="h-8 w-8" />, name: "Google", border: "border-[#22C55E]" },
+    { icon: <CpuIcon className="h-8 w-8 text-[#76B900]" />, name: "NVIDIA", border: "border-[#76B900]" },
+    { icon: <MetaIcon className="h-8 w-8" />, name: "Meta", border: "border-[#6366F1]" },
   ];
 
   return (
@@ -46,9 +47,10 @@ export default function LandingPage() {
       <section className="bg-background px-20 py-[120px]">
         <div className="flex flex-col items-center text-center">
           {/* Badge */}
-          <div className="mb-8 inline-flex items-center rounded-2xl bg-[rgba(99,102,241,0.15)] px-4 py-2">
+          <div className="mb-8 inline-flex items-center gap-2 rounded-2xl bg-[rgba(99,102,241,0.15)] px-4 py-2">
+            <BotIcon className="h-4 w-4 text-[#818CF8]" />
             <span className="text-sm font-semibold text-[#818CF8]">
-              🤖 AI 驱动的财报分析
+              AI 驱动的财报分析
             </span>
           </div>
 
@@ -99,7 +101,7 @@ export default function LandingPage() {
                 key={feature.title}
                 className={`flex flex-col gap-4 rounded-xl border ${feature.borderColor} bg-surface-secondary p-8 ${feature.shadowColor}`}
               >
-                <span className="text-4xl">{feature.icon}</span>
+                {feature.icon}
                 <h3 className="text-xl font-semibold text-white">
                   {feature.title}
                 </h3>
@@ -125,9 +127,9 @@ export default function LandingPage() {
             {companies.map((company) => (
               <div
                 key={company.name}
-                className={`flex h-20 w-20 items-center justify-center rounded-2xl border ${company.border} bg-surface-secondary text-4xl`}
+                className={`flex h-20 w-20 items-center justify-center rounded-2xl border ${company.border} bg-surface-secondary text-white`}
               >
-                {company.emoji}
+                {company.icon}
               </div>
             ))}
           </div>
