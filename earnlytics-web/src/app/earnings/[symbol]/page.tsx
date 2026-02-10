@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { BotIcon, LoaderIcon, XCircleIcon, SparklesIcon, AlertTriangleIcon, BarChart3Icon, ThumbsUpIcon, ThumbsDownIcon } from "@/components/icons";
 
 interface EarningWithAnalysis {
@@ -33,7 +33,7 @@ interface EarningWithAnalysis {
 }
 
 interface Props {
-  params: { symbol: string };
+  params: Promise<{ symbol: string }>;
 }
 
 function formatCurrency(value: number | null): string {
@@ -56,7 +56,7 @@ function getSentimentStyle(sentiment: string | null) {
 }
 
 export default function EarningsPage({ params }: Props) {
-  const symbol = params?.symbol;
+  const { symbol } = use(params);
   const [earnings, setEarnings] = useState<EarningWithAnalysis | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
