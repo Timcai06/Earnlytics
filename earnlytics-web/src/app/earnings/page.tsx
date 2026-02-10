@@ -280,7 +280,7 @@ function LoadingState() {
   );
 }
 
-export default function EarningsPageWrapper() {
+export default function EarningsPage() {
   return (
     <Suspense fallback={<LoadingState />}>
       <EarningsContent />
