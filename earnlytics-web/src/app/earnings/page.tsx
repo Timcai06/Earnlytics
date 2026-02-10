@@ -60,6 +60,8 @@ function EarningsContent() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    console.log("[EarningsPage] useEffect triggered, symbol:", symbol);
+    
     if (!symbol) {
       setError("未提供股票代码");
       setLoading(false);
@@ -68,20 +70,28 @@ function EarningsContent() {
 
     async function fetchEarnings() {
       try {
+        console.log("[EarningsPage] Fetching earnings data...");
         const response = await fetch('/api/earnings');
-        if (!response.ok) throw new Error('Failed to fetch earnings');
+        console.log("[EarningsPage] Response status:", response.status);
+        
+        if (!response.ok) throw new Error(`Failed to fetch earnings: ${response.status}`);
         
         const data = await response.json();
+        console.log("[EarningsPage] Data received, earnings count:", data.earnings?.length);
+        
         const earning = data.earnings.find(
           (e: EarningWithAnalysis) => symbol && e.companies.symbol.toLowerCase() === symbol.toLowerCase()
         );
         
         if (earning) {
+          console.log("[EarningsPage] Found earning for symbol:", symbol);
           setEarnings(earning);
         } else {
+          console.log("[EarningsPage] No earning found for symbol:", symbol);
           setError('未找到该股票的财报数据');
         }
       } catch (e) {
+        console.error("[EarningsPage] Error fetching:", e);
         setError(e instanceof Error ? e.message : '加载失败');
       } finally {
         setLoading(false);
