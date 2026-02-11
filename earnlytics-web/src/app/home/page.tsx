@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { AppleIcon } from "@/components/icons";
+import SubscribeForm from "@/components/sections/SubscribeForm";
 
 export default function HomePage() {
   const earnings = [
@@ -109,6 +110,9 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Subscribe Section */}
+      <SubscribeForm />
     </div>
   );
 }
