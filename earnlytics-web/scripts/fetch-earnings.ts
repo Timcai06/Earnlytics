@@ -22,7 +22,12 @@ if (!supabaseUrl || !supabaseKey) {
 
 const supabase = createClient(supabaseUrl, supabaseKey)
 
-const SYMBOLS = ['AAPL', 'MSFT', 'GOOGL', 'NVDA', 'META', 'AMZN', 'TSLA', 'AMD', 'NFLX', 'CRM']
+const SYMBOLS = [
+  'AAPL', 'MSFT', 'GOOGL', 'NVDA', 'META',
+  'AMZN', 'TSLA', 'AMD', 'NFLX', 'CRM',
+  'AVGO', 'ORCL', 'ADBE', 'IBM', 'INTC',
+  'QCOM', 'TXN', 'NOW', 'PANW', 'PLTR'
+]
 
 async function fetchIncomeStatements(symbol: string): Promise<FMPIncomeStatement[]> {
   const url = `${fmpApiUrl}/income-statement/${symbol}?apikey=${fmpApiKey}&limit=4`

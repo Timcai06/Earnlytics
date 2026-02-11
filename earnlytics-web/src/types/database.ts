@@ -20,6 +20,7 @@ export type Earning = {
   eps_surprise: number | null
   net_income: number | null
   is_analyzed: boolean
+  data_source: 'fmp' | 'sec' | 'sample' | null
   created_at: string
 }
 
