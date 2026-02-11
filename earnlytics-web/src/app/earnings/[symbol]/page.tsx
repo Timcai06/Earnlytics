@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { use, useEffect, useState } from "react";
-import { BotIcon, LoaderIcon, XCircleIcon, SparklesIcon, AlertTriangleIcon, BarChart3Icon, ThumbsUpIcon, ThumbsDownIcon } from "@/components/icons";
+import { BotIcon, LoaderIcon, XCircleIcon, SparklesIcon, AlertTriangleIcon, BarChart3Icon, ThumbsUpIcon, ThumbsDownIcon, ClockIcon, DatabaseIcon, TrendingUpIcon } from "@/components/icons";
+import { EarningsTrendChart } from "@/components/sections/EarningsTrendChart";
 
 interface EarningWithAnalysis {
   id: number;
@@ -17,6 +18,7 @@ interface EarningWithAnalysis {
   eps_surprise: number | null;
   net_income: number | null;
   is_analyzed: boolean;
+  data_source: 'fmp' | 'sec' | 'sample' | null;
   companies: {
     id: number;
     symbol: string;
@@ -29,6 +31,7 @@ interface EarningWithAnalysis {
     highlights: string[] | null;
     concerns: string[] | null;
     sentiment: 'positive' | 'neutral' | 'negative' | null;
+    created_at: string | null;
   } | null;
 }
 
@@ -55,11 +58,47 @@ function getSentimentStyle(sentiment: string | null) {
   }
 }
 
+function formatRelativeTime(dateStr: string | null): string {
+  if (!dateStr) return "未知";
+  const date = new Date(dateStr);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+  const diffDays = Math.floor(diffHours / 24);
+
+  if (diffDays > 0) {
+    return `${diffDays}天前`;
+  } else if (diffHours > 0) {
+    return `${diffHours}小时前`;
+  } else {
+    return "刚刚";
+  }
+}
+
+function getDataSourceLabel(source: string | null): { label: string; color: string } {
+  switch (source) {
+    case "fmp":
+      return { label: "FMP API", color: "text-[#818CF8]" };
+    case "sec":
+      return { label: "SEC EDGAR", color: "text-[#22C55E]" };
+    case "sample":
+      return { label: "样本数据", color: "text-[#A1A1AA]" };
+    default:
+      return { label: "未知来源", color: "text-[#A1A1AA]" };
+  }
+}
+
 export default function EarningsPage({ params }: Props) {
   const { symbol } = use(params);
   const [earnings, setEarnings] = useState<EarningWithAnalysis | null>(null);
+  const [earningsHistory, setEarningsHistory] = useState<EarningWithAnalysis[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [retries, setRetries] = useState(0);
+  const [activeTab, setActiveTab] = useState<'revenue' | 'eps' | 'growth'>('revenue');
+  const maxRetries = 3;
+
+  const isLatestEarning = earnings && earningsHistory.length > 0 && earnings.id === earningsHistory[0].id;
 
   useEffect(() => {
     if (!symbol) {
@@ -70,20 +109,28 @@ export default function EarningsPage({ params }: Props) {
 
     async function fetchData() {
       try {
-        const response = await fetch('/api/earnings');
-        if (!response.ok) throw new Error(`Failed to fetch earnings: ${response.status}`);
-        
-        const data = await response.json();
-        const earning = data.earnings.find(
-          (e: EarningWithAnalysis) => e.companies.symbol.toLowerCase() === symbol.toLowerCase()
-        );
-        
-        if (earning) {
-          setEarnings(earning);
+        const latestResponse = await fetch(`/api/earnings?symbol=${symbol}&latest=true`);
+        if (!latestResponse.ok) throw new Error(`Failed to fetch latest earnings: ${latestResponse.status}`);
+        const latestData = await latestResponse.json();
+
+        if (latestData.earnings) {
+          setEarnings(latestData.earnings as EarningWithAnalysis);
         } else {
-          setError('未找到该股票的财报数据');
+          setError('未找到这支股票的财报数据');
+        }
+
+        const historyResponse = await fetch(`/api/earnings?symbol=${symbol}`);
+        if (!historyResponse.ok) throw new Error(`Failed to fetch earnings history: ${historyResponse.status}`);
+        const historyData = await historyResponse.json();
+
+        if (historyData.earnings) {
+          setEarningsHistory(Array.isArray(historyData.earnings) ? historyData.earnings : [historyData.earnings]);
         }
       } catch (e) {
+        if (retries < maxRetries) {
+          setRetries(r => r + 1);
+          return;
+        }
         setError(e instanceof Error ? e.message : '加载失败');
       } finally {
         setLoading(false);
@@ -91,9 +138,34 @@ export default function EarningsPage({ params }: Props) {
     }
 
     fetchData();
-  }, [symbol]);
+  }, [symbol, retries]);
 
-  if (loading) {
+  const handleEarningClick = async (earningId: number) => {
+    if (earningId === earnings?.id) return;
+
+    setLoading(true);
+    try {
+      const response = await fetch(`/api/earnings/${earningId}`);
+      if (!response.ok) throw new Error('Failed to fetch earning');
+      const data = await response.json();
+      if (data.earnings) {
+        setEarnings(data.earnings as EarningWithAnalysis);
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : '加载失败');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const trendData = earningsHistory.map(e => ({
+    quarter: `Q${e.fiscal_quarter} FY${e.fiscal_year.toString().slice(2)}`,
+    revenue: e.revenue ?? 0,
+    eps: e.eps ?? 0,
+    revenueGrowth: e.revenue_yoy_growth ?? 0,
+  }));
+
+  if (loading && !earnings) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="text-center">
@@ -121,6 +193,7 @@ export default function EarningsPage({ params }: Props) {
   const company = earnings.companies;
   const analysis = earnings.ai_analyses;
   const sentimentStyle = getSentimentStyle(analysis?.sentiment || null);
+  const dataSource = getDataSourceLabel(earnings.data_source);
 
   return (
     <div className="flex flex-col">
@@ -131,11 +204,35 @@ export default function EarningsPage({ params }: Props) {
               {company.symbol[0]}
             </div>
             <div className="flex-1">
-              <h1 className="text-2xl font-bold text-white sm:text-3xl">{company.name}</h1>
+              <div className="flex flex-wrap items-center gap-3">
+                <h1 className="text-2xl font-bold text-white sm:text-3xl">{company.name}</h1>
+                {!isLatestEarning && (
+                  <span className="rounded-lg bg-[#F59E0B]/20 px-2 py-0.5 text-xs text-[#F59E0B]">
+                    历史财报
+                  </span>
+                )}
+              </div>
               <div className="mt-2 flex flex-wrap gap-3 text-sm text-[#A1A1AA] sm:gap-5">
                 <span>{company.symbol}</span>
                 <span>Q{earnings.fiscal_quarter} FY{earnings.fiscal_year}</span>
                 <span>发布日期: {earnings.report_date}</span>
+              </div>
+              <div className="mt-3 flex flex-wrap items-center gap-3">
+                <div className="flex items-center gap-1.5 rounded-lg bg-[#27272A] px-2.5 py-1">
+                  <DatabaseIcon className="h-3.5 w-3.5 text-[#818CF8]" />
+                  <span className="text-xs text-[#A1A1AA]">数据来源: <span className={dataSource.color}>{dataSource.label}</span></span>
+                </div>
+                {analysis?.created_at && (
+                  <div className="flex items-center gap-1.5 rounded-lg bg-[#27272A] px-2.5 py-1">
+                    <ClockIcon className="h-3.5 w-3.5 text-[#22C55E]" />
+                    <span className="text-xs text-[#A1A1AA]">AI分析于 {formatRelativeTime(analysis.created_at)}</span>
+                  </div>
+                )}
+                {isLatestEarning && (
+                  <span className="rounded-lg bg-[#6366F1]/20 px-2 py-0.5 text-xs font-medium text-[#818CF8]">
+                    最新
+                  </span>
+                )}
               </div>
             </div>
             <span className={`w-fit rounded-2xl ${sentimentStyle.bg} px-4 py-1.5 text-sm font-semibold ${sentimentStyle.text}`}>
@@ -175,6 +272,37 @@ export default function EarningsPage({ params }: Props) {
               </div>
             ))}
           </div>
+
+          {earningsHistory.length > 1 && (
+            <div className="mb-8 rounded-xl border border-border bg-surface-secondary p-5 sm:p-7">
+              <div className="mb-4 flex items-center gap-2 sm:mb-6">
+                <TrendingUpIcon className="h-5 w-5 text-[#818CF8]" />
+                <h3 className="text-lg font-bold text-white sm:text-xl">季度趋势对比</h3>
+              </div>
+
+              <div className="mb-4 flex gap-2 border-b border-border pb-4">
+                {[
+                  { key: 'revenue', label: '营收趋势' },
+                  { key: 'eps', label: 'EPS趋势' },
+                  { key: 'growth', label: '同比增长' },
+                ].map((tab) => (
+                  <button
+                    key={tab.key}
+                    onClick={() => setActiveTab(tab.key as typeof activeTab)}
+                    className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors sm:px-4 sm:py-2 ${
+                      activeTab === tab.key
+                        ? 'bg-[#6366F1] text-white'
+                        : 'text-[#A1A1AA] hover:bg-[#27272A] hover:text-white'
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+
+              <EarningsTrendChart data={trendData} type={activeTab} />
+            </div>
+          )}
 
           {analysis ? (
             <>
@@ -234,11 +362,57 @@ export default function EarningsPage({ params }: Props) {
           )}
 
           <div className="mb-8 rounded-xl border border-border bg-surface-secondary p-5 sm:p-7">
-            <h3 className="mb-4 text-lg font-bold text-white sm:mb-6 sm:text-xl">历史业绩趋势</h3>
-            <div className="flex h-48 items-center justify-center gap-2 rounded-lg bg-background sm:h-72">
-              <BarChart3Icon className="h-5 w-5 text-[#A1A1AA]" />
-              <p className="text-sm text-[#A1A1AA] sm:text-base">即将上线</p>
-            </div>
+            <h3 className="mb-4 text-lg font-bold text-white sm:mb-6 sm:text-xl">历史财报</h3>
+            {earningsHistory.length > 1 ? (
+              <div className="space-y-3">
+                {earningsHistory.map((e) => {
+                  const eAnalysis = e.ai_analyses;
+                  const eSentiment = eAnalysis?.sentiment || null;
+                  const sentimentClass = eSentiment === 'positive' ? 'text-[#22C55E]' :
+                                          eSentiment === 'negative' ? 'text-[#EF4444]' : 'text-[#A1A1AA]';
+                  const isSelected = e.id === earnings.id;
+                  const isLatest = e.id === earningsHistory[0].id;
+
+                  return (
+                    <button
+                      key={e.id}
+                      onClick={() => handleEarningClick(e.id)}
+                      disabled={loading}
+                      className={`flex w-full items-center justify-between rounded-lg p-3 text-left transition-colors ${
+                        isSelected ? 'bg-[#6366F1]/20 border border-[#6366F1]/50' : 'bg-background hover:bg-[#27272A]'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="text-sm font-medium text-white">
+                          Q{e.fiscal_quarter} FY{e.fiscal_year}
+                        </span>
+                        <span className="text-xs text-[#A1A1AA]">{e.report_date}</span>
+                        {isLatest && (
+                          <span className="rounded bg-[#6366F1] px-1.5 py-0.5 text-xs text-white">最新</span>
+                        )}
+                        {isSelected && (
+                          <span className="rounded bg-[#22C55E] px-1.5 py-0.5 text-xs text-white">当前</span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-3">
+                        {e.revenue && (
+                          <span className="text-sm text-[#A1A1AA]">{formatCurrency(e.revenue)}</span>
+                        )}
+                        {eSentiment && (
+                          <span className={`text-xs font-medium ${sentimentClass}`}>
+                            {eSentiment === 'positive' ? '积极' : eSentiment === 'negative' ? '消极' : '中性'}
+                          </span>
+                        )}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="flex h-32 items-center justify-center gap-2 rounded-lg bg-background">
+                <p className="text-sm text-[#A1A1AA]">暂无历史财报</p>
+              </div>
+            )}
           </div>
 
           <div className="rounded-xl border border-border bg-surface p-5 sm:p-7">
