@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useCallback } from "react";
+import { memo } from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -20,30 +20,35 @@ interface DuPontAnalysisChartProps {
   className?: string;
 }
 
+interface TooltipProps {
+  active?: boolean;
+  payload?: Array<{ payload: DuPontData }>;
+}
+
+function CustomTooltip({ active, payload }: TooltipProps) {
+  if (active && payload && payload.length) {
+    const item = payload[0].payload;
+    return (
+      <div className="bg-background border border-border rounded-lg p-3 shadow-lg">
+        <p className="font-medium">{item.factor}</p>
+        <p className="text-sm text-muted-foreground">{item.factorEn}</p>
+        <p className="text-sm mt-1">
+          数值: <span className="font-semibold">{item.value.toFixed(2)}</span>
+        </p>
+        <p className="text-sm">
+          贡献度: <span className="font-semibold">{(item.contribution * 100).toFixed(1)}%</span>
+        </p>
+      </div>
+    );
+  }
+  return null;
+}
+
 function DuPontAnalysisChartComponent({
   data,
   roe,
   className,
 }: DuPontAnalysisChartProps) {
-  const CustomTooltip = useCallback(({ active, payload }: { active?: boolean; payload?: Array<{payload: DuPontData}> }) => {
-    if (active && payload && payload.length) {
-      const item = payload[0].payload;
-      return (
-        <div className="bg-background border border-border rounded-lg p-3 shadow-lg">
-          <p className="font-medium">{item.factor}</p>
-          <p className="text-sm text-muted-foreground">{item.factorEn}</p>
-          <p className="text-sm mt-1">
-            数值: <span className="font-semibold">{item.value.toFixed(2)}</span>
-          </p>
-          <p className="text-sm">
-            贡献度: <span className="font-semibold">{(item.contribution * 100).toFixed(1)}%</span>
-          </p>
-        </div>
-      );
-    }
-    return null;
-  }, []);
-
   return (
     <Card className={cn("overflow-hidden", className)}>
       <CardHeader className="pb-2">

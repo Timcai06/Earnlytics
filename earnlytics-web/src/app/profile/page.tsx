@@ -1,12 +1,9 @@
 "use client";
 
-import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 export default function ProfilePage() {
-  const [activeTab, setActiveTab] = "personal";
-
   return (
     <div className="flex flex-col">
       {/* Profile Hero */}

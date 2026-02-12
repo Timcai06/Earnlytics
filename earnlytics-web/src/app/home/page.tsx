@@ -1,26 +1,149 @@
 import Link from "next/link";
+import { supabase } from "@/lib/supabase";
 import { AppleIcon } from "@/components/icons";
 import SubscribeForm from "@/components/sections/SubscribeForm";
 
-export default function HomePage() {
-  const earnings = [
-    {
-      company: "Apple Inc.",
-      ticker: "AAPL",
-      quarter: "Q1 FY2026",
-      date: "2026-01-28",
-      revenue: "$119.6B",
-      eps: "$2.18",
-      yoy: "+8.2%",
-      badge: "超预期",
-    },
-  ];
+interface EarningsWithCompany {
+  id: number;
+  fiscal_year: number;
+  fiscal_quarter: number;
+  report_date: string;
+  revenue: number | null;
+  eps: number | null;
+  revenue_yoy_growth: number | null;
+  eps_surprise: number | null;
+  companies: {
+    symbol: string;
+    name: string;
+  } | null;
+  ai_analyses: {
+    sentiment: 'positive' | 'neutral' | 'negative' | null;
+  } | null;
+}
 
-  const calendarItems = [
-    { date: "2月10日 周一", company: "Palantir (PLTR)", time: "盘后发布" },
-    { date: "2月12日 周三", company: "Nvidia (NVDA)", time: "盘后发布 | 预期 EPS: $0.85" },
-    { date: "2月14日 周五", company: "Airbnb (ABNB)", time: "盘前发布 | 预期 EPS: $0.45" },
-  ];
+interface CalendarEvent {
+  id: number;
+  date: string;
+  symbol: string;
+  companyName: string;
+  fiscalYear: number;
+  fiscalQuarter: number;
+}
+
+async function getLatestEarnings(): Promise<EarningsWithCompany[]> {
+  const { data, error } = await supabase
+    .from('earnings')
+    .select(`
+      id,
+      fiscal_year,
+      fiscal_quarter,
+      report_date,
+      revenue,
+      eps,
+      revenue_yoy_growth,
+      eps_surprise,
+      companies (
+        symbol,
+        name
+      ),
+      ai_analyses (
+        sentiment
+      )
+    `)
+    .not('revenue', 'is', null)
+    .order('report_date', { ascending: false })
+    .limit(5);
+
+  if (error) {
+    console.error('Error fetching latest earnings:', error);
+    return [];
+  }
+
+  return (data || []).map((item: any) => ({
+    id: item.id,
+    fiscal_year: item.fiscal_year,
+    fiscal_quarter: item.fiscal_quarter,
+    report_date: item.report_date,
+    revenue: item.revenue,
+    eps: item.eps,
+    revenue_yoy_growth: item.revenue_yoy_growth,
+    eps_surprise: item.eps_surprise,
+    companies: item.companies?.[0] || null,
+    ai_analyses: item.ai_analyses?.[0] || null,
+  }));
+}
+
+async function getUpcomingEarnings(): Promise<CalendarEvent[]> {
+  const today = new Date();
+  const nextWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+  const { data, error } = await supabase
+    .from('earnings')
+    .select(`
+      id,
+      report_date,
+      fiscal_year,
+      fiscal_quarter,
+      companies (
+        symbol,
+        name
+      )
+    `)
+    .gte('report_date', today.toISOString().split('T')[0])
+    .lte('report_date', nextWeek.toISOString().split('T')[0])
+    .order('report_date', { ascending: true })
+    .limit(5);
+
+  if (error) {
+    console.error('Error fetching upcoming earnings:', error);
+    return [];
+  }
+
+  return (data || []).map(e => ({
+    id: e.id,
+    date: e.report_date,
+    symbol: (e.companies as any)?.symbol || '',
+    companyName: (e.companies as any)?.name || '',
+    fiscalYear: e.fiscal_year,
+    fiscalQuarter: e.fiscal_quarter,
+  }));
+}
+
+function formatCurrency(value: number | null): string {
+  if (!value) return 'N/A';
+  if (value >= 1e12) return `$${(value / 1e12).toFixed(1)}T`;
+  if (value >= 1e9) return `$${(value / 1e9).toFixed(1)}B`;
+  if (value >= 1e6) return `$${(value / 1e6).toFixed(1)}M`;
+  return `$${value.toLocaleString()}`;
+}
+
+function formatDate(dateStr: string): string {
+  const date = new Date(dateStr);
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
+  const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+  const weekday = weekdays[date.getDay()];
+  return `${month}月${day}日 ${weekday}`;
+}
+
+function getEarningsBadge(epsSurprise: number | null, sentiment: string | null): { text: string; color: string } {
+  if (epsSurprise && epsSurprise > 0) {
+    return { text: '超预期', color: 'bg-[rgba(34,197,94,0.15)] text-[#22C55E]' };
+  }
+  if (sentiment === 'positive') {
+    return { text: '积极', color: 'bg-[rgba(34,197,94,0.15)] text-[#22C55E]' };
+  }
+  if (sentiment === 'negative') {
+    return { text: '消极', color: 'bg-[rgba(239,68,68,0.15)] text-[#EF4444]' };
+  }
+  return { text: '中性', color: 'bg-[rgba(161,161,170,0.15)] text-[#A1A1AA]' };
+}
+
+export default async function HomePage() {
+  const [latestEarnings, upcomingEarnings] = await Promise.all([
+    getLatestEarnings(),
+    getUpcomingEarnings(),
+  ]);
 
   return (
     <div className="flex flex-col">
@@ -47,40 +170,51 @@ export default function HomePage() {
           </div>
 
           <div className="space-y-4">
-            {earnings.map((item) => (
-              <Link
-                key={item.ticker}
-                href={`/earnings/${item.ticker}`}
-                className="flex items-center gap-6 rounded-xl border border-[#6366F1] bg-surface-secondary p-6 transition-colors hover:bg-surface"
-              >
-                <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-black text-white">
-                  <AppleIcon className="h-8 w-8" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-xl font-semibold text-white">{item.company}</h3>
-                  <p className="text-sm text-[#A1A1AA]">
-                    {item.quarter} | {item.date}
-                  </p>
-                </div>
-                <div className="flex items-center gap-8">
-                  <div>
-                    <p className="text-xs text-[#64748B]">营收</p>
-                    <p className="text-lg font-semibold text-[#10B981]">{item.revenue}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-[#64748B]">EPS</p>
-                    <p className="text-lg font-semibold text-[#10B981]">{item.eps}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-[#64748B]">同比</p>
-                    <p className="text-lg font-semibold text-[#10B981]">{item.yoy}</p>
-                  </div>
-                </div>
-                <span className="rounded-xl bg-[rgba(34,197,94,0.15)] px-3 py-1.5 text-sm font-semibold text-[#22C55E]">
-                  {item.badge}
-                </span>
-              </Link>
-            ))}
+            {latestEarnings.length === 0 ? (
+              <div className="rounded-xl border border-[#3F3F46] bg-surface-secondary p-8 text-center">
+                <p className="text-[#A1A1AA]">暂无财报数据</p>
+              </div>
+            ) : (
+              latestEarnings.map((item) => {
+                const badge = getEarningsBadge(item.eps_surprise, item.ai_analyses?.sentiment || null);
+                return (
+                  <Link
+                    key={item.id}
+                    href={`/earnings/${item.companies?.symbol?.toLowerCase()}`}
+                    className="flex items-center gap-6 rounded-xl border border-[#6366F1] bg-surface-secondary p-6 transition-colors hover:bg-surface"
+                  >
+                    <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-black text-white">
+                      <AppleIcon className="h-8 w-8" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-xl font-semibold text-white">{item.companies?.name}</h3>
+                      <p className="text-sm text-[#A1A1AA]">
+                        Q{item.fiscal_quarter} FY{item.fiscal_year} | {item.report_date}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-8">
+                      <div>
+                        <p className="text-xs text-[#64748B]">营收</p>
+                        <p className="text-lg font-semibold text-[#10B981]">{formatCurrency(item.revenue)}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-[#64748B]">EPS</p>
+                        <p className="text-lg font-semibold text-[#10B981]">{item.eps ? `$${item.eps}` : 'N/A'}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-[#64748B]">同比</p>
+                        <p className="text-lg font-semibold text-[#10B981]">
+                          {item.revenue_yoy_growth ? `+${item.revenue_yoy_growth}%` : 'N/A'}
+                        </p>
+                      </div>
+                    </div>
+                    <span className={`rounded-xl px-3 py-1.5 text-sm font-semibold ${badge.color}`}>
+                      {badge.text}
+                    </span>
+                  </Link>
+                );
+              })
+            )}
           </div>
         </div>
       </section>
@@ -96,17 +230,23 @@ export default function HomePage() {
           </div>
 
           <div className="space-y-4">
-            {calendarItems.map((item, index) => (
-              <div
-                key={index}
-                className="flex items-center gap-5 rounded-xl border border-[#22C55E] bg-surface-secondary p-6"
-              >
-                <span className="text-base font-semibold text-primary">{item.date}</span>
-                <p className="text-lg font-medium text-white">
-                  {item.company} - {item.time}
-                </p>
+            {upcomingEarnings.length === 0 ? (
+              <div className="rounded-xl border border-[#3F3F46] bg-surface-secondary p-8 text-center">
+                <p className="text-[#A1A1AA]">暂无即将发布的财报</p>
               </div>
-            ))}
+            ) : (
+              upcomingEarnings.map((item) => (
+                <div
+                  key={item.id}
+                  className="flex items-center gap-5 rounded-xl border border-[#22C55E] bg-surface-secondary p-6"
+                >
+                  <span className="text-base font-semibold text-primary">{formatDate(item.date)}</span>
+                  <p className="text-lg font-medium text-white">
+                    {item.companyName} ({item.symbol}) - Q{item.fiscalQuarter} FY{item.fiscalYear}
+                  </p>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </section>
