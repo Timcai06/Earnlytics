@@ -14,7 +14,7 @@ export async function GET(
     const { data: company, error: companyError } = await supabase
       .from('companies')
       .select('symbol, name, sector, industry')
-      .eq('symbol', normalizedSymbol)
+      .ilike('symbol', symbol)
       .single();
 
     if (companyError) {
@@ -27,7 +27,7 @@ export async function GET(
     const { data: currentCompanyPeers } = await supabase
       .from('peer_comparison')
       .select('*')
-      .eq('symbol', normalizedSymbol)
+      .ilike('symbol', symbol)
       .order('date', { ascending: false })
       .limit(1)
       .single();
@@ -35,7 +35,7 @@ export async function GET(
     const { data: peerSymbols } = await supabase
       .from('peer_comparison')
       .select('peer_symbol')
-      .eq('symbol', normalizedSymbol)
+      .ilike('symbol', symbol)
       .order('date', { ascending: false });
 
     const uniquePeers = [...new Set(peerSymbols?.map(p => p.peer_symbol) || [])].slice(0, 5);

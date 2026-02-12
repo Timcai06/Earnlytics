@@ -24,11 +24,11 @@ export async function GET(request: Request) {
       data = result.data
       error = result.error
     } else if (symbol) {
-      // First get the company to find its ID
+      // First get the company to find its ID (case-insensitive)
       const companyResult = await supabase
         .from('companies')
         .select('id')
-        .eq('symbol', symbol.toUpperCase())
+        .ilike('symbol', symbol)
         .single()
 
       if (companyResult.error || !companyResult.data) {

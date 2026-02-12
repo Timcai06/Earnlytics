@@ -59,18 +59,20 @@ async function getLatestEarnings(): Promise<EarningsWithCompany[]> {
     return [];
   }
 
-  return (data || []).map((item: any) => ({
-    id: item.id,
-    fiscal_year: item.fiscal_year,
-    fiscal_quarter: item.fiscal_quarter,
-    report_date: item.report_date,
-    revenue: item.revenue,
-    eps: item.eps,
-    revenue_yoy_growth: item.revenue_yoy_growth,
-    eps_surprise: item.eps_surprise,
-    companies: item.companies?.[0] || null,
-    ai_analyses: item.ai_analyses?.[0] || null,
-  }));
+  return (data || [])
+    .map((item: any) => ({
+      id: item.id,
+      fiscal_year: item.fiscal_year,
+      fiscal_quarter: item.fiscal_quarter,
+      report_date: item.report_date,
+      revenue: item.revenue,
+      eps: item.eps,
+      revenue_yoy_growth: item.revenue_yoy_growth,
+      eps_surprise: item.eps_surprise,
+      companies: item.companies?.[0] || null,
+      ai_analyses: item.ai_analyses?.[0] || null,
+    }))
+    .filter((item) => item.companies !== null);
 }
 
 async function getUpcomingEarnings(): Promise<CalendarEvent[]> {

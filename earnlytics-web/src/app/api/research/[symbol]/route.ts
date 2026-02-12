@@ -34,7 +34,7 @@ export async function GET(
           successful_recommendations
         )
       `)
-      .eq('symbol', normalizedSymbol)
+      .ilike('symbol', symbol)
       .gte('publish_date', sinceDate.toISOString().split('T')[0])
       .order('publish_date', { ascending: false })
       .range(offset, offset + limit - 1);

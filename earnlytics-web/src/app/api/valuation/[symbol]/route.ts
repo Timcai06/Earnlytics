@@ -21,7 +21,7 @@ export async function GET(
           industry
         )
       `)
-      .eq('symbol', normalizedSymbol)
+      .ilike('symbol', symbol)
       .order('date', { ascending: false })
       .limit(1)
       .single();
