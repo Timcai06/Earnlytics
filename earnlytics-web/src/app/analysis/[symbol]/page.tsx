@@ -43,49 +43,156 @@ interface AnalysisData {
   earningsId: string;
   filingType: string;
   filingDate: string;
+  dataSource: string;
+  stockPrice?: {
+    symbol: string;
+    price: number;
+    change: number;
+    changePercent: number;
+    volume: number;
+    marketCap: number;
+    peRatio: number;
+    high52w: number;
+    low52w: number;
+    timestamp: string;
+    source: string;
+    cached: boolean;
+  };
+}
+
+
+
+
+
+async function fetchEarningsWithFinancials(companyId: number) {
+  const { data: earnings } = await supabase
+    .from("earnings")
+    .select("id, fiscal_year, fiscal_quarter, report_date, revenue, net_income, eps")
+    .eq("company_id", companyId)
+    .order("fiscal_year", { ascending: false })
+    .order("fiscal_quarter", { ascending: false })
+    .limit(12);
+  
+  return earnings || [];
+}
+
+function calculateRevenueCAGR(earnings: any[]) {
+  if (earnings.length < 2) return 0;
+  
+  const sorted = [...earnings].sort((a, b) => {
+    const dateA = new Date(a.fiscal_year, (a.fiscal_quarter - 1) * 3);
+    const dateB = new Date(b.fiscal_year, (b.fiscal_quarter - 1) * 3);
+    return dateA.getTime() - dateB.getTime();
+  });
+  
+  const firstRevenue = sorted[0].revenue;
+  const lastRevenue = sorted[sorted.length - 1].revenue;
+  const years = (sorted.length - 1) / 4;
+  
+  if (!firstRevenue || !lastRevenue || years <= 0) return 0;
+  
+  return Math.pow(lastRevenue / firstRevenue, 1 / years) - 1;
+}
+
+function determineGrowthStage(cagr: number): "introduction" | "growth" | "maturity" | "decline" {
+  if (cagr > 0.25) return "growth";
+  if (cagr > 0.05) return "maturity";
+  if (cagr > -0.1) return "introduction";
+  return "decline";
+}
+
+function calculateFinancialScore(roe: number | null, roa: number | null, netMargin: number | null): number {
+  let score = 50;
+  
+  if (roe !== null) {
+    if (roe > 0.2) score += 15;
+    else if (roe > 0.15) score += 10;
+    else if (roe > 0.1) score += 5;
+  }
+  
+  if (roa !== null) {
+    if (roa > 0.1) score += 10;
+    else if (roa > 0.05) score += 5;
+  }
+  
+  if (netMargin !== null) {
+    if (netMargin > 0.2) score += 10;
+    else if (netMargin > 0.1) score += 5;
+  }
+  
+  return Math.min(100, Math.max(0, score));
+}
+
+async function fetchStockPrice(symbol: string) {
+  try {
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    const response = await fetch(`${baseUrl}/api/stock-price/${symbol}`, {
+      next: { revalidate: 300 }
+    });
+    
+    if (!response.ok) {
+      console.log('Stock price API error:', response.status);
+      return null;
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching stock price:', error);
+    return null;
+  }
 }
 
 async function getAnalysisData(symbol: string, earningsId?: string): Promise<AnalysisData | null> {
-  // First get the company by symbol
   const { data: company, error: companyError } = await supabase
     .from("companies")
     .select("id, symbol, name, sector")
     .ilike("symbol", symbol)
     .single();
 
-  if (companyError || !company) {
+  if (companyError && companyError.code !== "PGRST116") {
     console.error("Error fetching company:", companyError);
+  }
+
+  if (!company) {
+    console.error(`Company not found: ${symbol}`);
     return null;
   }
 
   let latestEarning;
 
-  // If earnings_id is provided, fetch that specific record
   if (earningsId) {
     const { data: earning, error: earningError } = await supabase
       .from("earnings")
-      .select("id, fiscal_year, fiscal_quarter, report_date, company_id")
+      .select("id, fiscal_year, fiscal_quarter, report_date, company_id, revenue, net_income, eps")
       .eq("id", parseInt(earningsId))
       .single();
 
-    if (!earningError && earning) {
+    if (earningError && earningError.code !== "PGRST116") {
+      console.error(`Error fetching earnings by ID ${earningsId}:`, earningError);
+    }
+
+    if (earning) {
       latestEarning = earning;
     }
   }
 
-  // Fallback: Get the latest earnings for this company if no specific earnings_id or not found
   if (!latestEarning) {
-    const { data: fallbackEarning, error: earningError } = await supabase
+    const { data: fallbackEarning, error: fallbackError } = await supabase
       .from("earnings")
-      .select("id, fiscal_year, fiscal_quarter, report_date, company_id")
+      .select("id, fiscal_year, fiscal_quarter, report_date, company_id, revenue, net_income, eps")
       .eq("company_id", company.id)
+      .not("revenue", "is", null)
       .order("fiscal_year", { ascending: false })
       .order("fiscal_quarter", { ascending: false })
       .limit(1)
       .single();
 
-    if (earningError || !fallbackEarning) {
-      console.error("Error fetching earnings:", earningError);
+    if (fallbackError && fallbackError.code !== "PGRST116") {
+      console.error(`Error fetching earnings for ${company.symbol}:`, fallbackError);
+    }
+
+    if (!fallbackEarning) {
+      console.error(`No earnings data found for company ${company.symbol} (ID: ${company.id})`);
       return null;
     }
     latestEarning = fallbackEarning;
@@ -96,51 +203,115 @@ async function getAnalysisData(symbol: string, earningsId?: string): Promise<Ana
     .select("summary, highlights, concerns, sentiment")
     .eq("earnings_id", latestEarning.id)
     .single();
-
-  if (analysisError) {
-    console.error("Error fetching analysis:", analysisError);
+  
+  if (analysisError && analysisError.code !== "PGRST116") {
+    console.error(`Error fetching AI analysis for earnings ${latestEarning.id}:`, analysisError);
   }
 
-  // Map database columns to the expected format
+  const [stockPrice, earningsHistory] = await Promise.all([
+    fetchStockPrice(company.symbol),
+    fetchEarningsWithFinancials(company.id)
+  ]);
+
   const highlights = analysis?.highlights || [];
   const concerns = analysis?.concerns || [];
   const sentiment = analysis?.sentiment || "neutral";
 
+  const currentPrice = stockPrice?.price || 0;
+  
+  const revenueCAGR = calculateRevenueCAGR(earningsHistory);
+  const growthStage = determineGrowthStage(revenueCAGR);
+
+  const roe = null;
+  const roa = null;
+  const netMargin = latestEarning.net_income && latestEarning.revenue 
+    ? latestEarning.net_income / latestEarning.revenue 
+    : null;
+  
+  const financialScore = calculateFinancialScore(roe, roa, netMargin);
+
+  const assessment = stockPrice?.peRatio && stockPrice?.peRatio > 0 
+    ? (stockPrice.peRatio < 15 ? "undervalued" : stockPrice.peRatio > 30 ? "overvalued" : "fair")
+    : "unknown";
+  const pePercentile = stockPrice?.peRatio ? 50 : 50;
+
+  let targetPriceLow = 0;
+  let targetPriceHigh = 0;
+  
+  if (currentPrice > 0 && pePercentile) {
+    if (assessment === "undervalued") {
+      targetPriceLow = currentPrice * 1.05;
+      targetPriceHigh = currentPrice * 1.25;
+    } else if (assessment === "overvalued") {
+      targetPriceLow = currentPrice * 0.75;
+      targetPriceHigh = currentPrice * 0.95;
+    } else {
+      targetPriceLow = currentPrice * 0.9;
+      targetPriceHigh = currentPrice * 1.1;
+    }
+  }
+
+  let confidence: "high" | "medium" | "low" = "low";
+  if (stockPrice && analysis) {
+    confidence = "high";
+  } else if (stockPrice || analysis) {
+    confidence = "medium";
+  }
+
+  let rating = "hold";
+  if (sentiment === "positive" && assessment === "undervalued") {
+    rating = "buy";
+  } else if (sentiment === "negative" && assessment === "overvalued") {
+    rating = "sell";
+  } else if (sentiment === "positive") {
+    rating = "buy";
+  } else if (sentiment === "negative") {
+    rating = "sell";
+  }
+
+  const moatStrength: "wide" | "narrow" | "none" = roe && roe > 0.2 ? "wide" : roe && roe > 0.12 ? "narrow" : "none";
+  const porterScore = Math.min(100, Math.round(financialScore * 0.8));
+
   return {
     symbol: company.symbol,
     name: company.name,
-    sector: company.sector,
-    currentPrice: 0,
-    rating: sentiment === "positive" ? "buy" : sentiment === "negative" ? "sell" : "hold",
-    confidence: "medium",
-    targetPrice: { low: 0, high: 0 },
+    sector: company.sector || "Unknown",
+    currentPrice: currentPrice > 0 ? currentPrice : 0,
+    rating,
+    confidence: confidence as "high" | "medium" | "low",
+    targetPrice: { 
+      low: targetPriceLow > 0 ? targetPriceLow : 0, 
+      high: targetPriceHigh > 0 ? targetPriceHigh : 0 
+    },
     keyPoints: highlights.slice(0, 5),
     risks: concerns.slice(0, 3),
     catalysts: [],
     financialQuality: {
-      score: 50,
+      score: financialScore,
       roeDuPont: {
-        netMargin: 0.15,
+        netMargin: netMargin || 0.1,
         assetTurnover: 0.5,
-        equityMultiplier: 2.0,
+        equityMultiplier: roe && netMargin ? roe / netMargin : 2.0,
       },
-      cashFlowHealth: "moderate" as const,
+      cashFlowHealth: financialScore > 70 ? "healthy" : financialScore > 40 ? "moderate" : "concerning",
     },
     growth: {
-      stage: "maturity" as const,
-      revenueCAGR3Y: 0.1,
+      stage: growthStage,
+      revenueCAGR3Y: revenueCAGR,
     },
     moat: {
-      strength: "narrow" as const,
-      porterScore: 50,
+      strength: moatStrength,
+      porterScore,
     },
     valuation: {
-      assessment: "fair" as const,
-      pePercentile: 50,
+      assessment: assessment === "unknown" ? "fair" : assessment,
+      pePercentile: pePercentile || 50,
     },
     earningsId: latestEarning.id,
     filingType: `FY${latestEarning.fiscal_year} Q${latestEarning.fiscal_quarter}`,
     filingDate: latestEarning.report_date,
+    dataSource: "unknown",
+    stockPrice: stockPrice,
   };
 }
 
@@ -150,7 +321,35 @@ export default async function AnalysisPage({ params, searchParams }: { params: P
   const data = await getAnalysisData(symbol, earnings_id);
 
   if (!data) {
-    notFound();
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-6">
+          <Button variant="ghost" asChild className="mb-4">
+            <Link href="/dashboard">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              返回仪表盘
+            </Link>
+          </Button>
+          
+          <div className="text-center py-20">
+            <h1 className="text-3xl font-bold mb-4">数据加载失败</h1>
+            <p className="text-muted-foreground mb-6">
+              无法找到 {symbol.toUpperCase()} 的分析数据。可能的原因：
+            </p>
+            <ul className="text-left max-w-md mx-auto space-y-2 text-muted-foreground mb-8">
+              <li>• 该公司不在我们的数据库中</li>
+              <li>• 该公司的财报数据尚未导入</li>
+              <li>• 数据暂时不可用</li>
+            </ul>
+            <Button asChild>
+              <Link href="/companies">
+                查看公司列表
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -175,8 +374,22 @@ export default async function AnalysisPage({ params, searchParams }: { params: P
             </p>
           </div>
           <div className="text-right">
-            <div className="text-2xl font-bold">${data.currentPrice.toFixed(2)}</div>
-            <div className="text-sm text-muted-foreground">当前股价</div>
+            {data.stockPrice && data.stockPrice.price > 0 ? (
+              <>
+                <div className="text-2xl font-bold">${data.stockPrice.price.toFixed(2)}</div>
+                <div className="text-sm text-muted-foreground">
+                  {data.stockPrice.change > 0 ? '+' : ''}{data.stockPrice.change?.toFixed(2)} ({data.stockPrice.changePercent?.toFixed(2)}%)
+                </div>
+                {data.stockPrice.source === 'yahoo_finance' && (
+                  <div className="text-xs text-muted-foreground">实时数据</div>
+                )}
+              </>
+            ) : (
+              <>
+                <div className="text-2xl font-bold text-muted-foreground">--</div>
+                <div className="text-sm text-muted-foreground">股价数据暂不可用</div>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -188,8 +401,12 @@ export default async function AnalysisPage({ params, searchParams }: { params: P
             rating={data.rating as "strong_buy" | "buy" | "hold" | "sell" | "strong_sell"}
             confidence={data.confidence as "high" | "medium" | "low"}
             targetPrice={data.targetPrice}
-            currentPrice={data.currentPrice}
+            currentPrice={data.stockPrice?.price || 0}
+            previousClose={data.stockPrice?.price && data.stockPrice?.change 
+              ? data.stockPrice.price - data.stockPrice.change 
+              : undefined}
             keyPoints={data.keyPoints}
+            dataSource={data.dataSource}
           />
         </div>
 
@@ -351,10 +568,10 @@ export default async function AnalysisPage({ params, searchParams }: { params: P
           filingDate={data.filingDate}
           aiSummary={{
             highlights: data.keyPoints,
-            keyMetrics: [
+            keyMetrics: data.targetPrice.low > 0 && data.targetPrice.high > 0 ? [
               { label: "目标价下限", value: `$${data.targetPrice.low.toFixed(2)}` },
               { label: "目标价上限", value: `$${data.targetPrice.high.toFixed(2)}` },
-            ],
+            ] : [],
             sentiment: data.rating === 'buy' || data.rating === 'strong_buy' ? 'positive' : data.rating === 'sell' || data.rating === 'strong_sell' ? 'negative' : 'neutral',
           }}
         />
