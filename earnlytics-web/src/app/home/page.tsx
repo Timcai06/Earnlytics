@@ -65,7 +65,12 @@ async function getLatestEarnings(): Promise<EarningsWithCompany[]> {
     }
 
     const mapped = data
-      .filter((item: any) => item.companies !== null)
+      .filter((item: any) => {
+        // 确保有公司数据且有实际营收数据
+        const hasCompany = item.companies !== null;
+        const hasRevenue = item.revenue !== null && item.revenue !== undefined && item.revenue > 0;
+        return hasCompany && hasRevenue;
+      })
       .map((item: any) => ({
         id: item.id,
         fiscal_year: item.fiscal_year,
