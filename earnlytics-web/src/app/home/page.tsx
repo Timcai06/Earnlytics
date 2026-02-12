@@ -43,7 +43,7 @@ async function getLatestEarnings(): Promise<EarningsWithCompany[]> {
         eps,
         revenue_yoy_growth,
         eps_surprise,
-        companies!inner (
+        companies (
           symbol,
           name
         ),
@@ -51,17 +51,21 @@ async function getLatestEarnings(): Promise<EarningsWithCompany[]> {
           sentiment
         )
       `)
+      .not('revenue', 'is', null)
       .order('report_date', { ascending: false })
-      .limit(10);
+      .limit(5);
 
     if (error) {
       console.error('Error fetching latest earnings:', error);
       return [];
     }
 
-    const mapped = (data || [])
-      .filter((item: any) => item.revenue !== null && item.companies !== null)
-      .slice(0, 5)
+    if (!data || data.length === 0) {
+      return [];
+    }
+
+    const mapped = data
+      .filter((item: any) => item.companies !== null)
       .map((item: any) => ({
         id: item.id,
         fiscal_year: item.fiscal_year,
@@ -94,7 +98,7 @@ async function getUpcomingEarnings(): Promise<CalendarEvent[]> {
         report_date,
         fiscal_year,
         fiscal_quarter,
-        companies!inner (
+        companies (
           symbol,
           name
         )
@@ -109,7 +113,11 @@ async function getUpcomingEarnings(): Promise<CalendarEvent[]> {
       return [];
     }
 
-    return (data || [])
+    if (!data || data.length === 0) {
+      return [];
+    }
+
+    return data
       .filter((e: any) => e.companies !== null)
       .map((e: any) => {
         const company = Array.isArray(e.companies) ? e.companies[0] : e.companies;
