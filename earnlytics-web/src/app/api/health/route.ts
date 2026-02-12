@@ -15,6 +15,11 @@ export async function GET() {
     tests: {},
   };
 
+  if (!supabase) {
+    results.tests.supabase = { success: false, error: 'Supabase not configured' };
+    return NextResponse.json(results);
+  }
+
   try {
     const { data: companies, error } = await supabase
       .from('companies')

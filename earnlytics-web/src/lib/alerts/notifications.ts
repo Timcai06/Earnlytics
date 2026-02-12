@@ -53,7 +53,8 @@ export async function queueEmail(
   textContent: string,
   alertId?: string
 ): Promise<void> {
-  
+  if (!supabase) return;
+
 
   const { error } = await supabase.from('email_queue').insert({
     user_id: userId,
@@ -245,7 +246,8 @@ function formatValue(value: unknown): string {
  * Update alert sent status
  */
 async function updateAlertSentStatus(alertId: string, channels: string[]): Promise<void> {
-  
+  if (!supabase) return;
+
 
   const { error } = await supabase
     .from('alert_history')
@@ -264,7 +266,8 @@ async function updateAlertSentStatus(alertId: string, channels: string[]): Promi
  * Process pending emails in queue
  */
 export async function processEmailQueue(batchSize: number = 10): Promise<void> {
-  
+  if (!supabase) return;
+
 
   // Get pending emails
   const { data: emails, error } = await supabase
@@ -339,7 +342,8 @@ export async function sendDigestEmail(
   userEmail: string,
   period: 'daily' | 'weekly'
 ): Promise<void> {
-  
+  if (!supabase) return;
+
 
   // Get alerts from the period
   const since = new Date()

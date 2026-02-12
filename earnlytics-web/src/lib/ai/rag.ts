@@ -18,6 +18,8 @@ export async function searchDocuments(
   query: string,
   options: RAGSearchOptions = {}
 ): Promise<SearchResult[]> {
+  if (!supabase) return [];
+
   const { symbol, matchThreshold = DEFAULT_MATCH_THRESHOLD, matchCount = DEFAULT_MATCH_COUNT } = options
 
   // Generate embedding for the query
@@ -141,7 +143,8 @@ export async function getKnowledgeBaseArticles(
   summary: string
   category: string
 }>> {
-  
+  if (!supabase) return [];
+
 
   let queryBuilder = supabase
     .from('knowledge_base')
@@ -176,7 +179,8 @@ export async function getKnowledgeBaseArticle(
   category: string
   keywords: string[]
 } | null> {
-  
+  if (!supabase) return null;
+
 
   const { data, error } = await supabase
     .from('knowledge_base')

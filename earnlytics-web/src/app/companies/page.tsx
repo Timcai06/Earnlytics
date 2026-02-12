@@ -14,6 +14,8 @@ export interface CompanyWithEarnings extends Company {
 }
 
 async function getCompaniesWithEarnings(): Promise<CompanyWithEarnings[]> {
+  if (!supabase) return [];
+
   const { data: companies, error: companiesError } = await supabase
     .from("companies")
     .select("*")

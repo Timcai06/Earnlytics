@@ -16,6 +16,8 @@ export interface IngestDocumentParams {
  * Ingest a document into the vector database
  */
 export async function ingestDocument(params: IngestDocumentParams): Promise<void> {
+  if (!supabase) throw new Error('Database not configured');
+
   const { sourceType, sourceId, symbol, title, content, date, metadata = {} } = params
 
   // Split content into chunks
@@ -83,7 +85,7 @@ export async function deleteEmbeddingsForSource(
   sourceType: string,
   sourceId: string
 ): Promise<void> {
-  
+  if (!supabase) return;
 
   const { error } = await supabase
     .from('document_embeddings')
@@ -134,7 +136,9 @@ export async function getEmbeddingStats(): Promise<{
   bySourceType: Record<string, number>
   bySymbol: Record<string, number>
 }> {
-  
+  if (!supabase) {
+    return { totalDocuments: 0, totalChunks: 0, bySourceType: {}, bySymbol: {} };
+  }
 
   // Get total chunks
   const { count: totalChunks, error: countError } = await supabase
@@ -196,7 +200,8 @@ export async function hasEmbeddings(
   sourceType: string,
   sourceId: string
 ): Promise<boolean> {
-  
+  if (!supabase) return false;
+
 
   const { count, error } = await supabase
     .from('document_embeddings')

@@ -7,6 +7,10 @@ export async function GET(
   request: Request,
   { params }: { params: Promise<{ symbol: string }> }
 ) {
+  if (!supabase) {
+    return NextResponse.json({ error: 'Database not configured' }, { status: 500 })
+  }
+
   try {
     const { symbol } = await params;
     const normalizedSymbol = symbol.toUpperCase();

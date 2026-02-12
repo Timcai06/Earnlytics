@@ -29,7 +29,8 @@ export async function evaluateRulesForSymbol(
   symbol: string,
   context: EvaluationContext
 ): Promise<Array<{ rule: AlertRule; result: RuleEvaluationResult }>> {
-  
+  if (!supabase) return [];
+
 
   // Get all active rules for this symbol or portfolio-wide
   const { data: rules, error } = await supabase

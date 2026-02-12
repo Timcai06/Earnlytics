@@ -65,6 +65,8 @@ interface AnalysisData {
 
 
 async function fetchEarningsWithFinancials(companyId: number) {
+  if (!supabase) return [];
+  
   const { data: earnings } = await supabase
     .from("earnings")
     .select("id, fiscal_year, fiscal_quarter, report_date, revenue, net_income, eps")
@@ -143,6 +145,11 @@ async function fetchStockPrice(symbol: string) {
 }
 
 async function getAnalysisData(symbol: string, earningsId?: string): Promise<AnalysisData | null> {
+  if (!supabase) {
+    console.error('Supabase client not initialized');
+    return null;
+  }
+
   const { data: company, error: companyError } = await supabase
     .from("companies")
     .select("id, symbol, name, sector")

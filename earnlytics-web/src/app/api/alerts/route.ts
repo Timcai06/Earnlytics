@@ -3,6 +3,10 @@ import { supabase } from '@/lib/supabase'
 
 // GET /api/alerts - Get user's alert rules and history
 export async function GET(request: NextRequest) {
+  if (!supabase) {
+    return NextResponse.json({ error: 'Database not configured' }, { status: 500 })
+  }
+  
   try {
     const { searchParams } = new URL(request.url)
     const type = searchParams.get('type') || 'rules'
@@ -93,6 +97,10 @@ export async function GET(request: NextRequest) {
 
 // POST /api/alerts - Create new alert rule
 export async function POST(request: NextRequest) {
+  if (!supabase) {
+    return NextResponse.json({ error: 'Database not configured' }, { status: 500 })
+  }
+
   try {
     const body = await request.json()
     const {
@@ -147,6 +155,10 @@ export async function POST(request: NextRequest) {
 
 // PATCH /api/alerts - Update alert rule
 export async function PATCH(request: NextRequest) {
+  if (!supabase) {
+    return NextResponse.json({ error: 'Database not configured' }, { status: 500 })
+  }
+
   try {
     const body = await request.json()
     const { ruleId, isActive, ...updates } = body
@@ -189,6 +201,10 @@ export async function PATCH(request: NextRequest) {
 
 // DELETE /api/alerts - Delete alert rule
 export async function DELETE(request: NextRequest) {
+  if (!supabase) {
+    return NextResponse.json({ error: 'Database not configured' }, { status: 500 })
+  }
+
   try {
     const { searchParams } = new URL(request.url)
     const ruleId = searchParams.get('ruleId')

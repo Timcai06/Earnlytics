@@ -100,6 +100,8 @@ export async function createConversation(
   symbol: string | undefined,
   title: string
 ): Promise<string> {
+  if (!supabase) throw new Error('Database not configured');
+
   const { data, error } = await supabase
     .from('chat_conversations')
     .insert({
@@ -133,6 +135,8 @@ export async function saveMessage(
     processingTimeMs?: number
   } = {}
 ): Promise<void> {
+  if (!supabase) return;
+
   const { error } = await supabase.from('chat_messages').insert({
     conversation_id: conversationId,
     role,
@@ -156,6 +160,8 @@ export async function getConversationHistory(
   conversationId: string,
   limit: number = 50
 ): Promise<ChatMessage[]> {
+  if (!supabase) return [];
+
   const { data, error } = await supabase
     .from('chat_messages')
     .select('*')

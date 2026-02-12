@@ -77,6 +77,12 @@ export default function HomePage() {
       try {
         setLoading(true);
         
+        if (!supabase) {
+          setError('Database not configured');
+          setLoading(false);
+          return;
+        }
+        
         const { data: latestData, error: latestError } = await supabase
           .from('earnings')
           .select(`

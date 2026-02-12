@@ -3,11 +3,26 @@ import { createClient } from '@supabase/supabase-js'
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-if (!supabaseUrl || !supabaseKey) {
-  throw new Error('Missing Supabase environment variables')
+// Only create client if env vars are available (works during build too)
+let supabaseInstance: ReturnType<typeof createClient> | null = null
+
+export function getSupabase() {
+  if (!supabaseUrl || !supabaseKey) {
+    return null
+  }
+  
+  if (!supabaseInstance) {
+    supabaseInstance = createClient(supabaseUrl, supabaseKey)
+  }
+  
+  return supabaseInstance
 }
 
-export const supabase = createClient(supabaseUrl, supabaseKey)
+// Export for backward compatibility
+export const supabase = supabaseUrl && supabaseKey 
+  ? createClient(supabaseUrl, supabaseKey)
+  : null
+
 export { createClient }
 
 export type Database = {

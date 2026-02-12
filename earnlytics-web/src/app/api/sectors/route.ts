@@ -4,6 +4,10 @@ import { NextResponse } from 'next/server';
 export const revalidate = 3600;
 
 export async function GET(request: Request) {
+  if (!supabase) {
+    return NextResponse.json({ error: 'Database not configured' }, { status: 500 })
+  }
+  
   try {
     const { searchParams } = new URL(request.url);
     const sector = searchParams.get('sector');

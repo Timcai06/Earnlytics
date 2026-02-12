@@ -16,6 +16,8 @@ interface InvestmentRecommendation {
 }
 
 async function getInvestmentRecommendations(): Promise<InvestmentRecommendation[]> {
+  if (!supabase) return [];
+
   // First, get the latest ai_analyses with their earnings_id
   const { data: analyses, error } = await supabase
     .from("ai_analyses")
@@ -96,6 +98,8 @@ async function getInvestmentRecommendations(): Promise<InvestmentRecommendation[
 }
 
 async function getCompanies(): Promise<Company[]> {
+  if (!supabase) return [];
+
   const { data: companies, error } = await supabase
     .from("companies")
     .select("*")
