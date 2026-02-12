@@ -31,84 +31,101 @@ interface CalendarEvent {
 }
 
 async function getLatestEarnings(): Promise<EarningsWithCompany[]> {
-  const { data, error } = await supabase
-    .from('earnings')
-    .select(`
-      id,
-      fiscal_year,
-      fiscal_quarter,
-      report_date,
-      revenue,
-      eps,
-      revenue_yoy_growth,
-      eps_surprise,
-      companies (
-        symbol,
-        name
-      ),
-      ai_analyses (
-        sentiment
-      )
-    `)
-    .not('revenue', 'is', null)
-    .order('report_date', { ascending: false })
-    .limit(5);
+  try {
+    const { data, error } = await supabase
+      .from('earnings')
+      .select(`
+        id,
+        fiscal_year,
+        fiscal_quarter,
+        report_date,
+        revenue,
+        eps,
+        revenue_yoy_growth,
+        eps_surprise,
+        companies!inner (
+          symbol,
+          name
+        ),
+        ai_analyses (
+          sentiment
+        )
+      `)
+      .order('report_date', { ascending: false })
+      .limit(10);
 
-  if (error) {
-    console.error('Error fetching latest earnings:', error);
+    if (error) {
+      console.error('Error fetching latest earnings:', error);
+      return [];
+    }
+
+    const mapped = (data || [])
+      .filter((item: any) => item.revenue !== null && item.companies !== null)
+      .slice(0, 5)
+      .map((item: any) => ({
+        id: item.id,
+        fiscal_year: item.fiscal_year,
+        fiscal_quarter: item.fiscal_quarter,
+        report_date: item.report_date,
+        revenue: item.revenue,
+        eps: item.eps,
+        revenue_yoy_growth: item.revenue_yoy_growth,
+        eps_surprise: item.eps_surprise,
+        companies: Array.isArray(item.companies) ? item.companies[0] : item.companies,
+        ai_analyses: Array.isArray(item.ai_analyses) ? item.ai_analyses[0] : item.ai_analyses,
+      }));
+
+    return mapped;
+  } catch (e) {
+    console.error('Exception fetching latest earnings:', e);
     return [];
   }
-
-  return (data || [])
-    .map((item: any) => ({
-      id: item.id,
-      fiscal_year: item.fiscal_year,
-      fiscal_quarter: item.fiscal_quarter,
-      report_date: item.report_date,
-      revenue: item.revenue,
-      eps: item.eps,
-      revenue_yoy_growth: item.revenue_yoy_growth,
-      eps_surprise: item.eps_surprise,
-      companies: item.companies?.[0] || null,
-      ai_analyses: item.ai_analyses?.[0] || null,
-    }))
-    .filter((item) => item.companies !== null);
 }
 
 async function getUpcomingEarnings(): Promise<CalendarEvent[]> {
-  const today = new Date();
-  const nextWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
+  try {
+    const today = new Date();
+    const nextWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
 
-  const { data, error } = await supabase
-    .from('earnings')
-    .select(`
-      id,
-      report_date,
-      fiscal_year,
-      fiscal_quarter,
-      companies (
-        symbol,
-        name
-      )
-    `)
-    .gte('report_date', today.toISOString().split('T')[0])
-    .lte('report_date', nextWeek.toISOString().split('T')[0])
-    .order('report_date', { ascending: true })
-    .limit(5);
+    const { data, error } = await supabase
+      .from('earnings')
+      .select(`
+        id,
+        report_date,
+        fiscal_year,
+        fiscal_quarter,
+        companies!inner (
+          symbol,
+          name
+        )
+      `)
+      .gte('report_date', today.toISOString().split('T')[0])
+      .lte('report_date', nextWeek.toISOString().split('T')[0])
+      .order('report_date', { ascending: true })
+      .limit(5);
 
-  if (error) {
-    console.error('Error fetching upcoming earnings:', error);
+    if (error) {
+      console.error('Error fetching upcoming earnings:', error);
+      return [];
+    }
+
+    return (data || [])
+      .filter((e: any) => e.companies !== null)
+      .map((e: any) => {
+        const company = Array.isArray(e.companies) ? e.companies[0] : e.companies;
+        return {
+          id: e.id,
+          date: e.report_date,
+          symbol: company?.symbol || '',
+          companyName: company?.name || '',
+          fiscalYear: e.fiscal_year,
+          fiscalQuarter: e.fiscal_quarter,
+        };
+      });
+  } catch (e) {
+    console.error('Exception fetching upcoming earnings:', e);
     return [];
   }
-
-  return (data || []).map(e => ({
-    id: e.id,
-    date: e.report_date,
-    symbol: (e.companies as any)?.symbol || '',
-    companyName: (e.companies as any)?.name || '',
-    fiscalYear: e.fiscal_year,
-    fiscalQuarter: e.fiscal_quarter,
-  }));
 }
 
 function formatCurrency(value: number | null): string {
