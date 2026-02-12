@@ -1,0 +1,64 @@
+name: Process Alerts
+
+on:
+  schedule:
+    # Run every hour
+    - cron: '0 * * * *'
+  workflow_dispatch:
+
+env:
+  NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+  SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+  RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+  RESEND_FROM_EMAIL: ${{ secrets.RESEND_FROM_EMAIL || 'alerts@earnlytics.com' }}
+  NEXT_PUBLIC_APP_URL: ${{ vars.NEXT_PUBLIC_APP_URL || 'https://earnlytics-ebon.vercel.app' }}
+
+jobs:
+  process-alerts:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: earnlytics-web/package-lock.json
+
+      - name: Install dependencies
+        working-directory: earnlytics-web
+        run: npm ci
+
+      - name: Process alert rules
+        working-directory: earnlytics-web
+        run: npm run alerts:process
+
+      - name: Send pending emails
+        working-directory: earnlytics-web
+        run: npm run alerts:send-emails
+
+      - name: Send daily digests (at 9 AM UTC)
+        if: github.event.schedule == '0 9 * * *'
+        working-directory: earnlytics-web
+        run: npm run alerts:send-digests daily
+
+      - name: Send weekly digests (Sunday at 9 AM UTC)
+        if: github.event.schedule == '0 9 * * 0'
+        working-directory: earnlytics-web
+        run: npm run alerts:send-digests weekly
+
+      - name: Alert on failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: '🚨 Alert Processing Failed',
+              body: `Alert processing workflow failed at ${new Date().toISOString()}\n\nPlease check the workflow logs for details.`,
+              labels: ['bug', 'alerts', 'automated']
+            })

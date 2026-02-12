@@ -98,7 +98,10 @@ export default function EarningsPage({ params }: Props) {
   const [activeTab, setActiveTab] = useState<'revenue' | 'eps' | 'growth'>('revenue');
   const maxRetries = 3;
 
-  const isLatestEarning = earnings && earningsHistory.length > 0 && earnings.id === earningsHistory[0].id;
+  // 过滤掉没有数据的财报记录（防御性编程）
+  const validEarningsHistory = earningsHistory.filter(e => e.revenue !== null);
+
+  const isLatestEarning = earnings && validEarningsHistory.length > 0 && earnings.id === validEarningsHistory[0].id;
 
   useEffect(() => {
     if (!symbol) {
@@ -158,7 +161,7 @@ export default function EarningsPage({ params }: Props) {
     }
   };
 
-  const trendData = earningsHistory.map(e => ({
+  const trendData = validEarningsHistory.map(e => ({
     quarter: `Q${e.fiscal_quarter} FY${e.fiscal_year.toString().slice(2)}`,
     revenue: e.revenue ?? 0,
     eps: e.eps ?? 0,
@@ -238,6 +241,12 @@ export default function EarningsPage({ params }: Props) {
             <span className={`w-fit rounded-2xl ${sentimentStyle.bg} px-4 py-1.5 text-sm font-semibold ${sentimentStyle.text}`}>
               {sentimentStyle.label}
             </span>
+            <Link
+              href={`/analysis/${company.symbol}?earnings_id=${earnings.id}`}
+              className="rounded-xl border border-[#6366F1] bg-[rgba(99,102,241,0.15)] px-4 py-1.5 text-sm font-semibold text-[#818CF8] hover:bg-[rgba(99,102,241,0.25)] transition-colors"
+            >
+              深度分析 →
+            </Link>
           </div>
         </div>
       </section>
@@ -273,7 +282,7 @@ export default function EarningsPage({ params }: Props) {
             ))}
           </div>
 
-          {earningsHistory.length > 1 && (
+          {validEarningsHistory.length > 1 && (
             <div className="mb-8 rounded-xl border border-border bg-surface-secondary p-5 sm:p-7">
               <div className="mb-4 flex items-center gap-2 sm:mb-6">
                 <TrendingUpIcon className="h-5 w-5 text-[#818CF8]" />
@@ -363,15 +372,15 @@ export default function EarningsPage({ params }: Props) {
 
           <div className="mb-8 rounded-xl border border-border bg-surface-secondary p-5 sm:p-7">
             <h3 className="mb-4 text-lg font-bold text-white sm:mb-6 sm:text-xl">历史财报</h3>
-            {earningsHistory.length > 1 ? (
+              {validEarningsHistory.length > 1 ? (
               <div className="space-y-3">
-                {earningsHistory.map((e) => {
+              {validEarningsHistory.map((e) => {
                   const eAnalysis = e.ai_analyses;
                   const eSentiment = eAnalysis?.sentiment || null;
                   const sentimentClass = eSentiment === 'positive' ? 'text-[#22C55E]' :
                                           eSentiment === 'negative' ? 'text-[#EF4444]' : 'text-[#A1A1AA]';
-                  const isSelected = e.id === earnings.id;
-                  const isLatest = e.id === earningsHistory[0].id;
+                  const isSelected = e.id === earnings?.id;
+                  const isLatest = e.id === validEarningsHistory[0].id;
 
                   return (
                     <button

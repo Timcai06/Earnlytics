@@ -46,6 +46,8 @@ export async function GET(request: Request) {
             ai_analyses (*)
           `)
           .eq('company_id', companyId)
+          .lte('report_date', new Date().toISOString())
+          .not('revenue', 'is', null)  // 只返回有实际数据的财报
           .order('report_date', { ascending: false })
           .limit(1)
           .single()
@@ -60,6 +62,7 @@ export async function GET(request: Request) {
             ai_analyses (*)
           `)
           .eq('company_id', companyId)
+          .not('revenue', 'is', null)  // 只返回有实际数据的财报
           .order('report_date', { ascending: false })
         data = result.data
         error = result.error

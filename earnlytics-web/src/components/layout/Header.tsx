@@ -11,7 +11,7 @@ export default function Header() {
     { label: "首页", href: "/home" },
     { label: "公司", href: "/companies" },
     { label: "日历", href: "/calendar" },
-    { label: "分析", href: "/analysis" },
+    { label: "仪表盘", href: "/dashboard" },
   ];
 
   return (
