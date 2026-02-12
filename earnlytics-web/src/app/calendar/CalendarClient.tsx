@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
+import HorizontalGlow from "@/components/ui/horizontal-glow"
 
 interface CalendarEvent {
   id: number
@@ -88,9 +89,12 @@ export default function CalendarClient({
       {/* Hero */}
       <section className="bg-background px-6 py-16 md:px-20 md:py-20">
         <div className="flex flex-col items-center text-center">
-          <h1 className="mb-4 text-3xl font-bold text-white drop-shadow-[0_0_30px_rgba(99,102,241,0.25)] md:text-[40px]">
-            财报日历
-          </h1>
+          <div className="relative mb-4">
+            <HorizontalGlow />
+            <h1 className="relative z-10 text-3xl font-bold text-white md:text-[40px]">
+              财报日历
+            </h1>
+          </div>
           <p className="text-base text-[#A1A1AA] md:text-lg">
             追踪即将发布的科技公司财报
           </p>

@@ -1,74 +1,194 @@
-# Earnlytics 项目文档
+# Earnlytics Web Application
 
-> AI驱动的美国科技公司财报分析平台
+> AI驱动的美国科技公司财报分析平台 - Next.js 16 前端应用
 
-## 📂 文档结构（两级分类）
+**Production**: https://earnlytics-ebon.vercel.app  
+**Status**: Plan 3 Week 8 In Progress (87.5%)  
+**Last Updated**: 2026-02-11
 
-```
-earnlytics/
-├── README.md              # 本文档 - 总览与导航
-│
-├── 计划/                  # 执行计划文档（按顺序阅读）
-│   ├── 项目简介.md
-│   ├── 计划1-MVP启动.md      # 🎯 从这里开始！
-│   ├── 计划2-AI自动化.md
-│   ├── 计划3-规模化.md
-│   ├── 计划4-增长优化.md
-│   └── 计划5-商业化.md
-│
-├── 策略/                  # 运营策略文档
-│   ├── 路线图.md
-│   └── 运营策略.md
-│
-└── 技术/                  # 技术实现文档
-    ├── 架构设计.md
-    ├── 数据模型.md
-    ├── API文档.md
-    └── 部署运维.md
-```
+## 🎯 项目进度
+
+| 阶段 | 状态 | 完成度 | 关键成果 |
+|------|------|--------|---------|
+| **计划1: MVP** | ✅ 完成 | 100% | 10个页面，Vercel部署 |
+| **计划2: AI自动化** | ✅ 完成 | 100% | DeepSeek AI，23条财报分析，GitHub Actions |
+| **计划3: 规模化** | 🚀 第7周完成 | 87.5% | 30家公司，109条财报，100% AI分析，邮件订阅 |
+| **计划3: 第8周** | ⏳ 进行中 | 0% | AdSense申请准备 |
+
+### 数据库状态
+- **公司数**: 30家 (Tier 1/2/3)
+- **财报数**: 109条
+- **AI分析**: 109条 (100%覆盖)
+- **订阅者**: 就绪 (API + UI完成)
 
 ## 🚀 快速开始
 
-**新手路线**（推荐）：
-1. **阅读** → `计划/项目简介.md` - 了解项目全貌
-2. **执行** → `计划/计划1-MVP启动.md` - 开始第一个任务
-3. **参考** → `技术/架构设计.md` - 理解技术架构
-4. **开发** → `技术/数据模型.md` 和 `技术/API文档.md`
+```bash
+# 开发环境
+npm run dev              # 启动开发服务器 (localhost:3000)
 
-## 📋 执行计划概览
+# 数据操作
+npm run fetch:earnings   # 从FMP获取最新财报
+npm run analyze:batch    # 生成AI分析 (每批5条)
 
-| 计划 | 时间 | 目标 | 收入预期 |
-|------|------|------|---------|
-| 计划1 | Week 1-2 | MVP上线，5家公司 | ¥0 |
-| 计划2 | Week 3-4 | 自动化系统，10家公司 | ¥0 |
-| 计划3 | Month 2 | 30家公司，AdSense | $0-10 |
-| 计划4 | Month 3 | SEO优化，流量增长 | $50+ |
-| 计划5 | Month 4-6 | 商业化验证 | $500+ |
+# 构建与部署
+npm run build           # 生产构建
+npm run lint            # 代码检查
+```
 
 ## 🛠 技术栈
 
-- **前端**: Next.js 14 + Tailwind CSS + shadcn/ui
-- **后端**: Vercel Serverless
+- **前端**: Next.js 16 + React 19 + TypeScript 5
+- **样式**: Tailwind CSS 4 + shadcn/ui
+- **图标**: Lucide React + 自定义SVG图标
+- **路径别名**: `@/*` → `./src/*`
+
+### 后端与基础设施
+- **托管**: Vercel Serverless
 - **数据库**: Supabase PostgreSQL
-- **AI**: DeepSeek API
-- **数据源**: FMP API + SEC EDGAR
-- **自动化**: GitHub Actions
+- **AI服务**: DeepSeek API (¥0.002/1K tokens)
+- **数据源**: Financial Modeling Prep (FMP) API
+- **自动化**: GitHub Actions (每4小时)
 
-## 💰 成本预算
+## 📂 项目结构
 
-| 阶段 | 月成本 | 主要支出 |
-|------|--------|---------|
-| MVP阶段 | ¥0 | 全部使用免费额度 |
-| 自动化阶段 | ¥1-2 | DeepSeek API |
-| 规模化阶段 | ¥10-20 | 可能的数据库升级 |
+```
+earnlytics-web/
+├── src/
+│   ├── app/                   # App Router
+│   │   ├── earnings/[symbol]/ # 动态路由 - 财报详情
+│   │   ├── companies/         # 公司列表页
+│   │   ├── calendar/          # 财报日历页
+│   │   └── api/               # API路由
+│   ├── components/
+│   │   ├── ui/                # shadcn/ui基础组件
+│   │   ├── icons/             # SVG图标库
+│   │   └── layout/            # Header, Footer
+│   └── lib/                   # 工具函数 (cn, ai.ts, supabase.ts)
+├── scripts/                   # 数据脚本
+│   ├── fetch-earnings.ts      # 获取财报数据
+│   └── analyze-batch.ts       # 批量AI分析
+└── supabase/migrations/       # 数据库Schema
+```
+
+## 🎉 关键成就
+
+- ✅ 10个完整页面已部署到生产环境
+- ✅ 30家公司覆盖3个层级 (FAANG, 科技巨头, 新兴公司)
+- ✅ 109条财报，100% AI分析覆盖
+- ✅ 邮件订阅系统 (API + UI)
+- ✅ 财报日历视图
+- ✅ GitHub Actions自动化 (每4小时)
+- ✅ SVG图标系统 (替换所有emoji)
+- ✅ 动态路由财报页面
+
+## 📋 执行计划概览
+
+| 计划 | 时间 | 目标 | 状态 | 收入预期 |
+|------|------|------|------|---------|
+| 计划1 | Week 1-2 | MVP上线，10家公司 | ✅ 完成 | ¥0 |
+| 计划2 | Week 3-4 | 自动化系统，AI分析 | ✅ 完成 | ¥0 |
+| 计划3 | Month 2 | 30家公司，AdSense | 🚀 87.5% | $0-10 |
+| 计划4 | Month 3 | SEO优化，流量增长 | 📋 计划中 | $50+ |
+| 计划5 | Month 4-6 | 商业化验证 | 📋 计划中 | $500+ |
+
+### 第8周任务 (进行中)
+- [ ] 隐私政策页面 (`/privacy`)
+- [ ] 服务条款页面 (`/terms`)
+- [ ] 联系我们页面 (`/contact`)
+- [ ] AdSense集成
+- [ ] 提交AdSense申请
+
+## 📚 文档导航
+
+### 计划文档 (按顺序阅读)
+- `../doc/计划/项目简介.md` - 项目全貌
+- `../doc/计划/计划1-MVP启动/` - MVP阶段
+- `../doc/计划/计划2-AI自动化/` - AI自动化阶段
+- `../doc/计划/计划3-规模化/` - 规模化阶段
+
+### 策略文档
+- `../doc/策略/路线图.md` - 产品路线图
+- `../doc/策略/运营策略.md` - 运营策略
+
+### 技术文档
+- `../doc/技术/架构设计.md` - 技术架构
+- `../doc/技术/数据模型.md` - 数据库设计
+- `../doc/技术/API文档.md` - API接口
+- `../doc/技术/部署运维.md` - 部署指南
+
+## 🔑 关键架构决策
+
+### 1. 动态路由财报页面
+**从**: `/earnings?symbol=aapl` (查询参数)  
+**到**: `/earnings/aapl` (动态路由)  
+**原因**: Next.js 15+ params是Promise，动态段更简洁  
+**实现**: `src/app/earnings/[symbol]/page.tsx` 使用 `React.use()` 解包params
+
+### 2. SVG图标替代Emoji
+**所有emoji已替换为SVG组件**  
+**位置**: `src/components/icons/index.tsx`  
+**优势**: 样式一致，性能更好，无平台差异
+
+### 3. AI分析批处理
+**方式**: 每次处理5条财报  
+**原因**: 控制API成本，可管理的执行时间  
+**命令**: `npm run analyze:batch` (多次运行处理所有数据)
+
+## 💰 成本分析
+
+| 阶段 | 月成本 | 主要支出 | 实际 |
+|------|--------|---------|------|
+| MVP阶段 | ¥0 | 全部免费额度 | ✅ ¥0 |
+| 自动化阶段 | ¥1-2 | DeepSeek API | ✅ ¥0.2-1 |
+| 规模化阶段 | ¥10-20 | 可能的数据库升级 | 🚀 ¥0.2-1 |
+
+**当前**: ~¥0.2-1/月 (极低成本，全部使用免费额度)
+
+## ⚠️ 反模式 (本项目)
+
+### 永远不要
+- ❌ 在根目录运行 `create-next-app` (创建重复配置)
+- ❌ 将API密钥提交到git (使用环境变量)
+- ❌ 使用 `as any`, `@ts-ignore`, `@ts-expect-error`
+- ❌ 添加与 `earnlytics-web/.gitignore` 重复的规则
+- ❌ 提交 `.env.local` 或包含密钥的文件
+
+### 始终要
+- ✅ 使用 `src/components/icons/` 中的SVG图标
+- ✅ 遵循shadcn/ui组件模式
+- ✅ 完成任务时更新进度文档
+- ✅ 使用动态路由处理参数化页面
+- ✅ 提交前测试构建
+
+## 🐛 已知问题与解决方案
+
+| 问题 | 解决方案 | 文件 |
+|------|---------|------|
+| useSearchParams返回null | 使用动态路由 `[symbol]` | `earnings/[symbol]/page.tsx` |
+| Next.js 15中params是Promise | 使用 `React.use()` 解包 | `earnings/[symbol]/page.tsx` |
+| 脚本中的环境变量 | 使用dotenv加载 `.env.local` | `scripts/*.ts` |
+| API密钥泄露到git | 1) 删除文件, 2) 轮换密钥, 3) 添加到 `.gitignore` | 已修复 |
+
+## 📝 注意事项
+
+- 项目使用DOVE VPN代理 (HTTP 7897) 访问GitHub
+- Doc文件夹使用中文命名约定 (计划, 技术, 策略)
+- 根目录 `.gitignore` 最小化；完整规则在 `earnlytics-web/.gitignore`
+- 月度AI成本: ~¥0.2-1 (极低成本)
+- 所有API密钥如意外提交必须轮换
+- 动态路由使用 `[symbol]` 格式，通过 `React.use(params)` 访问
 
 ---
 
-**项目启动日期**: 2026年2月  
-**当前状态**: 准备启动  
-**下一步**: 阅读 `doc/执行计划1-MVP启动.md`
+**项目启动日期**: 2026-02-07  
+**生产环境**: https://earnlytics-ebon.vercel.app  
+**GitHub**: https://github.com/Timcai06/Earnlytics  
+**最后更新**: 2026-02-11
 
-## Getting Started
+---
+
+## Getting Started (English)
 
 First, run the development server:
 

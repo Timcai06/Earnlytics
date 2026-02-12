@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { ZapIcon, BotIcon, DiamondIcon, AppleIcon, WindowIcon, SearchIcon, CpuIcon, MetaIcon } from "@/components/icons";
+import MysticalGlow from "@/components/ui/mystical-glow";
 
 export default function LandingPage() {
   const features = [
@@ -55,9 +56,12 @@ export default function LandingPage() {
           </div>
 
           {/* Title */}
-          <h1 className="mb-6 text-[64px] font-bold leading-tight text-white drop-shadow-[0_0_30px_rgba(99,102,241,0.25)]">
-            让财报分析变得简单
-          </h1>
+          <div className="relative mb-6">
+            <MysticalGlow />
+            <h1 className="relative z-10 text-[64px] font-bold leading-tight text-white">
+              让财报分析变得简单
+            </h1>
+          </div>
 
           {/* Subtitle */}
           <p className="mb-10 max-w-2xl text-xl text-[#D4D4D8]">
@@ -115,7 +119,7 @@ export default function LandingPage() {
       {/* Companies Showcase */}
       <section className="bg-background px-20 py-20">
         <div className="flex flex-col items-center text-center">
-          <h2 className="mb-6 text-[48px] font-bold text-white drop-shadow-[0_0_30px_rgba(99,102,241,0.25)]">
+          <h2 className="mb-6 text-[48px] font-bold text-white">
             覆盖热门科技公司
           </h2>
           <p className="mb-12 max-w-2xl text-xl text-[#A1A1AA]">
@@ -146,7 +150,7 @@ export default function LandingPage() {
       {/* CTA Section */}
       <section className="bg-background px-20 py-20">
         <div className="flex flex-col items-center text-center">
-          <h2 className="mb-8 text-[48px] font-bold text-white drop-shadow-[0_0_30px_rgba(99,102,241,0.25)]">
+          <h2 className="mb-8 text-[48px] font-bold text-white">
             准备好探索财报洞察了吗？
           </h2>
           <Link

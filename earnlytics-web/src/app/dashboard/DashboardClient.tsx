@@ -5,10 +5,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { TrendingUp, TrendingDown, AlertCircle, Target } from "lucide-react";
+import { TrendingUp, TrendingDown, AlertCircle, Target, Sparkles, Building2, Calendar } from "lucide-react";
+import { StatCardSkeleton, CardSkeleton } from "@/components/ui/skeleton";
+import { NoDataState } from "@/components/ui/empty-state";
 import type { Company } from "@/types/database";
 import CompaniesList from "../companies/CompaniesList";
 import CalendarClient from "../calendar/CalendarClient";
+import { useState, useEffect } from "react";
 
 interface InvestmentRecommendation {
   symbol: string;
@@ -28,115 +31,208 @@ interface DashboardClientProps {
 }
 
 function getRatingConfig(rating: string) {
-  const configs: Record<string, { label: string; color: string; bgColor: string; icon: typeof TrendingUp }> = {
-    strong_buy: { label: "强烈买入", color: "text-emerald-700", bgColor: "bg-emerald-50", icon: TrendingUp },
-    buy: { label: "买入", color: "text-green-700", bgColor: "bg-green-50", icon: TrendingUp },
-    hold: { label: "持有", color: "text-amber-700", bgColor: "bg-amber-50", icon: AlertCircle },
-    sell: { label: "卖出", color: "text-orange-700", bgColor: "bg-orange-50", icon: TrendingDown },
-    strong_sell: { label: "强烈卖出", color: "text-red-700", bgColor: "bg-red-50", icon: TrendingDown },
+  const configs: Record<string, { label: string; color: string; bgColor: string; borderColor: string }> = {
+    strong_buy: { 
+      label: "强烈买入", 
+      color: "text-emerald-400", 
+      bgColor: "bg-emerald-500/10",
+      borderColor: "border-emerald-500/30"
+    },
+    buy: { 
+      label: "买入", 
+      color: "text-green-400", 
+      bgColor: "bg-green-500/10",
+      borderColor: "border-green-500/30"
+    },
+    hold: { 
+      label: "持有", 
+      color: "text-amber-400", 
+      bgColor: "bg-amber-500/10",
+      borderColor: "border-amber-500/30"
+    },
+    sell: { 
+      label: "卖出", 
+      color: "text-orange-400", 
+      bgColor: "bg-orange-500/10",
+      borderColor: "border-orange-500/30"
+    },
+    strong_sell: { 
+      label: "强烈卖出", 
+      color: "text-red-400", 
+      bgColor: "bg-red-500/10",
+      borderColor: "border-red-500/30"
+    },
   };
   return configs[rating] || configs.hold;
 }
 
+function getConfidenceLabel(confidence: string): string {
+  const labels: Record<string, string> = {
+    high: "高置信度",
+    medium: "中等置信度",
+    low: "低置信度",
+  };
+  return labels[confidence] || "中等置信度";
+}
+
+function StatCard({ 
+  title, 
+  value, 
+  subtitle, 
+  trend,
+  icon: Icon 
+}: { 
+  title: string; 
+  value: string | number; 
+  subtitle: string;
+  trend?: "up" | "down" | "neutral";
+  icon: typeof Building2;
+}) {
+  return (
+    <Card className="bg-[#111111] border-[#27272A] hover:border-[#3F3F46] transition-colors">
+      <CardHeader className="pb-2">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-sm font-medium text-[#A1A1AA]">
+            {title}
+          </CardTitle>
+          <div className="p-2 bg-[#6366F1]/10 rounded-lg">
+            <Icon className="h-4 w-4 text-[#6366F1]" />
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="flex items-baseline gap-2">
+          <span className="text-2xl font-bold text-white">{value}</span>
+          {trend && (
+            <span className={`text-sm ${trend === "up" ? "text-emerald-400" : trend === "down" ? "text-red-400" : "text-amber-400"}`}>
+              {trend === "up" ? "↑" : trend === "down" ? "↓" : "→"}
+            </span>
+          )}
+        </div>
+        <p className="text-xs text-[#71717A]">{subtitle}</p>
+      </CardContent>
+    </Card>
+  );
+}
+
 function OverviewTab({ recommendations }: { recommendations: InvestmentRecommendation[] }) {
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setLoading(false), 500);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const buyCount = recommendations.filter(r => r.rating === 'buy' || r.rating === 'strong_buy').length;
+  const sellCount = recommendations.filter(r => r.rating === 'sell' || r.rating === 'strong_sell').length;
+  const holdCount = recommendations.filter(r => r.rating === 'hold').length;
+
+  if (loading) {
+    return (
+      <>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          <StatCardSkeleton />
+          <StatCardSkeleton />
+          <StatCardSkeleton />
+        </div>
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+          <CardSkeleton />
+          <CardSkeleton />
+        </div>
+      </>
+    );
+  }
+
+  if (recommendations.length === 0) {
+    return (
+      <NoDataState 
+        title="暂无投资建议"
+        description="请先运行分析脚本生成投资建议数据"
+      />
+    );
+  }
+
   return (
     <>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              今日分析覆盖
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">30</div>
-            <p className="text-xs text-muted-foreground">家科技公司</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              买入评级
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-emerald-600">
-              {recommendations.filter(r => r.rating === 'buy' || r.rating === 'strong_buy').length}
-            </div>
-            <p className="text-xs text-muted-foreground">家公司</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              最新更新
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">
-              {recommendations.length > 0 
-                ? new Date(recommendations[0].updatedAt).toLocaleDateString('zh-CN')
-                : '-'
-              }
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {recommendations.length > 0 
-                ? new Date(recommendations[0].updatedAt).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
-                : ''
-              }
-            </p>
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <StatCard
+          title="分析覆盖"
+          value="30"
+          subtitle="家科技公司"
+          icon={Building2}
+          trend="up"
+        />
+        <StatCard
+          title="买入评级"
+          value={buyCount}
+          subtitle="家公司"
+          icon={TrendingUp}
+          trend="up"
+        />
+        <StatCard
+          title="卖出评级"
+          value={sellCount}
+          subtitle="家公司"
+          icon={TrendingDown}
+          trend="down"
+        />
+        <StatCard
+          title="持有评级"
+          value={holdCount}
+          subtitle="家公司"
+          icon={AlertCircle}
+          trend="neutral"
+        />
       </div>
 
       <div className="mb-6">
-        <h2 className="text-xl font-semibold mb-4">最新投资建议</h2>
+        <h2 className="text-xl font-semibold text-white mb-4">最新投资建议</h2>
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-          {recommendations.map((rec) => {
+          {recommendations.slice(0, 6).map((rec) => {
             const config = getRatingConfig(rec.rating);
-            const RatingIcon = config.icon;
             const upside = rec.currentPrice > 0 
               ? ((rec.targetPriceHigh - rec.currentPrice) / rec.currentPrice * 100)
               : 0;
 
             return (
-              <Card key={rec.symbol} className="hover:shadow-md transition-shadow">
-                <CardContent className="p-6">
+              <Card key={rec.symbol} className="bg-[#111111] border-[#27272A] hover:border-[#3F3F46] transition-colors">
+                <CardContent className="p-5">
                   <div className="flex items-start justify-between mb-4">
                     <div>
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="text-2xl font-bold">{rec.symbol}</span>
-                        <span className="text-sm text-muted-foreground">{rec.name}</span>
+                        <span className="text-xl font-bold text-white">{rec.symbol}</span>
+                        <span className="text-sm text-[#71717A]">{rec.name}</span>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Badge className={config.bgColor + " " + config.color}>
-                          <RatingIcon className="h-3 w-3 mr-1" />
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <Badge className={`${config.bgColor} ${config.color} border-0`}>
                           {config.label}
                         </Badge>
-                        <Badge variant="outline">
-                          {rec.confidence === 'high' ? '高置信度' : rec.confidence === 'medium' ? '中等置信度' : '低置信度'}
+                        <Badge variant="outline" className="text-[#71717A] border-[#3F3F46]">
+                          {getConfidenceLabel(rec.confidence)}
                         </Badge>
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="text-lg font-semibold">${rec.currentPrice.toFixed(2)}</div>
-                      <div className="text-xs text-muted-foreground">当前价格</div>
+                      <div className="text-lg font-semibold text-white">${rec.currentPrice.toFixed(2)}</div>
+                      <div className="text-xs text-[#71717A]">当前价格</div>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-4 mb-4 p-3 bg-muted/50 rounded-lg">
-                    <Target className="h-5 w-5 text-primary" />
+                  <div className="flex items-center gap-4 mb-4 p-3 bg-[#1A1A1A] rounded-lg">
+                    <div className="p-2 bg-[#6366F1]/10 rounded-lg">
+                      <Target className="h-4 w-4 text-[#6366F1]" />
+                    </div>
                     <div className="flex-1">
-                      <div className="text-sm text-muted-foreground">目标价区间</div>
-                      <div className="font-semibold">
+                      <div className="text-xs text-[#71717A]">目标价区间</div>
+                      <div className="font-semibold text-white">
                         ${rec.targetPriceLow.toFixed(2)} - ${rec.targetPriceHigh.toFixed(2)}
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className={`text-sm font-medium ${upside >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+                      <div className={`text-sm font-medium ${upside >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                         {upside >= 0 ? '+' : ''}{upside.toFixed(1)}%
                       </div>
-                      <div className="text-xs text-muted-foreground">预期涨幅</div>
+                      <div className="text-xs text-[#71717A]">预期涨幅</div>
                     </div>
                   </div>
 
@@ -144,22 +240,22 @@ function OverviewTab({ recommendations }: { recommendations: InvestmentRecommend
                     <div className="space-y-2 mb-4">
                       {rec.keyPoints.slice(0, 2).map((point, idx) => (
                         <div key={idx} className="flex items-start gap-2 text-sm">
-                          <span className="text-primary mt-1">•</span>
-                          <span className="text-muted-foreground line-clamp-2">{point}</span>
+                          <span className="text-[#6366F1] mt-1">•</span>
+                          <span className="text-[#A1A1AA] line-clamp-2">{point}</span>
                         </div>
                       ))}
                     </div>
                   )}
 
                   <div className="flex gap-2">
-                    <Button asChild className="flex-1">
-                      <Link href={`/analysis/${rec.symbol}`}>
+                    <Button asChild className="flex-1 bg-[#6366F1] hover:bg-[#818CF8]">
+                      <Link href={`/analysis/${rec.symbol.toLowerCase()}`}>
                         深度分析
                       </Link>
                     </Button>
-                    <Button variant="outline" asChild>
-                      <Link href={`/earnings/${rec.symbol}`}>
-                        财报详情
+                    <Button variant="outline" asChild className="border-[#3F3F46] text-[#A1A1AA] hover:text-white hover:bg-[#27272A]">
+                      <Link href={`/earnings/${rec.symbol.toLowerCase()}`}>
+                        财报
                       </Link>
                     </Button>
                   </div>
@@ -169,19 +265,6 @@ function OverviewTab({ recommendations }: { recommendations: InvestmentRecommend
           })}
         </div>
       </div>
-
-      {recommendations.length === 0 && (
-        <Card className="p-12 text-center">
-          <AlertCircle className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
-          <h3 className="text-lg font-medium mb-2">暂无投资建议</h3>
-          <p className="text-muted-foreground mb-4">
-            请先运行分析脚本生成投资建议数据
-          </p>
-          <Button asChild>
-            <Link href="/companies">浏览公司列表</Link>
-          </Button>
-        </Card>
-      )}
     </>
   );
 }
@@ -200,10 +283,19 @@ function CalendarTab() {
 export default function DashboardClient({ initialRecommendations, companies }: DashboardClientProps) {
   return (
     <Tabs defaultValue="overview" className="w-full">
-      <TabsList className="mb-6">
-        <TabsTrigger value="overview">概览</TabsTrigger>
-        <TabsTrigger value="companies">公司</TabsTrigger>
-        <TabsTrigger value="calendar">日历</TabsTrigger>
+      <TabsList className="mb-6 bg-[#1A1A1A] border border-[#27272A]">
+        <TabsTrigger value="overview" className="data-[state=active]:bg-[#27272A] data-[state=active]:text-white">
+          <Sparkles className="h-4 w-4 mr-2" />
+          概览
+        </TabsTrigger>
+        <TabsTrigger value="companies" className="data-[state=active]:bg-[#27272A] data-[state=active]:text-white">
+          <Building2 className="h-4 w-4 mr-2" />
+          公司
+        </TabsTrigger>
+        <TabsTrigger value="calendar" className="data-[state=active]:bg-[#27272A] data-[state=active]:text-white">
+          <Calendar className="h-4 w-4 mr-2" />
+          日历
+        </TabsTrigger>
       </TabsList>
 
       <TabsContent value="overview">

@@ -163,6 +163,7 @@ export default function EarningsPage({ params }: Props) {
 
   const trendData = validEarningsHistory.map(e => ({
     quarter: `Q${e.fiscal_quarter} FY${e.fiscal_year.toString().slice(2)}`,
+    date: e.report_date,
     revenue: e.revenue ?? 0,
     eps: e.eps ?? 0,
     revenueGrowth: e.revenue_yoy_growth ?? 0,
@@ -309,7 +310,7 @@ export default function EarningsPage({ params }: Props) {
                 ))}
               </div>
 
-              <EarningsTrendChart data={trendData} type={activeTab} />
+              <EarningsTrendChart data={trendData} defaultType={activeTab} />
             </div>
           )}
 

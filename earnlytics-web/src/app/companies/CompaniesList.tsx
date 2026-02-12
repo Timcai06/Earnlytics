@@ -1,57 +1,31 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import type { Company } from "@/types/database";
+import { useState, useMemo, useEffect } from "react";
+import type { CompanyWithEarnings } from "./page";
+import { SearchIcon, LayoutGridIcon, ListIcon, ArrowUpDownIcon } from "@/components/icons";
+import { CompanyCardSkeleton } from "@/components/ui/skeleton";
+import { SearchEmptyState, NoDataState } from "@/components/ui/empty-state";
 
 interface CompaniesListProps {
-  companies: Company[];
+  companies: CompanyWithEarnings[];
 }
 
+type ViewMode = "grid" | "list";
+type SortOption = "symbol-asc" | "symbol-desc" | "date-desc" | "date-asc";
+
 const getSectorStyle = (sector: string | null) => {
-  const styles: Record<string, { border: string; shadow: string; animation: string }> = {
-    "芯片": {
-      border: "border-[#3B82F6]",
-      shadow: "shadow-[0_0_20px_rgba(59,130,246,0.4)]",
-      animation: "breathe-blue 3s ease-in-out infinite",
-    },
-    "软件": {
-      border: "border-[#10B981]",
-      shadow: "shadow-[0_0_20px_rgba(16,185,129,0.4)]",
-      animation: "breathe-emerald 3s ease-in-out infinite",
-    },
-    "电商": {
-      border: "border-[#F59E0B]",
-      shadow: "shadow-[0_0_20px_rgba(245,158,11,0.4)]",
-      animation: "breathe-amber 3s ease-in-out infinite",
-    },
-    "社交媒体": {
-      border: "border-[#8B5CF6]",
-      shadow: "shadow-[0_0_20px_rgba(139,92,246,0.4)]",
-      animation: "breathe-violet 3s ease-in-out infinite",
-    },
-    "消费电子": {
-      border: "border-[#EC4899]",
-      shadow: "shadow-[0_0_20px_rgba(236,72,153,0.4)]",
-      animation: "breathe-pink 3s ease-in-out infinite",
-    },
-    "流媒体": {
-      border: "border-[#EF4444]",
-      shadow: "shadow-[0_0_20px_rgba(239,68,68,0.4)]",
-      animation: "breathe-red 3s ease-in-out infinite",
-    },
-    "汽车": {
-      border: "border-[#06B6D4]",
-      shadow: "shadow-[0_0_20px_rgba(6,182,212,0.4)]",
-      animation: "breathe-cyan 3s ease-in-out infinite",
-    },
+  const styles: Record<string, { color: string; bgColor: string }> = {
+    "芯片": { color: "#3B82F6", bgColor: "bg-blue-500/10" },
+    "软件": { color: "#10B981", bgColor: "bg-emerald-500/10" },
+    "电商": { color: "#F59E0B", bgColor: "bg-amber-500/10" },
+    "社交媒体": { color: "#8B5CF6", bgColor: "bg-violet-500/10" },
+    "消费电子": { color: "#EC4899", bgColor: "bg-pink-500/10" },
+    "流媒体": { color: "#EF4444", bgColor: "bg-red-500/10" },
+    "汽车": { color: "#06B6D4", bgColor: "bg-cyan-500/10" },
   };
-  
-  return styles[sector || ""] || {
-    border: "border-[#6366F1]",
-    shadow: "shadow-[0_0_20px_rgba(99,102,241,0.4)]",
-    animation: "breathe-indigo 3s ease-in-out infinite",
-  };
+
+  return styles[sector || ""] || { color: "#6366F1", bgColor: "bg-[#6366F1]/10" };
 };
 
 const filters = [
@@ -65,62 +39,105 @@ const filters = [
   { label: "汽车", value: "汽车" },
 ];
 
-const breathingStyles = `
-  @keyframes breathe-blue {
-    0%, 100% { box-shadow: 0 0 20px rgba(59,130,246,0.3), 0 0 40px rgba(59,130,246,0.1); border-color: rgba(59,130,246,0.7); }
-    50% { box-shadow: 0 0 35px rgba(59,130,246,0.6), 0 0 70px rgba(59,130,246,0.25); border-color: rgba(59,130,246,1); }
-  }
-  @keyframes breathe-emerald {
-    0%, 100% { box-shadow: 0 0 20px rgba(16,185,129,0.3), 0 0 40px rgba(16,185,129,0.1); border-color: rgba(16,185,129,0.7); }
-    50% { box-shadow: 0 0 35px rgba(16,185,129,0.6), 0 0 70px rgba(16,185,129,0.25); border-color: rgba(16,185,129,1); }
-  }
-  @keyframes breathe-amber {
-    0%, 100% { box-shadow: 0 0 20px rgba(245,158,11,0.3), 0 0 40px rgba(245,158,11,0.1); border-color: rgba(245,158,11,0.7); }
-    50% { box-shadow: 0 0 35px rgba(245,158,11,0.6), 0 0 70px rgba(245,158,11,0.25); border-color: rgba(245,158,11,1); }
-  }
-  @keyframes breathe-violet {
-    0%, 100% { box-shadow: 0 0 20px rgba(139,92,246,0.3), 0 0 40px rgba(139,92,246,0.1); border-color: rgba(139,92,246,0.7); }
-    50% { box-shadow: 0 0 35px rgba(139,92,246,0.6), 0 0 70px rgba(139,92,246,0.25); border-color: rgba(139,92,246,1); }
-  }
-  @keyframes breathe-pink {
-    0%, 100% { box-shadow: 0 0 20px rgba(236,72,153,0.3), 0 0 40px rgba(236,72,153,0.1); border-color: rgba(236,72,153,0.7); }
-    50% { box-shadow: 0 0 35px rgba(236,72,153,0.6), 0 0 70px rgba(236,72,153,0.25); border-color: rgba(236,72,153,1); }
-  }
-  @keyframes breathe-red {
-    0%, 100% { box-shadow: 0 0 20px rgba(239,68,68,0.3), 0 0 40px rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.7); }
-    50% { box-shadow: 0 0 35px rgba(239,68,68,0.6), 0 0 70px rgba(239,68,68,0.25); border-color: rgba(239,68,68,1); }
-  }
-  @keyframes breathe-cyan {
-    0%, 100% { box-shadow: 0 0 20px rgba(6,182,212,0.3), 0 0 40px rgba(6,182,212,0.1); border-color: rgba(6,182,212,0.7); }
-    50% { box-shadow: 0 0 35px rgba(6,182,212,0.6), 0 0 70px rgba(6,182,212,0.25); border-color: rgba(6,182,212,1); }
-  }
-  @keyframes breathe-indigo {
-    0%, 100% { box-shadow: 0 0 20px rgba(99,102,241,0.3), 0 0 40px rgba(99,102,241,0.1); border-color: rgba(99,102,241,0.7); }
-    50% { box-shadow: 0 0 35px rgba(99,102,241,0.6), 0 0 70px rgba(99,102,241,0.25); border-color: rgba(99,102,241,1); }
-  }
-  .breathe-blue { animation: breathe-blue 3s ease-in-out infinite; }
-  .breathe-emerald { animation: breathe-emerald 3s ease-in-out infinite; }
-  .breathe-amber { animation: breathe-amber 3s ease-in-out infinite; }
-  .breathe-violet { animation: breathe-violet 3s ease-in-out infinite; }
-  .breathe-pink { animation: breathe-pink 3s ease-in-out infinite; }
-  .breathe-red { animation: breathe-red 3s ease-in-out infinite; }
-  .breathe-cyan { animation: breathe-cyan 3s ease-in-out infinite; }
-  .breathe-indigo { animation: breathe-indigo 3s ease-in-out infinite; }
-`;
+const sortOptions = [
+  { label: "代码 A-Z", value: "symbol-asc" },
+  { label: "代码 Z-A", value: "symbol-desc" },
+  { label: "财报日期 (新→旧)", value: "date-desc" },
+  { label: "财报日期 (旧→新)", value: "date-asc" },
+];
+
+function formatEarningDate(dateStr: string | null): string {
+  if (!dateStr) return "暂无数据";
+  const date = new Date(dateStr);
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+}
 
 export default function CompaniesList({ companies }: CompaniesListProps) {
   const [activeFilter, setActiveFilter] = useState("全部");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState<SortOption>("symbol-asc");
+  const [viewMode, setViewMode] = useState<ViewMode>("grid");
+  const [isLoading, setIsLoading] = useState(true);
 
-  const filteredCompanies =
-    activeFilter === "全部"
-      ? companies
-      : companies.filter((c) => c.sector === activeFilter);
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 300);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const filteredAndSortedCompanies = useMemo(() => {
+    let result = [...companies];
+
+    if (activeFilter !== "全部") {
+      result = result.filter((c) => c.sector === activeFilter);
+    }
+
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(
+        (c) =>
+          c.name.toLowerCase().includes(query) ||
+          c.symbol.toLowerCase().includes(query)
+      );
+    }
+
+    result.sort((a, b) => {
+      switch (sortBy) {
+        case "symbol-asc":
+          return a.symbol.localeCompare(b.symbol);
+        case "symbol-desc":
+          return b.symbol.localeCompare(a.symbol);
+        case "date-desc":
+          const dateA = a.latestEarning?.report_date || "";
+          const dateB = b.latestEarning?.report_date || "";
+          return dateB.localeCompare(dateA);
+        case "date-asc":
+          const dateA2 = a.latestEarning?.report_date || "";
+          const dateB2 = b.latestEarning?.report_date || "";
+          return dateA2.localeCompare(dateB2);
+        default:
+          return 0;
+      }
+    });
+
+    return result;
+  }, [companies, activeFilter, searchQuery, sortBy]);
+
+  const clearFilters = () => {
+    setActiveFilter("全部");
+    setSearchQuery("");
+    setSortBy("symbol-asc");
+  };
+
+  if (companies.length === 0) {
+    return (
+      <div className="flex flex-col">
+        <section className="bg-background px-4 py-20 sm:px-6 lg:px-20">
+          <div className="flex flex-col items-center text-center">
+            <h1 className="mb-4 text-3xl font-bold text-white sm:text-[40px]">
+              科技公司目录
+            </h1>
+            <p className="text-lg text-[#A1A1AA]">
+              探索我们覆盖的美国科技巨头
+            </p>
+          </div>
+        </section>
+        <section className="bg-background px-4 pb-24 sm:px-6 lg:px-20">
+          <div className="mx-auto max-w-6xl">
+            <NoDataState 
+              title="暂无公司数据" 
+              description="数据库中还没有公司信息，请先运行数据导入脚本"
+            />
+          </div>
+        </section>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col">
       <section className="bg-background px-4 py-20 sm:px-6 lg:px-20">
         <div className="flex flex-col items-center text-center">
-          <h1 className="mb-4 text-3xl font-bold text-white drop-shadow-[0_0_30px_rgba(99,102,241,0.25)] sm:text-[40px]">
+          <h1 className="mb-4 text-3xl font-bold text-white sm:text-[40px]">
             科技公司目录
           </h1>
           <p className="text-lg text-[#A1A1AA]">
@@ -130,18 +147,73 @@ export default function CompaniesList({ companies }: CompaniesListProps) {
       </section>
 
       <section className="bg-background px-4 pb-6 sm:px-6 lg:px-20">
-        <div className="mx-auto max-w-6xl">
+        <div className="mx-auto max-w-6xl space-y-4">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="relative flex-1 max-w-md">
+              <SearchIcon className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-[#64748B]" />
+              <input
+                type="text"
+                placeholder="搜索公司名称或股票代码..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="h-11 w-full rounded-lg border border-[#3F3F46] bg-[#111111] pl-10 pr-4 text-sm text-white placeholder:text-[#64748B] focus:border-[#6366F1] focus:outline-none"
+              />
+            </div>
+
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 rounded-lg border border-[#3F3F46] bg-[#111111] p-1">
+                <button
+                  onClick={() => setViewMode("grid")}
+                  className={`rounded-md p-2 transition-colors ${
+                    viewMode === "grid"
+                      ? "bg-[#6366F1] text-white"
+                      : "text-[#64748B] hover:text-white"
+                  }`}
+                  title="网格视图"
+                >
+                  <LayoutGridIcon className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={() => setViewMode("list")}
+                  className={`rounded-md p-2 transition-colors ${
+                    viewMode === "list"
+                      ? "bg-[#6366F1] text-white"
+                      : "text-[#64748B] hover:text-white"
+                  }`}
+                  title="列表视图"
+                >
+                  <ListIcon className="h-4 w-4" />
+                </button>
+              </div>
+
+              <div className="relative">
+                <ArrowUpDownIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#64748B]" />
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as SortOption)}
+                  className="h-10 appearance-none rounded-lg border border-[#3F3F46] bg-[#111111] pl-9 pr-8 text-sm text-white focus:border-[#6366F1] focus:outline-none"
+                >
+                  {sortOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+
           <div className="flex flex-wrap items-center gap-4">
             <span className="text-sm font-medium text-[#A1A1AA]">行业筛选：</span>
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap gap-2">
               {filters.map((filter) => (
                 <button
                   key={filter.value}
                   onClick={() => setActiveFilter(filter.value)}
-                  className={`rounded-lg px-4 py-2 text-sm font-medium transition-all ${
+                  className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-all ${
                     activeFilter === filter.value
-                      ? "bg-primary text-white"
-                      : "border border-[#6366F1] bg-[rgba(99,102,241,0.1)] text-[#E0E7FF] hover:bg-[rgba(99,102,241,0.2)]"
+                      ? "bg-[#6366F1] text-white"
+                      : "border border-[#6366F1] bg-[#6366F1]/10 text-[#E0E7FF] hover:bg-[#6366F1]/20"
                   }`}
                 >
                   {filter.label}
@@ -149,57 +221,193 @@ export default function CompaniesList({ companies }: CompaniesListProps) {
               ))}
             </div>
           </div>
-          <p className="mt-2 text-sm text-[#64748B]">
-            显示 {filteredCompanies.length} 家公司
+
+          <p className="text-sm text-[#64748B]">
+            显示 {filteredAndSortedCompanies.length} / {companies.length} 家公司
           </p>
         </div>
       </section>
 
-      <style dangerouslySetInnerHTML={{ __html: breathingStyles }} />
-      
       <section className="bg-background px-4 pb-24 sm:px-6 lg:px-20">
         <div className="mx-auto max-w-6xl">
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            {filteredCompanies.map((company) => {
-              const style = getSectorStyle(company.sector);
-              return (
-                <div
-                  key={company.symbol}
-                  className={`rounded-2xl border-2 ${style.border} bg-surface-secondary p-6 sm:p-8 ${style.animation}`}
-                >
-                  <div className="mb-4 flex items-start gap-4">
-                    <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-2xl bg-black text-3xl sm:h-20 sm:w-20 sm:text-4xl">
-                      {company.symbol[0]}
+          {isLoading ? (
+            viewMode === "grid" ? (
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <CompanyCardSkeleton key={i} />
+                ))}
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <CompanyCardSkeleton key={i} className="h-20" />
+                ))}
+              </div>
+            )
+          ) : filteredAndSortedCompanies.length === 0 ? (
+            <SearchEmptyState 
+              query={searchQuery}
+              onClearAction={clearFilters}
+            />
+          ) : viewMode === "grid" ? (
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              {filteredAndSortedCompanies.map((company) => {
+                const style = getSectorStyle(company.sector);
+                const hasAnalyzed = company.latestEarning?.is_analyzed;
+                const epsSurprise = company.latestEarning?.eps_surprise;
+
+                return (
+                  <div
+                    key={company.symbol}
+                    className="rounded-2xl border-2 bg-[#111111] p-6 transition-all hover:bg-[#1A1A1A]"
+                    style={{ borderColor: style.color }}
+                  >
+                    <div className="mb-4 flex items-start gap-4">
+                      <div 
+                        className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-2xl text-2xl font-bold text-white sm:h-20 sm:w-20 sm:text-3xl"
+                        style={{ backgroundColor: style.color + "20", color: style.color }}
+                      >
+                        {company.symbol[0]}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-start justify-between gap-2">
+                          <h3 className="truncate text-xl font-bold text-white sm:text-2xl">
+                            {company.name}
+                          </h3>
+                          {hasAnalyzed && (
+                            <span className="flex-shrink-0 rounded-full bg-emerald-500/15 px-2 py-0.5 text-xs font-medium text-emerald-400">
+                              AI分析
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-sm text-[#64748B]">
+                          NASDAQ: {company.symbol}
+                        </p>
+                        <span 
+                          className={`inline-block mt-1 rounded-full px-2 py-0.5 text-xs ${style.bgColor}`}
+                          style={{ color: style.color }}
+                        >
+                          {company.sector || "科技"}
+                        </span>
+                      </div>
                     </div>
-                    <div className="min-w-0 flex-1">
-                      <h3 className="truncate text-xl font-bold text-white sm:text-2xl">
-                        {company.name}
-                      </h3>
-                      <p className="text-sm text-[#64748B]">NASDAQ: {company.symbol}</p>
-                      <p className="text-sm text-[#64748B]">
-                        行业：{company.sector || "科技"}
-                      </p>
+
+                    <div className="mb-4 h-px bg-[#27272A]" />
+
+                    <div className="mb-4 grid grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-xs text-[#64748B]">最新财报</p>
+                        <p className="text-sm font-medium text-white">
+                          {company.latestEarning
+                            ? `Q${company.latestEarning.fiscal_quarter} FY${company.latestEarning.fiscal_year}`
+                            : "暂无数据"}
+                        </p>
+                        <p className="text-xs text-[#64748B]">
+                          {formatEarningDate(company.latestEarning?.report_date || null)}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-[#64748B]">EPS</p>
+                        <p className="text-sm font-medium text-white">
+                          {company.latestEarning?.eps
+                            ? `$${company.latestEarning.eps}`
+                            : "N/A"}
+                        </p>
+                        {epsSurprise !== null && epsSurprise !== undefined && (
+                          <p
+                            className={`text-xs ${
+                              epsSurprise > 0 ? "text-emerald-400" : "text-red-400"
+                            }`}
+                          >
+                            {epsSurprise > 0 ? "+" : ""}
+                            {epsSurprise}
+                          </p>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                  <div className="mb-4 h-px bg-border" />
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-xs text-[#64748B]">最新财报</p>
-                      <p className="text-sm font-semibold text-white sm:text-base">
-                        点击查看详情
-                      </p>
-                    </div>
+
                     <Link
                       href={`/earnings/${company.symbol.toLowerCase()}`}
-                      className="rounded-lg border border-[#6366F1] bg-[rgba(99,102,241,0.15)] px-4 py-2 text-sm font-semibold text-[#818CF8] sm:px-5 sm:py-2.5"
+                      className="block w-full rounded-lg border border-[#6366F1] bg-[#6366F1]/15 py-2.5 text-center text-sm font-semibold text-[#818CF8] transition-colors hover:bg-[#6366F1]/25"
                     >
                       查看财报 →
                     </Link>
                   </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {filteredAndSortedCompanies.map((company) => {
+                const style = getSectorStyle(company.sector);
+                const hasAnalyzed = company.latestEarning?.is_analyzed;
+                const epsSurprise = company.latestEarning?.eps_surprise;
+
+                return (
+                  <div
+                    key={company.symbol}
+                    className="flex items-center gap-4 rounded-xl border-2 bg-[#111111] p-4 transition-colors hover:bg-[#1A1A1A]"
+                    style={{ borderColor: style.color }}
+                  >
+                    <div 
+                      className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl text-xl font-bold text-white"
+                      style={{ backgroundColor: style.color + "20", color: style.color }}
+                    >
+                      {company.symbol[0]}
+                    </div>
+
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-bold text-white">
+                          {company.name}
+                        </h3>
+                        <span className="text-sm text-[#64748B]">
+                          {company.symbol}
+                        </span>
+                        {hasAnalyzed && (
+                          <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-xs font-medium text-emerald-400">
+                            AI
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm text-[#64748B]">
+                        <span style={{ color: style.color }}>{company.sector || "科技"}</span>
+                        {company.latestEarning
+                          ? ` · Q${company.latestEarning.fiscal_quarter} FY${company.latestEarning.fiscal_year} · ${formatEarningDate(company.latestEarning.report_date)}`
+                          : " · 暂无财报数据"}
+                      </p>
+                    </div>
+
+                    <div className="hidden flex-shrink-0 text-right sm:block">
+                      <p className="text-sm text-[#64748B]">EPS</p>
+                      <p className="font-medium text-white">
+                        {company.latestEarning?.eps
+                          ? `$${company.latestEarning.eps}`
+                          : "N/A"}
+                      </p>
+                      {epsSurprise !== null && epsSurprise !== undefined && (
+                        <p
+                          className={`text-xs ${
+                            epsSurprise > 0 ? "text-emerald-400" : "text-red-400"
+                          }`}
+                        >
+                          {epsSurprise > 0 ? "+" : ""}
+                          {epsSurprise}
+                        </p>
+                      )}
+                    </div>
+
+                    <Link
+                      href={`/earnings/${company.symbol.toLowerCase()}`}
+                      className="flex-shrink-0 rounded-lg border border-[#6366F1] bg-[#6366F1]/15 px-4 py-2 text-sm font-semibold text-[#818CF8] transition-colors hover:bg-[#6366F1]/25"
+                    >
+                      查看 →
+                    </Link>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       </section>
     </div>
