@@ -50,11 +50,11 @@ function formatCurrency(value: number | null): string {
 function getSentimentStyle(sentiment: string | null) {
   switch (sentiment) {
     case "positive":
-      return { bg: "bg-[rgba(34,197,94,0.15)]", text: "text-[#16A34A]", label: "积极" };
+      return { bg: "bg-success-light", text: "text-success", label: "积极" };
     case "negative":
-      return { bg: "bg-[rgba(239,68,68,0.15)]", text: "text-[#EF4444]", label: "消极" };
+      return { bg: "bg-error-light", text: "text-error", label: "消极" };
     default:
-      return { bg: "bg-[rgba(161,161,170,0.15)]", text: "text-[#A1A1AA]", label: "中性" };
+      return { bg: "bg-surface-secondary", text: "text-text-secondary", label: "中性" };
   }
 }
 
@@ -78,13 +78,13 @@ function formatRelativeTime(dateStr: string | null): string {
 function getDataSourceLabel(source: string | null): { label: string; color: string } {
   switch (source) {
     case "fmp":
-      return { label: "FMP API", color: "text-[#818CF8]" };
+      return { label: "FMP API", color: "text-primary-hover" };
     case "sec":
-      return { label: "SEC EDGAR", color: "text-[#22C55E]" };
+      return { label: "SEC EDGAR", color: "text-success" };
     case "sample":
-      return { label: "样本数据", color: "text-[#A1A1AA]" };
+      return { label: "样本数据", color: "text-text-secondary" };
     default:
-      return { label: "未知来源", color: "text-[#A1A1AA]" };
+      return { label: "未知来源", color: "text-text-secondary" };
   }
 }
 
@@ -173,8 +173,8 @@ export default function EarningsPage({ params }: Props) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="text-center">
-          <LoaderIcon className="mx-auto mb-4 h-10 w-10 animate-spin text-[#818CF8]" />
-          <p className="text-[#A1A1AA]">加载中...</p>
+          <LoaderIcon className="mx-auto mb-4 h-10 w-10 animate-spin text-primary-hover" />
+          <p className="text-text-secondary">加载中...</p>
         </div>
       </div>
     );
@@ -184,9 +184,9 @@ export default function EarningsPage({ params }: Props) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="text-center">
-          <XCircleIcon className="mx-auto mb-4 h-10 w-10 text-[#EF4444]" />
-          <p className="text-[#A1A1AA]">{error || '未找到财报数据'}</p>
-          <Link href="/companies" className="mt-4 inline-block text-[#818CF8]">
+          <XCircleIcon className="mx-auto mb-4 h-10 w-10 text-error" />
+          <p className="text-text-secondary">{error || '未找到财报数据'}</p>
+          <Link href="/companies" className="mt-4 inline-block text-primary-hover">
             ← 返回公司列表
           </Link>
         </div>
@@ -211,29 +211,29 @@ export default function EarningsPage({ params }: Props) {
               <div className="flex flex-wrap items-center gap-3">
                 <h1 className="text-2xl font-bold text-white sm:text-3xl">{company.name}</h1>
                 {!isLatestEarning && (
-                  <span className="rounded-lg bg-[#F59E0B]/20 px-2 py-0.5 text-xs text-[#F59E0B]">
+                  <span className="rounded-lg bg-warning-light px-2 py-0.5 text-xs text-warning">
                     历史财报
                   </span>
                 )}
               </div>
-              <div className="mt-2 flex flex-wrap gap-3 text-sm text-[#A1A1AA] sm:gap-5">
+              <div className="mt-2 flex flex-wrap gap-3 text-sm text-text-secondary sm:gap-5">
                 <span>{company.symbol}</span>
                 <span>Q{earnings.fiscal_quarter} FY{earnings.fiscal_year}</span>
                 <span>发布日期: {earnings.report_date}</span>
               </div>
               <div className="mt-3 flex flex-wrap items-center gap-3">
-                <div className="flex items-center gap-1.5 rounded-lg bg-[#27272A] px-2.5 py-1">
-                  <DatabaseIcon className="h-3.5 w-3.5 text-[#818CF8]" />
-                  <span className="text-xs text-[#A1A1AA]">数据来源: <span className={dataSource.color}>{dataSource.label}</span></span>
+                <div className="flex items-center gap-1.5 rounded-lg bg-surface-secondary px-2.5 py-1">
+                  <DatabaseIcon className="h-3.5 w-3.5 text-primary-hover" />
+                  <span className="text-xs text-text-secondary">数据来源: <span className={dataSource.color}>{dataSource.label}</span></span>
                 </div>
                 {analysis?.created_at && (
-                  <div className="flex items-center gap-1.5 rounded-lg bg-[#27272A] px-2.5 py-1">
-                    <ClockIcon className="h-3.5 w-3.5 text-[#22C55E]" />
-                    <span className="text-xs text-[#A1A1AA]">AI分析于 {formatRelativeTime(analysis.created_at)}</span>
+                  <div className="flex items-center gap-1.5 rounded-lg bg-surface-secondary px-2.5 py-1">
+                    <ClockIcon className="h-3.5 w-3.5 text-success" />
+                    <span className="text-xs text-text-secondary">AI分析于 {formatRelativeTime(analysis.created_at)}</span>
                   </div>
                 )}
                 {isLatestEarning && (
-                  <span className="rounded-lg bg-[#6366F1]/20 px-2 py-0.5 text-xs font-medium text-[#818CF8]">
+                  <span className="rounded-lg bg-primary-light px-2 py-0.5 text-xs font-medium text-primary-hover">
                     最新
                   </span>
                 )}
@@ -244,7 +244,7 @@ export default function EarningsPage({ params }: Props) {
             </span>
             <Link
               href={`/analysis/${company.symbol}?earnings_id=${earnings.id}`}
-              className="rounded-xl border border-[#6366F1] bg-[rgba(99,102,241,0.15)] px-4 py-1.5 text-sm font-semibold text-[#818CF8] hover:bg-[rgba(99,102,241,0.25)] transition-colors"
+              className="rounded-xl border border-primary bg-primary-light px-4 py-1.5 text-sm font-semibold text-primary-hover hover:bg-primary-light transition-colors"
             >
               深度分析 →
             </Link>
@@ -254,10 +254,10 @@ export default function EarningsPage({ params }: Props) {
 
       <div className="bg-surface px-4 py-6 sm:px-6 lg:px-20">
         <div className="mx-auto flex max-w-6xl items-center gap-2 text-sm">
-          <Link href="/home" className="text-[#A1A1AA]">首页</Link>
-          <span className="text-[#3F3F46]">/</span>
-          <Link href="/companies" className="text-[#A1A1AA]">公司</Link>
-          <span className="text-[#3F3F46]">/</span>
+          <Link href="/home" className="text-text-secondary">首页</Link>
+          <span className="text-border">/</span>
+          <Link href="/companies" className="text-text-secondary">公司</Link>
+          <span className="text-border">/</span>
           <span className="font-medium text-white">{company.symbol} Q{earnings.fiscal_quarter} FY{earnings.fiscal_year}</span>
         </div>
       </div>
@@ -266,18 +266,18 @@ export default function EarningsPage({ params }: Props) {
         <div className="mx-auto max-w-4xl">
           <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-4 sm:gap-5">
             {[
-              { label: "营收", value: formatCurrency(earnings.revenue), change: earnings.revenue_yoy_growth ? `+${earnings.revenue_yoy_growth}% YoY` : "N/A", color: "border-[#6366F1]", shadow: "shadow-[0_0_15px_rgba(99,102,241,0.13)]" },
-              { label: "每股收益 (EPS)", value: earnings.eps ? `$${earnings.eps}` : "N/A", change: earnings.eps_estimate ? `预期 $${earnings.eps_estimate}` : "", color: "border-[#22C55E]", shadow: "shadow-[0_0_15px_rgba(34,197,94,0.13)]" },
-              { label: "净利润", value: formatCurrency(earnings.net_income), change: "", color: "border-[#22C55E]", shadow: "shadow-[0_0_15px_rgba(34,197,94,0.13)]" },
-              { label: "EPS超预期", value: earnings.eps_surprise ? `${earnings.eps_surprise > 0 ? '+' : ''}${earnings.eps_surprise}` : "N/A", change: "", color: "border-[#3B82F6]", shadow: "shadow-[0_0_15px_rgba(59,130,246,0.13)]" },
+              { label: "营收", value: formatCurrency(earnings.revenue), change: earnings.revenue_yoy_growth ? `+${earnings.revenue_yoy_growth}% YoY` : "N/A", color: "border-primary", shadow: "shadow-[0_0_15px_rgba(99,102,241,0.13)]" },
+              { label: "每股收益 (EPS)", value: earnings.eps ? `$${earnings.eps}` : "N/A", change: earnings.eps_estimate ? `预期 $${earnings.eps_estimate}` : "", color: "border-success", shadow: "shadow-[0_0_15px_rgba(34,197,94,0.13)]" },
+              { label: "净利润", value: formatCurrency(earnings.net_income), change: "", color: "border-success", shadow: "shadow-[0_0_15px_rgba(34,197,94,0.13)]" },
+              { label: "EPS超预期", value: earnings.eps_surprise ? `${earnings.eps_surprise > 0 ? '+' : ''}${earnings.eps_surprise}` : "N/A", change: "", color: "border-info", shadow: "shadow-[0_0_15px_rgba(59,130,246,0.13)]" },
             ].map((metric) => (
               <div key={metric.label} className={`rounded-xl border ${metric.color} bg-surface-secondary p-4 sm:p-7 ${metric.shadow}`}>
-                <p className="mb-2 text-xs text-[#A1A1AA] sm:mb-3 sm:text-sm">{metric.label}</p>
+                <p className="mb-2 text-xs text-text-secondary sm:mb-3 sm:text-sm">{metric.label}</p>
                 <p className="mb-1 text-xl font-bold text-white drop-shadow-[0_0_20px_rgba(99,102,241,0.25)] sm:mb-2 sm:text-[32px]">
                   {metric.value}
                 </p>
                 {metric.change && (
-                  <p className="text-xs text-[#22C55E] sm:text-sm">{metric.change}</p>
+                  <p className="text-xs text-success sm:text-sm">{metric.change}</p>
                 )}
               </div>
             ))}
@@ -286,7 +286,7 @@ export default function EarningsPage({ params }: Props) {
           {validEarningsHistory.length > 1 && (
             <div className="mb-8 rounded-xl border border-border bg-surface-secondary p-5 sm:p-7">
               <div className="mb-4 flex items-center gap-2 sm:mb-6">
-                <TrendingUpIcon className="h-5 w-5 text-[#818CF8]" />
+                <TrendingUpIcon className="h-5 w-5 text-primary-hover" />
                 <h3 className="text-lg font-bold text-white sm:text-xl">季度趋势对比</h3>
               </div>
 
@@ -301,8 +301,8 @@ export default function EarningsPage({ params }: Props) {
                     onClick={() => setActiveTab(tab.key as typeof activeTab)}
                     className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors sm:px-4 sm:py-2 ${
                       activeTab === tab.key
-                        ? 'bg-[#6366F1] text-white'
-                        : 'text-[#A1A1AA] hover:bg-[#27272A] hover:text-white'
+                        ? 'bg-primary text-white'
+                        : 'text-text-secondary hover:bg-surface-secondary hover:text-white'
                     }`}
                   >
                     {tab.label}
@@ -316,28 +316,28 @@ export default function EarningsPage({ params }: Props) {
 
           {analysis ? (
             <>
-              <div className="mb-8 rounded-xl border-2 border-[#6366F1] bg-[rgba(99,102,241,0.1)] p-5 shadow-[0_0_30px_rgba(99,102,241,0.25)] sm:p-7">
+              <div className="mb-8 rounded-xl border-2 border-primary bg-primary-light p-5 shadow-[0_0_30px_rgba(99,102,241,0.25)] sm:p-7">
                 <div className="mb-4 flex items-center gap-3 sm:mb-5">
-                  <BotIcon className="h-6 w-6 text-[#818CF8] sm:h-7 sm:w-7" />
-                  <h2 className="text-xl font-bold text-[#818CF8] drop-shadow-[0_0_20px_rgba(99,102,241,0.5)] sm:text-2xl">
+                  <BotIcon className="h-6 w-6 text-primary-hover sm:h-7 sm:w-7" />
+                  <h2 className="text-xl font-bold text-primary-hover drop-shadow-[0_0_20px_rgba(99,102,241,0.5)] sm:text-2xl">
                     AI 分析摘要
                   </h2>
                 </div>
-                <p className="leading-relaxed text-sm text-[#E0E7FF] sm:text-base">
+                <p className="leading-relaxed text-sm text-primary-foreground sm:text-base">
                   {analysis.summary}
                 </p>
               </div>
 
               {analysis.highlights && analysis.highlights.length > 0 && (
                 <div className="mb-8 rounded-xl border border-[#22C55E] bg-[rgba(34,197,94,0.1)] p-5 sm:p-7">
-                  <h3 className="mb-3 flex items-center gap-2 text-base font-bold text-[#15803D] sm:mb-4 sm:text-lg">
+                  <h3 className="mb-3 flex items-center gap-2 text-base font-bold text-success sm:mb-4 sm:text-lg">
                     <SparklesIcon className="h-5 w-5" />
                     核心亮点
                   </h3>
                   <ul className="space-y-2 sm:space-y-3">
                     {analysis.highlights.map((item, i) => (
-                      <li key={i} className="flex items-start gap-2 text-sm text-[#DCFCE7] sm:gap-3 sm:text-base">
-                        <span className="text-[#22C55E]">•</span>
+                      <li key={i} className="flex items-start gap-2 text-sm text-success-foreground sm:gap-3 sm:text-base">
+                        <span className="text-success">•</span>
                         {item}
                       </li>
                     ))}
@@ -347,14 +347,14 @@ export default function EarningsPage({ params }: Props) {
 
               {analysis.concerns && analysis.concerns.length > 0 && (
                 <div className="mb-8 rounded-xl border border-[#EF4444] bg-[rgba(239,68,68,0.1)] p-5 sm:p-7">
-                  <h3 className="mb-3 flex items-center gap-2 text-base font-bold text-[#991B1B] sm:mb-4 sm:text-lg">
+                  <h3 className="mb-3 flex items-center gap-2 text-base font-bold text-error sm:mb-4 sm:text-lg">
                     <AlertTriangleIcon className="h-5 w-5" />
                     关注点
                   </h3>
                   <ul className="space-y-2 sm:space-y-3">
                     {analysis.concerns.map((item, i) => (
-                      <li key={i} className="flex items-start gap-2 text-sm text-[#FECACA] sm:gap-3 sm:text-base">
-                        <span className="text-[#EF4444]">•</span>
+                      <li key={i} className="flex items-start gap-2 text-sm text-error-foreground sm:gap-3 sm:text-base">
+                        <span className="text-error">•</span>
                         {item}
                       </li>
                     ))}
@@ -363,10 +363,10 @@ export default function EarningsPage({ params }: Props) {
               )}
             </>
           ) : (
-            <div className="mb-8 rounded-xl border-2 border-[#6366F1] bg-[rgba(99,102,241,0.1)] p-7 shadow-[0_0_30px_rgba(99,102,241,0.25)]">
+            <div className="mb-8 rounded-xl border-2 border-primary bg-primary-light p-7 shadow-[0_0_30px_rgba(99,102,241,0.25)]">
               <div className="flex items-center justify-center gap-3 py-8">
-                <BotIcon className="h-6 w-6 animate-pulse text-[#818CF8]" />
-                <p className="text-[#818CF8]">AI 分析正在生成中...</p>
+                <BotIcon className="h-6 w-6 animate-pulse text-primary-hover" />
+                <p className="text-primary-hover">AI 分析正在生成中...</p>
               </div>
             </div>
           )}
@@ -378,8 +378,8 @@ export default function EarningsPage({ params }: Props) {
               {validEarningsHistory.map((e) => {
                   const eAnalysis = e.ai_analyses;
                   const eSentiment = eAnalysis?.sentiment || null;
-                  const sentimentClass = eSentiment === 'positive' ? 'text-[#22C55E]' :
-                                          eSentiment === 'negative' ? 'text-[#EF4444]' : 'text-[#A1A1AA]';
+                  const sentimentClass = eSentiment === 'positive' ? 'text-success' :
+                                          eSentiment === 'negative' ? 'text-error' : 'text-text-secondary';
                   const isSelected = e.id === earnings?.id;
                   const isLatest = e.id === validEarningsHistory[0].id;
 
@@ -389,24 +389,24 @@ export default function EarningsPage({ params }: Props) {
                       onClick={() => handleEarningClick(e.id)}
                       disabled={loading}
                       className={`flex w-full items-center justify-between rounded-lg p-3 text-left transition-colors ${
-                        isSelected ? 'bg-[#6366F1]/20 border border-[#6366F1]/50' : 'bg-background hover:bg-[#27272A]'
+                        isSelected ? 'bg-primary-light border border-primary/50' : 'bg-background hover:bg-surface-secondary'
                       }`}
                     >
                       <div className="flex items-center gap-3">
                         <span className="text-sm font-medium text-white">
                           Q{e.fiscal_quarter} FY{e.fiscal_year}
                         </span>
-                        <span className="text-xs text-[#A1A1AA]">{e.report_date}</span>
+                        <span className="text-xs text-text-secondary">{e.report_date}</span>
                         {isLatest && (
-                          <span className="rounded bg-[#6366F1] px-1.5 py-0.5 text-xs text-white">最新</span>
+                          <span className="rounded bg-primary px-1.5 py-0.5 text-xs text-white">最新</span>
                         )}
                         {isSelected && (
-                          <span className="rounded bg-[#22C55E] px-1.5 py-0.5 text-xs text-white">当前</span>
+                          <span className="rounded bg-success px-1.5 py-0.5 text-xs text-white">当前</span>
                         )}
                       </div>
                       <div className="flex items-center gap-3">
                         {e.revenue && (
-                          <span className="text-sm text-[#A1A1AA]">{formatCurrency(e.revenue)}</span>
+                          <span className="text-sm text-text-secondary">{formatCurrency(e.revenue)}</span>
                         )}
                         {eSentiment && (
                           <span className={`text-xs font-medium ${sentimentClass}`}>
@@ -420,7 +420,7 @@ export default function EarningsPage({ params }: Props) {
               </div>
             ) : (
               <div className="flex h-32 items-center justify-center gap-2 rounded-lg bg-background">
-                <p className="text-sm text-[#A1A1AA]">暂无历史财报</p>
+                <p className="text-sm text-text-secondary">暂无历史财报</p>
               </div>
             )}
           </div>
@@ -428,11 +428,11 @@ export default function EarningsPage({ params }: Props) {
           <div className="rounded-xl border border-border bg-surface p-5 sm:p-7">
             <h3 className="mb-4 text-base font-semibold text-white sm:mb-5 sm:text-lg">这篇分析有帮助吗？</h3>
             <div className="flex gap-3 sm:gap-4">
-              <button className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface-secondary px-4 py-2 text-sm text-white hover:bg-[#27272A] sm:px-6 sm:py-3">
+              <button className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface-secondary px-4 py-2 text-sm text-white hover:bg-surface-secondary sm:px-6 sm:py-3">
                 <ThumbsUpIcon className="h-4 w-4" />
                 有帮助
               </button>
-              <button className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface-secondary px-4 py-2 text-sm text-white hover:bg-[#27272A] sm:px-6 sm:py-3">
+              <button className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface-secondary px-4 py-2 text-sm text-white hover:bg-surface-secondary sm:px-6 sm:py-3">
                 <ThumbsDownIcon className="h-4 w-4" />
                 需要改进
               </button>

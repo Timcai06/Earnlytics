@@ -89,14 +89,14 @@ function StatCard({
   icon: typeof Building2;
 }) {
   return (
-    <Card className="bg-[#111111] border-[#27272A] hover:border-[#3F3F46] transition-colors">
+    <Card className="bg-surface border-border hover:border-border transition-colors">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-sm font-medium text-[#A1A1AA]">
+          <CardTitle className="text-sm font-medium text-text-secondary">
             {title}
           </CardTitle>
           <div className="p-2 bg-[#6366F1]/10 rounded-lg">
-            <Icon className="h-4 w-4 text-[#6366F1]" />
+            <Icon className="h-4 w-4 text-primary" />
           </div>
         </div>
       </CardHeader>
@@ -109,7 +109,7 @@ function StatCard({
             </span>
           )}
         </div>
-        <p className="text-xs text-[#71717A]">{subtitle}</p>
+        <p className="text-xs text-text-tertiary">{subtitle}</p>
       </CardContent>
     </Card>
   );
@@ -195,35 +195,35 @@ function OverviewTab({ recommendations }: { recommendations: InvestmentRecommend
               : 0;
 
             return (
-              <Card key={rec.symbol} className="bg-[#111111] border-[#27272A] hover:border-[#3F3F46] transition-colors">
+              <Card key={rec.symbol} className="bg-surface border-border hover:border-border transition-colors">
                 <CardContent className="p-5">
                   <div className="flex items-start justify-between mb-4">
                     <div>
                       <div className="flex items-center gap-2 mb-1">
                         <span className="text-xl font-bold text-white">{rec.symbol}</span>
-                        <span className="text-sm text-[#71717A]">{rec.name}</span>
+                        <span className="text-sm text-text-tertiary">{rec.name}</span>
                       </div>
                       <div className="flex items-center gap-2 flex-wrap">
                         <Badge className={`${config.bgColor} ${config.color} border-0`}>
                           {config.label}
                         </Badge>
-                        <Badge variant="outline" className="text-[#71717A] border-[#3F3F46]">
+                        <Badge variant="outline" className="text-text-tertiary border-border">
                           {getConfidenceLabel(rec.confidence)}
                         </Badge>
                       </div>
                     </div>
                     <div className="text-right">
                       <div className="text-lg font-semibold text-white">${rec.currentPrice.toFixed(2)}</div>
-                      <div className="text-xs text-[#71717A]">当前价格</div>
+                      <div className="text-xs text-text-tertiary">当前价格</div>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-4 mb-4 p-3 bg-[#1A1A1A] rounded-lg">
+                  <div className="flex items-center gap-4 mb-4 p-3 bg-surface-secondary rounded-lg">
                     <div className="p-2 bg-[#6366F1]/10 rounded-lg">
-                      <Target className="h-4 w-4 text-[#6366F1]" />
+                      <Target className="h-4 w-4 text-primary" />
                     </div>
                     <div className="flex-1">
-                      <div className="text-xs text-[#71717A]">目标价区间</div>
+                      <div className="text-xs text-text-tertiary">目标价区间</div>
                       <div className="font-semibold text-white">
                         ${rec.targetPriceLow.toFixed(2)} - ${rec.targetPriceHigh.toFixed(2)}
                       </div>
@@ -232,7 +232,7 @@ function OverviewTab({ recommendations }: { recommendations: InvestmentRecommend
                       <div className={`text-sm font-medium ${upside >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                         {upside >= 0 ? '+' : ''}{upside.toFixed(1)}%
                       </div>
-                      <div className="text-xs text-[#71717A]">预期涨幅</div>
+                      <div className="text-xs text-text-tertiary">预期涨幅</div>
                     </div>
                   </div>
 
@@ -240,8 +240,8 @@ function OverviewTab({ recommendations }: { recommendations: InvestmentRecommend
                     <div className="space-y-2 mb-4">
                       {rec.keyPoints.slice(0, 2).map((point, idx) => (
                         <div key={idx} className="flex items-start gap-2 text-sm">
-                          <span className="text-[#6366F1] mt-1">•</span>
-                          <span className="text-[#A1A1AA] line-clamp-2">{point}</span>
+                          <span className="text-primary mt-1">•</span>
+                          <span className="text-text-secondary line-clamp-2">{point}</span>
                         </div>
                       ))}
                     </div>
@@ -253,7 +253,7 @@ function OverviewTab({ recommendations }: { recommendations: InvestmentRecommend
                         深度分析
                       </Link>
                     </Button>
-                    <Button variant="outline" asChild className="border-[#3F3F46] text-[#A1A1AA] hover:text-white hover:bg-[#27272A]">
+                    <Button variant="outline" asChild className="border-border text-text-secondary hover:text-white hover:bg-surface-secondary">
                       <Link href={`/earnings/${rec.symbol.toLowerCase()}`}>
                         财报
                       </Link>
@@ -283,16 +283,16 @@ function CalendarTab() {
 export default function DashboardClient({ initialRecommendations, companies }: DashboardClientProps) {
   return (
     <Tabs defaultValue="overview" className="w-full">
-      <TabsList className="mb-6 bg-[#1A1A1A] border border-[#27272A]">
-        <TabsTrigger value="overview" className="data-[state=active]:bg-[#27272A] data-[state=active]:text-white">
+      <TabsList className="mb-6 bg-surface-secondary border border-border">
+        <TabsTrigger value="overview" className="data-[state=active]:bg-surface-secondary data-[state=active]:text-white">
           <Sparkles className="h-4 w-4 mr-2" />
           概览
         </TabsTrigger>
-        <TabsTrigger value="companies" className="data-[state=active]:bg-[#27272A] data-[state=active]:text-white">
+        <TabsTrigger value="companies" className="data-[state=active]:bg-surface-secondary data-[state=active]:text-white">
           <Building2 className="h-4 w-4 mr-2" />
           公司
         </TabsTrigger>
-        <TabsTrigger value="calendar" className="data-[state=active]:bg-[#27272A] data-[state=active]:text-white">
+        <TabsTrigger value="calendar" className="data-[state=active]:bg-surface-secondary data-[state=active]:text-white">
           <Calendar className="h-4 w-4 mr-2" />
           日历
         </TabsTrigger>

@@ -38,7 +38,7 @@ const iconBgColors = {
 const iconColors = {
   chart: "text-[#6366F1]",
   search: "text-[#3B82F6]",
-  file: "text-[#A1A1AA]",
+  file: "text-text-secondary",
   company: "text-[#22C55E]",
   calendar: "text-[#F59E0B]",
   alert: "text-[#EF4444]",
@@ -104,7 +104,7 @@ export function EmptyState({
   return (
     <div
       className={cn(
-        "flex flex-col items-center justify-center text-center rounded-xl border border-[#27272A] bg-[#111111]",
+        "flex flex-col items-center justify-center text-center rounded-xl border border-border bg-surface",
         classes.wrapper,
         className
       )}
@@ -127,7 +127,7 @@ export function EmptyState({
       </h3>
 
       {description && (
-        <p className={cn("text-[#A1A1AA] max-w-sm mb-6", classes.description)}>
+        <p className={cn("text-text-secondary max-w-sm mb-6", classes.description)}>
           {description}
         </p>
       )}
@@ -146,7 +146,7 @@ export function EmptyState({
             <Button
               onClick={secondaryAction.onClick}
               variant="ghost"
-              className="text-[#A1A1AA] hover:text-white"
+              className="text-text-secondary hover:text-white"
             >
               {secondaryAction.label}
             </Button>

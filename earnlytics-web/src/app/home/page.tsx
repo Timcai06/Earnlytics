@@ -63,7 +63,7 @@ function getEarningsBadge(epsSurprise: number | null, sentiment: string | null):
   if (sentiment === 'negative') {
     return { text: '消极', color: 'bg-red-500/15 text-red-400 border-red-500/30' };
   }
-  return { text: '中性', color: 'bg-[#27272A] text-[#A1A1AA] border-[#3F3F46]' };
+  return { text: '中性', color: 'bg-surface-secondary text-text-secondary border-border' };
 }
 
 export default function HomePage() {
@@ -183,7 +183,7 @@ export default function HomePage() {
               探索科技公司财报
             </h1>
           </div>
-          <p className="max-w-2xl text-lg text-[#A1A1AA]">
+          <p className="max-w-2xl text-lg text-text-secondary">
             AI 驱动的财报分析，让复杂数据变得简单易懂
           </p>
         </div>
@@ -196,7 +196,7 @@ export default function HomePage() {
             <h2 className="text-2xl font-bold text-white sm:text-3xl">最新财报</h2>
             <Link 
               href="/companies" 
-              className="text-sm font-medium text-[#818CF8] hover:text-[#6366F1] transition-colors"
+              className="text-sm font-medium text-primary-hover hover:text-primary transition-colors"
             >
               查看全部 →
             </Link>
@@ -222,28 +222,28 @@ export default function HomePage() {
                   <Link
                     key={item.id}
                     href={`/earnings/${item.companies?.symbol?.toLowerCase()}`}
-                    className="flex flex-col sm:flex-row sm:items-center gap-4 rounded-xl border border-[#27272A] bg-[#111111] p-4 transition-all hover:border-[#6366F1]/50 hover:bg-[#1A1A1A] sm:gap-6 sm:p-6"
+                    className="flex flex-col sm:flex-row sm:items-center gap-4 rounded-xl border border-border bg-surface p-4 transition-all hover:border-primary/50 hover:bg-surface-secondary sm:gap-6 sm:p-6"
                   >
-                    <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl bg-[#1A1A1A] text-white sm:h-16 sm:w-16">
+                    <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl bg-surface-secondary text-white sm:h-16 sm:w-16">
                       <AppleIcon className="h-7 w-7 sm:h-8 sm:w-8" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <h3 className="text-lg font-semibold text-white">{item.companies?.name}</h3>
-                      <p className="text-sm text-[#71717A]">
+                      <p className="text-sm text-text-tertiary">
                         Q{item.fiscal_quarter} FY{item.fiscal_year} · {item.report_date}
                       </p>
                     </div>
                     <div className="flex items-center gap-4 sm:gap-8">
                       <div className="text-center">
-                        <p className="text-xs text-[#71717A]">营收</p>
+                        <p className="text-xs text-text-tertiary">营收</p>
                         <p className="text-base font-semibold text-emerald-400 sm:text-lg">{formatCurrency(item.revenue)}</p>
                       </div>
                       <div className="text-center">
-                        <p className="text-xs text-[#71717A]">EPS</p>
+                        <p className="text-xs text-text-tertiary">EPS</p>
                         <p className="text-base font-semibold text-white sm:text-lg">{item.eps ? `$${item.eps}` : 'N/A'}</p>
                       </div>
                       <div className="text-center">
-                        <p className="text-xs text-[#71717A]">同比</p>
+                        <p className="text-xs text-text-tertiary">同比</p>
                         <p className="text-base font-semibold text-white sm:text-lg">
                           {item.revenue_yoy_growth ? `+${item.revenue_yoy_growth}%` : 'N/A'}
                         </p>
@@ -267,7 +267,7 @@ export default function HomePage() {
             <h2 className="text-2xl font-bold text-white sm:text-3xl">本周财报预告</h2>
             <Link 
               href="/calendar" 
-              className="text-sm font-medium text-[#818CF8] hover:text-[#6366F1] transition-colors"
+              className="text-sm font-medium text-primary-hover hover:text-primary transition-colors"
             >
               查看完整日历 →
             </Link>
@@ -293,7 +293,7 @@ export default function HomePage() {
               {upcomingEarnings.map((item) => (
                 <div
                   key={item.id}
-                  className="flex items-center gap-4 rounded-xl border border-[#22C55E]/30 bg-[#111111] p-4 transition-colors hover:bg-[#1A1A1A]"
+                  className="flex items-center gap-4 rounded-xl border border-[#22C55E]/30 bg-surface p-4 transition-colors hover:bg-surface-secondary"
                 >
                   <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-emerald-500/10">
                     <span className="text-sm font-bold text-emerald-400">
@@ -304,7 +304,7 @@ export default function HomePage() {
                     <p className="font-medium text-white truncate">
                       {item.companyName}
                     </p>
-                    <p className="text-sm text-[#71717A]">
+                    <p className="text-sm text-text-tertiary">
                       {item.symbol} · Q{item.fiscalQuarter} FY{item.fiscalYear}
                     </p>
                   </div>

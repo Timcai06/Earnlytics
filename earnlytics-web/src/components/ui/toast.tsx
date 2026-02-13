@@ -14,15 +14,15 @@ const toastIcons = {
 };
 
 const toastStyles = {
-  default: "bg-[#111111] border-[#27272A]",
-  success: "bg-[#111111] border-[#22C55E]",
-  error: "bg-[#111111] border-[#EF4444]",
-  warning: "bg-[#111111] border-[#F59E0B]",
-  info: "bg-[#111111] border-[#3B82F6]",
+  default: "bg-surface border-border",
+  success: "bg-surface border-[#22C55E]",
+  error: "bg-surface border-[#EF4444]",
+  warning: "bg-surface border-[#F59E0B]",
+  info: "bg-surface border-[#3B82F6]",
 };
 
 const iconColors = {
-  default: "text-[#A1A1AA]",
+  default: "text-text-secondary",
   success: "text-[#22C55E]",
   error: "text-[#EF4444]",
   warning: "text-[#F59E0B]",
@@ -134,7 +134,7 @@ function ToastItem({
       <div className="flex-1 min-w-0">
         <h4 className="font-medium text-white text-sm">{toast.title}</h4>
         {toast.description && (
-          <p className="text-[#A1A1AA] text-sm mt-1">{toast.description}</p>
+          <p className="text-text-secondary text-sm mt-1">{toast.description}</p>
         )}
         {toast.action && (
           <Button
@@ -152,7 +152,7 @@ function ToastItem({
       </div>
       <button
         onClick={handleDismiss}
-        className="flex-shrink-0 p-1 rounded-lg text-[#71717A] hover:text-white hover:bg-[#27272A] transition-colors"
+        className="flex-shrink-0 p-1 rounded-lg text-text-tertiary hover:text-white hover:bg-surface-secondary transition-colors"
         aria-label="关闭通知"
       >
         <X size={16} />

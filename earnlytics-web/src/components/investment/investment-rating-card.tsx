@@ -45,8 +45,8 @@ function CompanyLogo({ symbol, name, size = "md" }: CompanyLogoProps) {
       <div
         className={cn(
           "rounded-xl bg-gradient-to-br from-[#6366F1]/20 to-[#6366F1]/5",
-          "flex items-center justify-center font-bold text-[#6366F1]",
-          "border border-[#6366F1]/20",
+          "flex items-center justify-center font-bold text-primary",
+          "border border-primary/20",
           sizeClasses[size]
         )}
       >
@@ -59,7 +59,7 @@ function CompanyLogo({ symbol, name, size = "md" }: CompanyLogoProps) {
     <img
       src={clearbitUrl}
       alt={`${name || symbol} logo`}
-      className={cn("rounded-xl object-contain bg-[#111111]", sizeClasses[size])}
+      className={cn("rounded-xl object-contain bg-surface", sizeClasses[size])}
       onError={() => setImageError(true)}
     />
   );
@@ -236,7 +236,7 @@ function PriceDisplay({ currentPrice, previousClose, currency = "$" }: PriceDisp
             --
           </span>
         </div>
-        <p className="text-sm text-[#71717A]">
+        <p className="text-sm text-text-tertiary">
           股价数据暂不可用
         </p>
       </div>
@@ -258,7 +258,7 @@ function PriceDisplay({ currentPrice, previousClose, currency = "$" }: PriceDisp
         )}
       </div>
       {previousClose && (
-        <p className="text-sm text-[#71717A]">
+        <p className="text-sm text-text-tertiary">
           较前收 {currency}{previousClose.toFixed(2)} {change > 0 ? "+" : ""}
           {change.toFixed(2)} ({changePercent > 0 ? "+" : ""}
           {changePercent.toFixed(2)}%)
@@ -278,11 +278,11 @@ function TargetPrice({ low, high, currentPrice }: TargetPriceProps) {
   if (low <= 0 || high <= 0) {
     return (
       <div className="space-y-3">
-        <div className="flex items-center gap-2 text-sm text-[#A1A1AA]">
-          <Target className="h-4 w-4 text-[#6366F1]" />
+        <div className="flex items-center gap-2 text-sm text-text-secondary">
+          <Target className="h-4 w-4 text-primary" />
           <span>目标价区间</span>
         </div>
-        <div className="text-sm text-[#71717A]">
+        <div className="text-sm text-text-tertiary">
           目标价数据暂不可用
         </div>
       </div>
@@ -295,8 +295,8 @@ function TargetPrice({ low, high, currentPrice }: TargetPriceProps) {
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center gap-2 text-sm text-[#A1A1AA]">
-        <Target className="h-4 w-4 text-[#6366F1]" />
+      <div className="flex items-center gap-2 text-sm text-text-secondary">
+        <Target className="h-4 w-4 text-primary" />
         <span>目标价区间</span>
       </div>
 
@@ -304,7 +304,7 @@ function TargetPrice({ low, high, currentPrice }: TargetPriceProps) {
         <span className="text-2xl font-bold text-white">
           ${low.toFixed(2)} - ${high.toFixed(2)}
         </span>
-        <span className="text-sm text-[#71717A]">(中位数: ${midPrice.toFixed(2)})</span>
+        <span className="text-sm text-text-tertiary">(中位数: ${midPrice.toFixed(2)})</span>
       </div>
 
       <div className="flex items-center gap-4 text-sm">
@@ -319,7 +319,7 @@ function TargetPrice({ low, high, currentPrice }: TargetPriceProps) {
         </span>
       </div>
 
-      <div className="relative h-2 bg-[#27272A] rounded-full overflow-hidden">
+      <div className="relative h-2 bg-surface-secondary rounded-full overflow-hidden">
         <div
           className="absolute h-full bg-gradient-to-r from-[#6366F1] to-[#818CF8] rounded-full"
           style={{
@@ -335,9 +335,9 @@ function TargetPrice({ low, high, currentPrice }: TargetPriceProps) {
           }}
         />
       </div>
-      <div className="flex justify-between text-xs text-[#71717A]">
+      <div className="flex justify-between text-xs text-text-tertiary">
         <span>${low.toFixed(2)}</span>
-        <span className="text-[#6366F1]">当前</span>
+        <span className="text-primary">当前</span>
         <span>${high.toFixed(2)}</span>
       </div>
     </div>
@@ -358,18 +358,18 @@ function KeyPointsSection({ points, defaultExpanded = false }: KeyPointsSectionP
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-2 text-sm font-medium text-white">
-        <CheckCircle className="h-4 w-4 text-[#6366F1]" />
+        <CheckCircle className="h-4 w-4 text-primary" />
         <span>核心观点</span>
-        <span className="text-[#71717A] font-normal">({points.length}条)</span>
+        <span className="text-text-tertiary font-normal">({points.length}条)</span>
       </div>
 
       <ul className="space-y-2">
         {displayPoints.map((point, index) => (
           <li
             key={index}
-            className="flex items-start gap-2 text-sm text-[#A1A1AA] leading-relaxed"
+            className="flex items-start gap-2 text-sm text-text-secondary leading-relaxed"
           >
-            <span className="text-[#6366F1] mt-1">•</span>
+            <span className="text-primary mt-1">•</span>
             <span>{point}</span>
           </li>
         ))}
@@ -380,7 +380,7 @@ function KeyPointsSection({ points, defaultExpanded = false }: KeyPointsSectionP
           variant="ghost"
           size="sm"
           onClick={() => setIsExpanded(!isExpanded)}
-          className="text-[#6366F1] hover:text-[#818CF8] hover:bg-[#6366F1]/10 -ml-2"
+          className="text-primary hover:text-primary-hover hover:bg-[#6366F1]/10 -ml-2"
         >
           {isExpanded ? (
             <>
@@ -411,15 +411,15 @@ function DataSourceAttribution({
   analystCount,
 }: DataSourceAttributionProps) {
   return (
-    <div className="space-y-2 pt-4 border-t border-[#27272A]">
-      <div className="flex items-start gap-2 text-xs text-[#71717A]">
+    <div className="space-y-2 pt-4 border-t border-border">
+      <div className="flex items-start gap-2 text-xs text-text-tertiary">
         <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
         <span>
           此投资建议基于{source}生成，仅供参考，不构成投资建议。投资有风险，入市需谨慎。
         </span>
       </div>
 
-      <div className="flex items-center gap-4 text-xs text-[#71717A]">
+      <div className="flex items-center gap-4 text-xs text-text-tertiary">
         {lastUpdated && (
           <div className="flex items-center gap-1">
             <Clock className="h-3 w-3" />
@@ -472,7 +472,7 @@ export function InvestmentRatingCard({
   return (
     <Card
       className={cn(
-        "overflow-hidden bg-[#111111] border-[#27272A]",
+        "overflow-hidden bg-surface border-border",
         className
       )}
     >
@@ -485,7 +485,7 @@ export function InvestmentRatingCard({
                 <h3 className="text-lg font-bold text-white">{symbol}</h3>
                 <ConfidenceBadge confidence={confidence} />
               </div>
-              {name && <p className="text-sm text-[#71717A]">{name}</p>}
+              {name && <p className="text-sm text-text-tertiary">{name}</p>}
             </div>
           </div>
           <RatingBadge rating={rating} size="md" />

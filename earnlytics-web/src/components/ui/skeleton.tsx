@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { cva, type VariantProps } from "class-variance-authority";
 
 const skeletonVariants = cva(
-  "bg-[#27272A] relative overflow-hidden",
+  "bg-surface-secondary relative overflow-hidden",
   {
     variants: {
       variant: {
@@ -81,7 +81,7 @@ export function Skeleton({
 
 export function CardSkeleton({ className }: { className?: string }) {
   return (
-    <div className={cn("rounded-xl border border-[#27272A] bg-[#111111] p-5", className)}>
+    <div className={cn("rounded-xl border border-border bg-surface p-5", className)}>
       <div className="flex items-center gap-3 mb-4">
         <Skeleton variant="circular" width={40} height={40} />
         <div className="flex-1 space-y-2">
@@ -94,7 +94,7 @@ export function CardSkeleton({ className }: { className?: string }) {
         <Skeleton variant="text" width="90%" height={14} />
         <Skeleton variant="text" width="70%" height={14} />
       </div>
-      <div className="mt-4 pt-4 border-t border-[#27272A]">
+      <div className="mt-4 pt-4 border-t border-border">
         <Skeleton variant="text" width="30%" height={12} />
       </div>
     </div>
@@ -103,7 +103,7 @@ export function CardSkeleton({ className }: { className?: string }) {
 
 export function ChartSkeleton({ className }: { className?: string }) {
   return (
-    <div className={cn("rounded-xl border border-[#27272A] bg-[#111111] p-5", className)}>
+    <div className={cn("rounded-xl border border-border bg-surface p-5", className)}>
       <div className="flex items-center justify-between mb-6">
         <Skeleton variant="text" width={150} height={20} />
         <Skeleton variant="text" width={80} height={12} />
@@ -164,8 +164,8 @@ export function TableSkeleton({
   className?: string;
 }) {
   return (
-    <div className={cn("rounded-xl border border-[#27272A] bg-[#111111] overflow-hidden", className)}>
-      <div className="flex items-center gap-4 px-4 py-3 border-b border-[#27272A] bg-[#1A1A1A]">
+    <div className={cn("rounded-xl border border-border bg-surface overflow-hidden", className)}>
+      <div className="flex items-center gap-4 px-4 py-3 border-b border-border bg-surface-secondary">
         <Skeleton variant="rectangular" width={16} height={16} className="rounded" />
         {Array.from({ length: columns }).map((_, i) => (
           <div key={i} className="flex-1" style={{ flex: i === 0 ? 2 : 1 }}>
@@ -179,7 +179,7 @@ export function TableSkeleton({
           <TableRowSkeleton
             key={i}
             columns={columns}
-            className={i !== rows - 1 ? "border-b border-[#27272A]" : ""}
+            className={i !== rows - 1 ? "border-b border-border" : ""}
           />
         ))}
       </div>
@@ -199,7 +199,7 @@ export function EarningsListSkeleton({
       {Array.from({ length: count }).map((_, i) => (
         <div
           key={i}
-          className="flex items-center gap-4 p-4 rounded-xl border border-[#27272A] bg-[#111111]"
+          className="flex items-center gap-4 p-4 rounded-xl border border-border bg-surface"
         >
           <Skeleton variant="circular" width={48} height={48} />
           <div className="flex-1 min-w-0">
@@ -228,7 +228,7 @@ export function EarningsListSkeleton({
 
 export function CompanyCardSkeleton({ className }: { className?: string }) {
   return (
-    <div className={cn("rounded-xl border border-[#27272A] bg-[#111111] p-5", className)}>
+    <div className={cn("rounded-xl border border-border bg-surface p-5", className)}>
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center gap-3">
           <Skeleton variant="circular" width={44} height={44} />
@@ -248,7 +248,7 @@ export function CompanyCardSkeleton({ className }: { className?: string }) {
         <Skeleton variant="text" width={80} height={24} className="rounded-full" />
         <Skeleton variant="text" width={60} height={24} className="rounded-full" />
       </div>
-      <div className="pt-4 border-t border-[#27272A] flex items-center justify-between">
+      <div className="pt-4 border-t border-border flex items-center justify-between">
         <Skeleton variant="text" width={100} height={14} />
         <Skeleton variant="text" width={80} height={32} className="rounded-lg" />
       </div>
@@ -258,7 +258,7 @@ export function CompanyCardSkeleton({ className }: { className?: string }) {
 
 export function StatCardSkeleton({ className }: { className?: string }) {
   return (
-    <div className={cn("rounded-xl border border-[#27272A] bg-[#111111] p-5", className)}>
+    <div className={cn("rounded-xl border border-border bg-surface p-5", className)}>
       <div className="flex items-start justify-between mb-2">
         <Skeleton variant="text" width={100} height={14} />
         <Skeleton variant="circular" width={20} height={20} />

@@ -12,7 +12,7 @@ export default function ProfilePage() {
           <h1 className="mb-4 text-[40px] font-bold text-white drop-shadow-[0_0_30px_rgba(99,102,241,0.25)]">
             账户设置
           </h1>
-          <p className="text-lg text-[#A1A1AA]">管理您的个人信息和订阅偏好</p>
+          <p className="text-lg text-text-secondary">管理您的个人信息和订阅偏好</p>
         </div>
       </section>
 
@@ -26,8 +26,8 @@ export default function ProfilePage() {
                 key={tab}
                 className={`rounded-lg px-6 py-3 text-[15px] font-medium ${
                   index === 0
-                    ? "border border-[#6366F1] bg-primary text-white"
-                    : "border border-border bg-transparent text-[#A1A1AA]"
+                    ? "border border-primary bg-primary text-white"
+                    : "border border-border bg-transparent text-text-secondary"
                 }`}
               >
                 {tab}
@@ -36,13 +36,13 @@ export default function ProfilePage() {
           </div>
 
           {/* Profile Card */}
-          <div className="rounded-2xl border border-[#6366F1] bg-surface-secondary p-8 shadow-[0_0_30px_rgba(99,102,241,0.19)]">
+          <div className="rounded-2xl border border-primary bg-surface-secondary p-8 shadow-[0_0_30px_rgba(99,102,241,0.19)]">
             {/* Avatar Section */}
             <div className="mb-8 flex items-center gap-6">
-              <div className="flex h-24 w-24 items-center justify-center rounded-full border-2 border-[#6366F1] bg-[rgba(99,102,241,0.2)] text-3xl font-bold text-[#818CF8]">
+              <div className="flex h-24 w-24 items-center justify-center rounded-full border-2 border-primary bg-[rgba(99,102,241,0.2)] text-3xl font-bold text-primary-hover">
                 张
               </div>
-              <button className="rounded-lg border border-[#6366F1] bg-[rgba(99,102,241,0.15)] px-4 py-2 text-sm font-medium text-[#E0E7FF] shadow-[0_0_10px_rgba(99,102,241,0.13)]">
+              <button className="rounded-lg border border-primary bg-[rgba(99,102,241,0.15)] px-4 py-2 text-sm font-medium text-[#E0E7FF] shadow-[0_0_10px_rgba(99,102,241,0.13)]">
                 更换头像
               </button>
             </div>
@@ -57,7 +57,7 @@ export default function ProfilePage() {
                   id="name"
                   type="text"
                   defaultValue="张三"
-                  className="h-12 border-[#3F3F46] bg-[#111111] px-4 text-white"
+                  className="h-12 border-border bg-surface px-4 text-white"
                 />
               </div>
 
@@ -70,9 +70,9 @@ export default function ProfilePage() {
                   type="email"
                   defaultValue="zhangsan@example.com"
                   disabled
-                  className="h-12 border-[#3F3F46] bg-[#111111] px-4 text-[#A1A1AA]"
+                  className="h-12 border-border bg-surface px-4 text-text-secondary"
                 />
-                <p className="text-xs text-[#71717A]">邮箱地址不可修改</p>
+                <p className="text-xs text-text-tertiary">邮箱地址不可修改</p>
               </div>
             </div>
 
@@ -88,7 +88,7 @@ export default function ProfilePage() {
                     id="oldPassword"
                     type="password"
                     placeholder="••••••••"
-                    className="h-12 border-[#3F3F46] bg-[#111111] px-4 text-white placeholder:text-[#71717A]"
+                    className="h-12 border-border bg-surface px-4 text-white placeholder:text-text-tertiary"
                   />
                 </div>
 
@@ -100,7 +100,7 @@ export default function ProfilePage() {
                     id="newPassword"
                     type="password"
                     placeholder="至少8位字符"
-                    className="h-12 border-[#3F3F46] bg-[#111111] px-4 text-white placeholder:text-[#71717A]"
+                    className="h-12 border-border bg-surface px-4 text-white placeholder:text-text-tertiary"
                   />
                 </div>
 
@@ -112,7 +112,7 @@ export default function ProfilePage() {
                     id="confirmPassword"
                     type="password"
                     placeholder="再次输入新密码"
-                    className="h-12 border-[#3F3F46] bg-[#111111] px-4 text-white placeholder:text-[#71717A]"
+                    className="h-12 border-border bg-surface px-4 text-white placeholder:text-text-tertiary"
                   />
                 </div>
               </div>

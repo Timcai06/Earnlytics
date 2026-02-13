@@ -86,7 +86,7 @@ function RadialProgress({
         )}
       </div>
       {label && (
-        <span className="mt-2 text-sm text-[#A1A1AA]">{label}</span>
+        <span className="mt-2 text-sm text-text-secondary">{label}</span>
       )}
     </div>
   );
@@ -130,18 +130,18 @@ interface FactorCardProps {
 
 function FactorCard({ label, value, unit, icon: Icon, description }: FactorCardProps) {
   return (
-    <div className="p-3 bg-[#1A1A1A] rounded-lg border border-[#27272A]">
+    <div className="p-3 bg-surface-secondary rounded-lg border border-border">
       <div className="flex items-center gap-2 mb-2">
-        <div className="p-1.5 bg-[#27272A] rounded-md">
-          <Icon className="w-4 h-4 text-[#6366F1]" />
+        <div className="p-1.5 bg-surface-secondary rounded-md">
+          <Icon className="w-4 h-4 text-primary" />
         </div>
-        <span className="text-xs text-[#A1A1AA]">{label}</span>
+        <span className="text-xs text-text-secondary">{label}</span>
       </div>
       <div className="text-lg font-semibold text-white">
         {value.toFixed(unit === "%" ? 1 : 2)}
         {unit}
       </div>
-      <p className="mt-1 text-xs text-[#71717A]">{description}</p>
+      <p className="mt-1 text-xs text-text-tertiary">{description}</p>
     </div>
   );
 }
@@ -185,33 +185,33 @@ function DuPontChart({
         />
       </div>
 
-      <div className="flex items-center justify-center gap-4 py-3 px-4 bg-[#1A1A1A] rounded-lg border border-[#27272A]">
+      <div className="flex items-center justify-center gap-4 py-3 px-4 bg-surface-secondary rounded-lg border border-border">
         <div className="text-center">
           <span className="text-lg font-semibold text-emerald-400">
             {(netMargin * 100).toFixed(1)}%
           </span>
-          <p className="text-xs text-[#71717A]">净利率</p>
+          <p className="text-xs text-text-tertiary">净利率</p>
         </div>
-        <span className="text-[#71717A] text-xl">×</span>
+        <span className="text-text-tertiary text-xl">×</span>
         <div className="text-center">
           <span className="text-lg font-semibold text-blue-400">
             {assetTurnover.toFixed(2)}x
           </span>
-          <p className="text-xs text-[#71717A]">资产周转</p>
+          <p className="text-xs text-text-tertiary">资产周转</p>
         </div>
-        <span className="text-[#71717A] text-xl">×</span>
+        <span className="text-text-tertiary text-xl">×</span>
         <div className="text-center">
           <span className="text-lg font-semibold text-purple-400">
             {equityMultiplier.toFixed(2)}x
           </span>
-          <p className="text-xs text-[#71717A]">权益乘数</p>
+          <p className="text-xs text-text-tertiary">权益乘数</p>
         </div>
-        <span className="text-[#71717A] text-xl">=</span>
-        <div className="text-center px-3 py-1 bg-[#6366F1]/10 rounded-lg border border-[#6366F1]/30">
-          <span className="text-xl font-bold text-[#6366F1]">
+        <span className="text-text-tertiary text-xl">=</span>
+        <div className="text-center px-3 py-1 bg-[#6366F1]/10 rounded-lg border border-primary/30">
+          <span className="text-xl font-bold text-primary">
             {(roe * 100).toFixed(1)}%
           </span>
-          <p className="text-xs text-[#6366F1]">ROE</p>
+          <p className="text-xs text-primary">ROE</p>
         </div>
       </div>
     </div>
@@ -294,13 +294,13 @@ function CashFlowIndicator({
         <CashFlowBadge health={health} />
       </div>
 
-      <p className="text-sm text-[#A1A1AA]">{config.description}</p>
+      <p className="text-sm text-text-secondary">{config.description}</p>
 
       {(operatingCashFlow !== undefined || freeCashFlow !== undefined) && (
         <div className="grid grid-cols-2 gap-3 pt-2">
           {operatingCashFlow !== undefined && (
-            <div className="p-3 bg-[#1A1A1A] rounded-lg">
-              <span className="text-xs text-[#71717A]">经营现金流</span>
+            <div className="p-3 bg-surface-secondary rounded-lg">
+              <span className="text-xs text-text-tertiary">经营现金流</span>
               <p
                 className={cn(
                   "text-lg font-semibold",
@@ -313,8 +313,8 @@ function CashFlowIndicator({
             </div>
           )}
           {freeCashFlow !== undefined && (
-            <div className="p-3 bg-[#1A1A1A] rounded-lg">
-              <span className="text-xs text-[#71717A]">自由现金流</span>
+            <div className="p-3 bg-surface-secondary rounded-lg">
+              <span className="text-xs text-text-tertiary">自由现金流</span>
               <p
                 className={cn(
                   "text-lg font-semibold",
@@ -401,16 +401,16 @@ export function FinancialHealthScorecard({
   className,
 }: FinancialHealthScorecardProps) {
   return (
-    <Card className={cn("overflow-hidden bg-[#111111] border-[#27272A]", className)}>
+    <Card className={cn("overflow-hidden bg-surface border-border", className)}>
       <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="p-2 bg-[#6366F1]/10 rounded-lg">
-              <HeartPulse className="h-5 w-5 text-[#6366F1]" />
+              <HeartPulse className="h-5 w-5 text-primary" />
             </div>
             <div>
               <h3 className="text-lg font-semibold text-white">财务健康度</h3>
-              <p className="text-xs text-[#71717A]">基于杜邦分析与现金流评估</p>
+              <p className="text-xs text-text-tertiary">基于杜邦分析与现金流评估</p>
             </div>
           </div>
           {trend && <TrendBadge trend={trend} />}
@@ -424,9 +424,9 @@ export function FinancialHealthScorecard({
 
         <div className="space-y-3">
           <div className="flex items-center gap-2 text-sm font-medium text-white">
-            <TrendingUp className="h-4 w-4 text-[#6366F1]" />
+            <TrendingUp className="h-4 w-4 text-primary" />
             <span>杜邦分析 - ROE拆解</span>
-            <Info className="h-3 w-3 text-[#71717A]" />
+            <Info className="h-3 w-3 text-text-tertiary" />
           </div>
           <DuPontChart
             netMargin={roeDuPont.netMargin}
@@ -435,7 +435,7 @@ export function FinancialHealthScorecard({
           />
         </div>
 
-        <div className="pt-4 border-t border-[#27272A]">
+        <div className="pt-4 border-t border-border">
           <CashFlowIndicator
             health={cashFlowHealth}
             operatingCashFlow={operatingCashFlow}

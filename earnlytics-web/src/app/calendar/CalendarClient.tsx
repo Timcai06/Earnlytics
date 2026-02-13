@@ -95,7 +95,7 @@ export default function CalendarClient({
               财报日历
             </h1>
           </div>
-          <p className="text-base text-[#A1A1AA] md:text-lg">
+          <p className="text-base text-text-secondary md:text-lg">
             追踪即将发布的科技公司财报
           </p>
         </div>
@@ -114,7 +114,7 @@ export default function CalendarClient({
               <div className="flex gap-2">
                 <button
                   onClick={goToPrevMonth}
-                  className="rounded-lg px-3 py-2 text-sm text-[#A1A1AA] hover:bg-[#27272A] transition-colors"
+                  className="rounded-lg px-3 py-2 text-sm text-text-secondary hover:bg-[#27272A] transition-colors"
                 >
                   ← 上月
                 </button>
@@ -126,7 +126,7 @@ export default function CalendarClient({
                 </button>
                 <button
                   onClick={goToNextMonth}
-                  className="rounded-lg px-3 py-2 text-sm text-[#A1A1AA] hover:bg-[#27272A] transition-colors"
+                  className="rounded-lg px-3 py-2 text-sm text-text-secondary hover:bg-[#27272A] transition-colors"
                 >
                   下月 →
                 </button>
@@ -169,7 +169,7 @@ export default function CalendarClient({
                           : "bg-background"
                       }`}
                     >
-                      <span className={`text-sm font-semibold ${day > 28 ? "text-[#71717A]" : "text-[#A1A1AA]"} md:text-base`}>
+                      <span className={`text-sm font-semibold ${day > 28 ? "text-[#71717A]" : "text-text-secondary"} md:text-base`}>
                         {day}
                       </span>
                       <div className="mt-1 space-y-1 md:mt-2">
@@ -196,15 +196,15 @@ export default function CalendarClient({
           <div className="mt-6 flex flex-col gap-4 rounded-xl border border-border bg-surface-secondary p-4 md:mt-8 md:flex-row md:gap-8 md:p-6">
             <div className="flex items-center gap-2">
               <div className="h-3 w-3 rounded-full bg-[#6366F1]" />
-              <span className="text-sm text-[#A1A1AA]">有财报发布</span>
+              <span className="text-sm text-text-secondary">有财报发布</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="h-3 w-3 rounded-full bg-[#3F3F46]" />
-              <span className="text-sm text-[#A1A1AA]">无财报</span>
+              <span className="text-sm text-text-secondary">无财报</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="h-3 w-3 rounded-full bg-[#22C55E]" />
-              <span className="text-sm text-[#A1A1AA]">已分析</span>
+              <span className="text-sm text-text-secondary">已分析</span>
             </div>
           </div>
         </div>

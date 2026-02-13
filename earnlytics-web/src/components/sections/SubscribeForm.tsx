@@ -49,7 +49,7 @@ export default function SubscribeForm() {
         <h2 className="mb-4 text-2xl font-bold text-white md:text-3xl">
           订阅财报提醒
         </h2>
-        <p className="mb-8 text-[#A1A1AA]">
+        <p className="mb-8 text-text-secondary">
           在财报发布后第一时间收到AI分析报告
         </p>
 
@@ -60,7 +60,7 @@ export default function SubscribeForm() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             disabled={status === "loading"}
-            className="flex-1 bg-surface-secondary text-white placeholder:text-[#71717A] border-[#3F3F46] focus:border-[#6366F1] focus:ring-[#6366F1]"
+            className="flex-1 bg-surface-secondary text-white placeholder:text-text-tertiary border-[#3F3F46] focus:border-[#6366F1] focus:ring-[#6366F1]"
           />
           <Button
             type="submit"
@@ -81,7 +81,7 @@ export default function SubscribeForm() {
           </p>
         )}
 
-        <p className="mt-4 text-xs text-[#71717A]">
+        <p className="mt-4 text-xs text-text-tertiary">
           我们尊重你的隐私，随时可取消订阅
         </p>
       </div>

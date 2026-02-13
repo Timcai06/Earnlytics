@@ -10,7 +10,7 @@ export default function TermsPage() {
     <div className="container mx-auto max-w-4xl px-4 py-16">
       <h1 className="mb-8 text-4xl font-bold text-white">使用条款</h1>
       
-      <div className="space-y-8 text-[#A1A1AA]">
+      <div className="space-y-8 text-text-secondary">
         <section>
           <h2 className="mb-4 text-2xl font-semibold text-white">1. 服务概述</h2>
           <p>

@@ -11,7 +11,7 @@ export default function NotFoundPage() {
         </span>
 
         <h1 className="mb-4 text-4xl font-bold text-white">页面未找到</h1>
-        <p className="mb-8 text-lg text-[#A1A1AA]">
+        <p className="mb-8 text-lg text-text-secondary">
           抱歉，您访问的页面不存在或已被移除
         </p>
 

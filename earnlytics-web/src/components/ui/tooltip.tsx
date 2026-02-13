@@ -134,7 +134,7 @@ export function Tooltip({
           }}
           className={cn(
             "fixed z-50 px-3 py-2 rounded-lg text-sm",
-            "bg-[#1A1A1A] border border-[#27272A] text-white",
+            "bg-surface-secondary border border-border text-white",
             "shadow-lg",
             "transition-all duration-200 ease-out",
             isVisible ? "opacity-100 scale-100" : "opacity-0 scale-95",
@@ -161,7 +161,7 @@ function TooltipArrow({ side }: { side: TooltipSide }) {
   return (
     <span
       className={cn(
-        "absolute w-2 h-2 bg-[#1A1A1A] border-[#27272A]",
+        "absolute w-2 h-2 bg-surface-secondary border-border",
         arrowClasses[side]
       )}
       style={{

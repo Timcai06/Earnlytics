@@ -100,14 +100,14 @@ function BarComparisonView({
             if (active && payload && payload.length) {
               const item = payload[0].payload;
               return (
-                <div className="bg-[#18181B] border border-[#3F3F46] rounded-lg p-3 shadow-lg">
+                <div className="bg-[#18181B] border border-border rounded-lg p-3 shadow-lg">
                   <p className="font-medium text-white">
                     {item.symbol}
                     {item.isTarget && (
-                      <span className="text-[#6366F1] ml-1">(当前)</span>
+                      <span className="text-primary ml-1">(当前)</span>
                     )}
                   </p>
-                  <p className="text-sm text-[#A1A1AA]">
+                  <p className="text-sm text-text-secondary">
                     {config.label}: {" "}
                     <span className="font-semibold text-white">
                       {item.value.toFixed(2)}
@@ -189,7 +189,7 @@ function RadarComparisonView({
           content={({ active, payload, label }) => {
             if (active && payload) {
               return (
-                <div className="bg-[#18181B] border border-[#3F3F46] rounded-lg p-3 shadow-lg">
+                <div className="bg-[#18181B] border border-border rounded-lg p-3 shadow-lg">
                   <p className="font-medium text-white mb-1">{label}</p>
                   {payload.map((item, idx) => (
                     <p key={idx} className="text-sm" style={{ color: item.color }}>
@@ -260,21 +260,21 @@ export function IndustryComparisonChart({
   const config = metricConfig[selectedMetric];
 
   return (
-    <Card className={cn("overflow-hidden bg-[#111111] border-[#27272A]", className)}>
+    <Card className={cn("overflow-hidden bg-surface border-border", className)}>
       <CardHeader className="pb-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center gap-2">
             <div className="p-2 bg-[#6366F1]/10 rounded-lg">
-              <Building2 className="h-5 w-5 text-[#6366F1]" />
+              <Building2 className="h-5 w-5 text-primary" />
             </div>
             <div>
               <h3 className="text-lg font-semibold text-white">行业对比</h3>
-              <p className="text-xs text-[#71717A]">{sectorName}</p>
+              <p className="text-xs text-text-tertiary">{sectorName}</p>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            <div className="flex items-center bg-[#1A1A1A] rounded-lg p-1">
+            <div className="flex items-center bg-surface-secondary rounded-lg p-1">
               <Button
                 variant="ghost"
                 size="sm"
@@ -282,8 +282,8 @@ export function IndustryComparisonChart({
                 className={cn(
                   "h-8 w-8 p-0",
                   chartView === "bar"
-                    ? "bg-[#27272A] text-white"
-                    : "text-[#71717A] hover:text-white"
+                    ? "bg-surface-secondary text-white"
+                    : "text-text-tertiary hover:text-white"
                 )}
               >
                 <BarChart3 className="w-4 h-4" />
@@ -295,8 +295,8 @@ export function IndustryComparisonChart({
                 className={cn(
                   "h-8 w-8 p-0",
                   chartView === "radar"
-                    ? "bg-[#27272A] text-white"
-                    : "text-[#71717A] hover:text-white"
+                    ? "bg-surface-secondary text-white"
+                    : "text-text-tertiary hover:text-white"
                 )}
               >
                 <RadarIcon className="w-4 h-4" />
@@ -316,8 +316,8 @@ export function IndustryComparisonChart({
                 className={cn(
                   "h-7 text-xs",
                   selectedMetric === metric
-                    ? "bg-[#6366F1]/10 text-[#6366F1] hover:bg-[#6366F1]/20"
-                    : "text-[#71717A] hover:text-white hover:bg-[#27272A]"
+                    ? "bg-[#6366F1]/10 text-primary hover:bg-[#6366F1]/20"
+                    : "text-text-tertiary hover:text-white hover:bg-surface-secondary"
                 )}
               >
                 {metricConfig[metric].label}
@@ -329,27 +329,27 @@ export function IndustryComparisonChart({
 
       <CardContent className="space-y-4">
         <div className="grid grid-cols-2 gap-3">
-          <div className="p-3 bg-[#1A1A1A] rounded-lg border border-[#27272A]">
-            <span className="text-xs text-[#71717A] block mb-1">
+          <div className="p-3 bg-surface-secondary rounded-lg border border-border">
+            <span className="text-xs text-text-tertiary block mb-1">
               {targetSymbol}
             </span>
             <div className="flex items-baseline gap-1">
               <span className="text-xl font-bold text-white">
                 {targetValue.toFixed(2)}
               </span>
-              <span className="text-sm text-[#71717A]">{config.unit}</span>
+              <span className="text-sm text-text-tertiary">{config.unit}</span>
             </div>
-            <p className="text-xs text-[#6366F1] mt-1">{config.label}</p>
+            <p className="text-xs text-primary mt-1">{config.label}</p>
           </div>
-          <div className="p-3 bg-[#1A1A1A] rounded-lg border border-[#27272A]">
-            <span className="text-xs text-[#71717A] block mb-1">行业平均</span>
+          <div className="p-3 bg-surface-secondary rounded-lg border border-border">
+            <span className="text-xs text-text-tertiary block mb-1">行业平均</span>
             <div className="flex items-baseline gap-1">
-              <span className="text-xl font-bold text-[#A1A1AA]">
+              <span className="text-xl font-bold text-text-secondary">
                 {industryAverage.toFixed(2)}
               </span>
-              <span className="text-sm text-[#71717A]">{config.unit}</span>
+              <span className="text-sm text-text-tertiary">{config.unit}</span>
             </div>
-            <p className="text-xs text-[#71717A] mt-1">{config.label}</p>
+            <p className="text-xs text-text-tertiary mt-1">{config.label}</p>
           </div>
         </div>
 
@@ -368,20 +368,20 @@ export function IndustryComparisonChart({
         <div className="flex items-center justify-center gap-6 text-xs">
           <div className="flex items-center gap-1.5">
             <div className="w-3 h-3 bg-[#6366F1] rounded-sm" />
-            <span className="text-[#A1A1AA]">当前公司</span>
+            <span className="text-text-secondary">当前公司</span>
           </div>
           <div className="flex items-center gap-1.5">
             <div className="w-3 h-3 bg-[#71717A] rounded-sm" />
-            <span className="text-[#A1A1AA]">同业公司</span>
+            <span className="text-text-secondary">同业公司</span>
           </div>
           <div className="flex items-center gap-1.5">
             <div className="w-3 h-0 border-t-2 border-dashed border-[#F59E0B]" />
-            <span className="text-[#A1A1AA]">行业平均</span>
+            <span className="text-text-secondary">行业平均</span>
           </div>
         </div>
 
-        <div className="flex items-center justify-between p-3 bg-[#1A1A1A] rounded-lg border border-[#27272A]">
-          <span className="text-sm text-[#A1A1AA]">
+        <div className="flex items-center justify-between p-3 bg-surface-secondary rounded-lg border border-border">
+          <span className="text-sm text-text-secondary">
             {targetSymbol} 的{config.label}
           </span>
           <Badge

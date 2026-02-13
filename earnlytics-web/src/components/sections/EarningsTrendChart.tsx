@@ -96,14 +96,14 @@ function CustomTooltip({
     
     if (isDual) {
       return (
-        <div className="bg-[#18181B] border border-[#3F3F46] rounded-lg p-3 shadow-lg min-w-[180px]">
-          <p className="text-[#A1A1AA] text-sm mb-2 font-medium">{label}</p>
+        <div className="bg-[#18181B] border border-border rounded-lg p-3 shadow-lg min-w-[180px]">
+          <p className="text-text-secondary text-sm mb-2 font-medium">{label}</p>
           
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-[#6366F1]" />
-                <span className="text-[#A1A1AA] text-sm">营收</span>
+                <span className="text-text-secondary text-sm">营收</span>
               </div>
               <span className="text-white font-semibold">
                 {formatCurrency(data.revenue)}
@@ -113,7 +113,7 @@ function CustomTooltip({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-[#22C55E]" />
-                <span className="text-[#A1A1AA] text-sm">同比</span>
+                <span className="text-text-secondary text-sm">同比</span>
               </div>
               <span className={`font-semibold ${(data.revenueGrowth || 0) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                 {data.revenueGrowth !== null && data.revenueGrowth !== undefined 
@@ -123,10 +123,10 @@ function CustomTooltip({
             </div>
             
             {data.qoqGrowth !== null && data.qoqGrowth !== undefined && (
-              <div className="flex items-center justify-between pt-1 border-t border-[#27272A]">
+              <div className="flex items-center justify-between pt-1 border-t border-border">
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full bg-[#A1A1AA]" />
-                  <span className="text-[#71717A] text-xs">环比</span>
+                  <span className="text-text-tertiary text-xs">环比</span>
                 </div>
                 <span className={`text-xs font-medium ${data.qoqGrowth >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                   {data.qoqGrowth > 0 ? '+' : ''}{data.qoqGrowth.toFixed(1)}%
@@ -161,12 +161,12 @@ function CustomTooltip({
     const config = configs[dataType];
 
     return (
-      <div className="bg-[#18181B] border border-[#3F3F46] rounded-lg p-3 shadow-lg">
-        <p className="text-[#A1A1AA] text-sm mb-1">{label}</p>
+      <div className="bg-[#18181B] border border-border rounded-lg p-3 shadow-lg">
+        <p className="text-text-secondary text-sm mb-1">{label}</p>
         <p className="text-white font-semibold" style={{ color: config.color }}>
           {config.format}
         </p>
-        <p className="text-[#71717A] text-xs mt-1">{config.label}</p>
+        <p className="text-text-tertiary text-xs mt-1">{config.label}</p>
         {dataType === "revenue" && data.qoqGrowth !== null && data.qoqGrowth !== undefined && (
           <p className={`text-xs mt-1 ${data.qoqGrowth >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
             环比 {data.qoqGrowth > 0 ? '+' : ''}{data.qoqGrowth.toFixed(1)}%
@@ -395,23 +395,23 @@ export function EarningsTrendChart({
   };
 
   return (
-    <Card className={cn("overflow-hidden bg-[#111111] border-[#27272A]", className)}>
+    <Card className={cn("overflow-hidden bg-surface border-border", className)}>
       <CardHeader className="pb-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center gap-2">
             <div className="p-2 bg-[#6366F1]/10 rounded-lg">
-              <TrendingUp className="h-5 w-5 text-[#6366F1]" />
+              <TrendingUp className="h-5 w-5 text-primary" />
             </div>
             <div>
               <h3 className="text-lg font-semibold text-white">{title}</h3>
-              <p className="text-xs text-[#71717A]">
+              <p className="text-xs text-text-tertiary">
                 {processedData.length} 个季度数据
               </p>
             </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <div className="flex items-center bg-[#1A1A1A] rounded-lg p-1">
+            <div className="flex items-center bg-surface-secondary rounded-lg p-1">
               {( ["revenue", "eps", "growth"] as DataType[]).map((type) => {
                 const TypeIcon = dataTypeConfig[type].icon;
                 return (
@@ -423,8 +423,8 @@ export function EarningsTrendChart({
                     className={cn(
                       "h-8 px-2 text-xs",
                       dataType === type
-                        ? "bg-[#27272A] text-white"
-                        : "text-[#71717A] hover:text-white"
+                        ? "bg-surface-secondary text-white"
+                        : "text-text-tertiary hover:text-white"
                     )}
                   >
                     <TypeIcon className="w-3.5 h-3.5 mr-1" />
@@ -434,7 +434,7 @@ export function EarningsTrendChart({
               })}
             </div>
 
-            <div className="flex items-center bg-[#1A1A1A] rounded-lg p-1">
+            <div className="flex items-center bg-surface-secondary rounded-lg p-1">
               {(["bar", "line", "area", "dual"] as ChartType[]).map((type) => {
                 const label = type === "dual" ? "双轴" : type === "bar" ? "柱状" : type === "line" ? "折线" : "面积";
                 return (
@@ -446,8 +446,8 @@ export function EarningsTrendChart({
                     className={cn(
                       "h-8 px-2 text-xs",
                       chartType === type
-                        ? "bg-[#27272A] text-white"
-                        : "text-[#71717A] hover:text-white"
+                        ? "bg-surface-secondary text-white"
+                        : "text-text-tertiary hover:text-white"
                     )}
                   >
                     {label}
@@ -456,7 +456,7 @@ export function EarningsTrendChart({
               })}
             </div>
 
-            <div className="flex items-center bg-[#1A1A1A] rounded-lg p-1">
+            <div className="flex items-center bg-surface-secondary rounded-lg p-1">
               {(["1Y", "3Y", "5Y", "ALL"] as TimeRange[]).map((range) => (
                 <Button
                   key={range}
@@ -466,8 +466,8 @@ export function EarningsTrendChart({
                   className={cn(
                     "h-8 px-2 text-xs",
                     timeRange === range
-                      ? "bg-[#27272A] text-white"
-                      : "text-[#71717A] hover:text-white"
+                      ? "bg-surface-secondary text-white"
+                      : "text-text-tertiary hover:text-white"
                   )}
                 >
                   {range === "ALL" ? "全部" : range}
@@ -479,7 +479,7 @@ export function EarningsTrendChart({
               variant="outline"
               size="sm"
               onClick={exportData}
-              className="h-8 border-[#27272A] text-[#A1A1AA] hover:text-white hover:bg-[#27272A]"
+              className="h-8 border-border text-text-secondary hover:text-white hover:bg-surface-secondary"
             >
               <Download className="w-4 h-4 mr-1" />
               导出
