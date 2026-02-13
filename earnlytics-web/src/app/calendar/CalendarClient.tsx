@@ -105,7 +105,7 @@ export default function CalendarClient({
       <section className="bg-background px-6 pb-24 md:px-20">
         <div className="mx-auto max-w-6xl">
           {/* Calendar Grid */}
-          <div className="rounded-2xl border border-[#6366F1] bg-surface-secondary p-4 shadow-[0_0_20px_rgba(99,102,241,0.13)] md:p-8">
+          <div className="rounded-2xl border border-primary bg-surface-secondary p-4 shadow-[0_0_20px_rgba(99,102,241,0.13)] md:p-8">
             {/* Header */}
             <div className="mb-4 flex flex-col items-center justify-between gap-4 md:mb-6 md:flex-row">
               <h2 className="text-xl font-bold text-white md:text-2xl">
@@ -114,19 +114,19 @@ export default function CalendarClient({
               <div className="flex gap-2">
                 <button
                   onClick={goToPrevMonth}
-                  className="rounded-lg px-3 py-2 text-sm text-text-secondary hover:bg-[#27272A] transition-colors"
+                  className="rounded-lg px-3 py-2 text-sm text-text-secondary hover:bg-surface-secondary transition-colors"
                 >
                   ← 上月
                 </button>
                 <button
                   onClick={goToToday}
-                  className="rounded-lg px-3 py-2 text-sm text-[#6366F1] hover:bg-[#6366F1] hover:text-white transition-colors"
+                  className="rounded-lg px-3 py-2 text-sm text-primary hover:bg-[#6366F1] hover:text-white transition-colors"
                 >
                   今天
                 </button>
                 <button
                   onClick={goToNextMonth}
-                  className="rounded-lg px-3 py-2 text-sm text-text-secondary hover:bg-[#27272A] transition-colors"
+                  className="rounded-lg px-3 py-2 text-sm text-text-secondary hover:bg-surface-secondary transition-colors"
                 >
                   下月 →
                 </button>
@@ -136,7 +136,7 @@ export default function CalendarClient({
             {/* Week Days */}
             <div className="mb-4 hidden grid-cols-7 gap-2 md:grid">
               {weekDays.map((day) => (
-                <div key={day} className="py-3 text-center text-sm font-semibold text-[#71717A]">
+                <div key={day} className="py-3 text-center text-sm font-semibold text-text-tertiary">
                   {day}
                 </div>
               ))}
@@ -145,7 +145,7 @@ export default function CalendarClient({
             {/* Calendar Days */}
             {loading ? (
               <div className="flex items-center justify-center py-20">
-                <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#6366F1] border-t-transparent" />
+                <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
               </div>
             ) : (
               <div className="grid grid-cols-7 gap-2">
@@ -165,11 +165,11 @@ export default function CalendarClient({
                       key={day}
                       className={`min-h-[100px] rounded-lg p-2 md:min-h-[120px] md:p-3 ${
                         hasEvent
-                          ? "border border-[#6366F1] bg-[rgba(99,102,241,0.15)] shadow-[0_0_20px_rgba(99,102,241,0.25)]"
+                          ? "border border-primary bg-[rgba(99,102,241,0.15)] shadow-[0_0_20px_rgba(99,102,241,0.25)]"
                           : "bg-background"
                       }`}
                     >
-                      <span className={`text-sm font-semibold ${day > 28 ? "text-[#71717A]" : "text-text-secondary"} md:text-base`}>
+                      <span className={`text-sm font-semibold ${day > 28 ? "text-text-tertiary" : "text-text-secondary"} md:text-base`}>
                         {day}
                       </span>
                       <div className="mt-1 space-y-1 md:mt-2">
@@ -199,7 +199,7 @@ export default function CalendarClient({
               <span className="text-sm text-text-secondary">有财报发布</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="h-3 w-3 rounded-full bg-[#3F3F46]" />
+              <div className="h-3 w-3 rounded-full bg-surface-secondary" />
               <span className="text-sm text-text-secondary">无财报</span>
             </div>
             <div className="flex items-center gap-2">

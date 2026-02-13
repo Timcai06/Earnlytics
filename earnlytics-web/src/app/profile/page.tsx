@@ -42,7 +42,7 @@ export default function ProfilePage() {
               <div className="flex h-24 w-24 items-center justify-center rounded-full border-2 border-primary bg-[rgba(99,102,241,0.2)] text-3xl font-bold text-primary-hover">
                 张
               </div>
-              <button className="rounded-lg border border-primary bg-[rgba(99,102,241,0.15)] px-4 py-2 text-sm font-medium text-[#E0E7FF] shadow-[0_0_10px_rgba(99,102,241,0.13)]">
+              <button className="rounded-lg border border-primary bg-[rgba(99,102,241,0.15)] px-4 py-2 text-sm font-medium text-primary-foreground shadow-[0_0_10px_rgba(99,102,241,0.13)]">
                 更换头像
               </button>
             </div>

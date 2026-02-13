@@ -100,7 +100,7 @@ function BarComparisonView({
             if (active && payload && payload.length) {
               const item = payload[0].payload;
               return (
-                <div className="bg-[#18181B] border border-border rounded-lg p-3 shadow-lg">
+                <div className="bg-surface border border-border rounded-lg p-3 shadow-lg">
                   <p className="font-medium text-white">
                     {item.symbol}
                     {item.isTarget && (
@@ -189,7 +189,7 @@ function RadarComparisonView({
           content={({ active, payload, label }) => {
             if (active && payload) {
               return (
-                <div className="bg-[#18181B] border border-border rounded-lg p-3 shadow-lg">
+                <div className="bg-surface border border-border rounded-lg p-3 shadow-lg">
                   <p className="font-medium text-white mb-1">{label}</p>
                   {payload.map((item, idx) => (
                     <p key={idx} className="text-sm" style={{ color: item.color }}>

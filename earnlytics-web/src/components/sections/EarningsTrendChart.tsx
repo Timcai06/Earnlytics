@@ -96,7 +96,7 @@ function CustomTooltip({
     
     if (isDual) {
       return (
-        <div className="bg-[#18181B] border border-border rounded-lg p-3 shadow-lg min-w-[180px]">
+        <div className="bg-surface border border-border rounded-lg p-3 shadow-lg min-w-[180px]">
           <p className="text-text-secondary text-sm mb-2 font-medium">{label}</p>
           
           <div className="space-y-2">
@@ -161,7 +161,7 @@ function CustomTooltip({
     const config = configs[dataType];
 
     return (
-      <div className="bg-[#18181B] border border-border rounded-lg p-3 shadow-lg">
+      <div className="bg-surface border border-border rounded-lg p-3 shadow-lg">
         <p className="text-text-secondary text-sm mb-1">{label}</p>
         <p className="text-white font-semibold" style={{ color: config.color }}>
           {config.format}

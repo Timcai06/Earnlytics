@@ -293,7 +293,7 @@ export default function HomePage() {
               {upcomingEarnings.map((item) => (
                 <div
                   key={item.id}
-                  className="flex items-center gap-4 rounded-xl border border-[#22C55E]/30 bg-surface p-4 transition-colors hover:bg-surface-secondary"
+                  className="flex items-center gap-4 rounded-xl border border-success/30 bg-surface p-4 transition-colors hover:bg-surface-secondary"
                 >
                   <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-emerald-500/10">
                     <span className="text-sm font-bold text-emerald-400">

@@ -21,7 +21,7 @@ export default function Header() {
         <div className="flex items-center gap-12">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#0F172A]">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-surface">
               <BarChart3 className="h-5 w-5 text-white" />
             </div>
             <span className="text-2xl font-bold text-white">Earnlytics</span>
@@ -46,7 +46,7 @@ export default function Header() {
         {/* Right: CTA Button */}
         <Link
           href="/signup"
-          className="rounded-lg border border-[#818CF8] bg-primary px-6 py-3 text-[15px] font-semibold leading-none text-white shadow-[0_0_24px_rgba(99,102,241,0.67)] transition-colors hover:bg-primary-hover"
+          className="rounded-lg border border-primary-hover bg-primary px-6 py-3 text-[15px] font-semibold leading-none text-white shadow-[0_0_24px_rgba(99,102,241,0.67)] transition-colors hover:bg-primary-hover"
         >
           免费订阅
         </Link>

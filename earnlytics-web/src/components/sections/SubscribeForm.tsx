@@ -60,7 +60,7 @@ export default function SubscribeForm() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             disabled={status === "loading"}
-            className="flex-1 bg-surface-secondary text-white placeholder:text-text-tertiary border-[#3F3F46] focus:border-[#6366F1] focus:ring-[#6366F1]"
+            className="flex-1 bg-surface-secondary text-white placeholder:text-text-tertiary border-border focus:border-primary focus:ring-[#6366F1]"
           />
           <Button
             type="submit"

@@ -25,7 +25,7 @@ export default function NotFoundPage() {
           </Link>
           <Link
             href="/companies"
-            className="rounded-lg border border-[#6366F1] bg-[rgba(99,102,241,0.15)] px-8 py-3.5 text-base font-medium text-[#E0E7FF] shadow-[0_0_15px_rgba(99,102,241,0.19)] transition-colors hover:bg-[rgba(99,102,241,0.25)]"
+            className="rounded-lg border border-primary bg-[rgba(99,102,241,0.15)] px-8 py-3.5 text-base font-medium text-primary-foreground shadow-[0_0_15px_rgba(99,102,241,0.19)] transition-colors hover:bg-[rgba(99,102,241,0.25)]"
           >
             浏览公司目录
           </Link>

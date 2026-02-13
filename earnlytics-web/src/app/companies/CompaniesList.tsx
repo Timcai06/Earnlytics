@@ -161,13 +161,13 @@ export default function CompaniesList({ companies }: CompaniesListProps) {
             </div>
 
             <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 rounded-lg border border-[#3F3F46] bg-[#111111] p-1">
+              <div className="flex items-center gap-2 rounded-lg border border-border bg-surface p-1">
                 <button
                   onClick={() => setViewMode("grid")}
                   className={`rounded-md p-2 transition-colors ${
                     viewMode === "grid"
                       ? "bg-[#6366F1] text-white"
-                      : "text-[#64748B] hover:text-white"
+                      : "text-text-tertiary hover:text-white"
                   }`}
                   title="网格视图"
                 >
@@ -178,7 +178,7 @@ export default function CompaniesList({ companies }: CompaniesListProps) {
                   className={`rounded-md p-2 transition-colors ${
                     viewMode === "list"
                       ? "bg-[#6366F1] text-white"
-                      : "text-[#64748B] hover:text-white"
+                      : "text-text-tertiary hover:text-white"
                   }`}
                   title="列表视图"
                 >
@@ -187,11 +187,11 @@ export default function CompaniesList({ companies }: CompaniesListProps) {
               </div>
 
               <div className="relative">
-                <ArrowUpDownIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#64748B]" />
+                <ArrowUpDownIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-tertiary" />
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as SortOption)}
-                  className="h-10 appearance-none rounded-lg border border-[#3F3F46] bg-[#111111] pl-9 pr-8 text-sm text-white focus:border-[#6366F1] focus:outline-none"
+                  className="h-10 appearance-none rounded-lg border border-border bg-surface pl-9 pr-8 text-sm text-white focus:border-primary focus:outline-none"
                 >
                   {sortOptions.map((option) => (
                     <option key={option.value} value={option.value}>
@@ -204,7 +204,7 @@ export default function CompaniesList({ companies }: CompaniesListProps) {
           </div>
 
           <div className="flex flex-wrap items-center gap-4">
-            <span className="text-sm font-medium text-[#A1A1AA]">行业筛选：</span>
+            <span className="text-sm font-medium text-text-secondary">行业筛选：</span>
             <div className="flex flex-wrap gap-2">
               {filters.map((filter) => (
                 <button
@@ -213,7 +213,7 @@ export default function CompaniesList({ companies }: CompaniesListProps) {
                   className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-all ${
                     activeFilter === filter.value
                       ? "bg-[#6366F1] text-white"
-                      : "border border-[#6366F1] bg-[#6366F1]/10 text-[#E0E7FF] hover:bg-[#6366F1]/20"
+                      : "border border-primary bg-[#6366F1]/10 text-primary-foreground hover:bg-[#6366F1]/20"
                   }`}
                 >
                   {filter.label}
@@ -222,7 +222,7 @@ export default function CompaniesList({ companies }: CompaniesListProps) {
             </div>
           </div>
 
-          <p className="text-sm text-[#64748B]">
+          <p className="text-sm text-text-tertiary">
             显示 {filteredAndSortedCompanies.length} / {companies.length} 家公司
           </p>
         </div>
@@ -259,7 +259,7 @@ export default function CompaniesList({ companies }: CompaniesListProps) {
                 return (
                   <div
                     key={company.symbol}
-                    className="rounded-2xl border-2 bg-[#111111] p-6 transition-all hover:bg-[#1A1A1A]"
+                    className="rounded-2xl border-2 bg-surface p-6 transition-all hover:bg-surface-secondary"
                     style={{ borderColor: style.color }}
                   >
                     <div className="mb-4 flex items-start gap-4">
@@ -280,7 +280,7 @@ export default function CompaniesList({ companies }: CompaniesListProps) {
                             </span>
                           )}
                         </div>
-                        <p className="text-sm text-[#64748B]">
+                        <p className="text-sm text-text-tertiary">
                           NASDAQ: {company.symbol}
                         </p>
                         <span 
@@ -292,22 +292,22 @@ export default function CompaniesList({ companies }: CompaniesListProps) {
                       </div>
                     </div>
 
-                    <div className="mb-4 h-px bg-[#27272A]" />
+                    <div className="mb-4 h-px bg-surface-secondary" />
 
                     <div className="mb-4 grid grid-cols-2 gap-4">
                       <div>
-                        <p className="text-xs text-[#64748B]">最新财报</p>
+                        <p className="text-xs text-text-tertiary">最新财报</p>
                         <p className="text-sm font-medium text-white">
                           {company.latestEarning
                             ? `Q${company.latestEarning.fiscal_quarter} FY${company.latestEarning.fiscal_year}`
                             : "暂无数据"}
                         </p>
-                        <p className="text-xs text-[#64748B]">
+                        <p className="text-xs text-text-tertiary">
                           {formatEarningDate(company.latestEarning?.report_date || null)}
                         </p>
                       </div>
                       <div>
-                        <p className="text-xs text-[#64748B]">EPS</p>
+                        <p className="text-xs text-text-tertiary">EPS</p>
                         <p className="text-sm font-medium text-white">
                           {company.latestEarning?.eps
                             ? `$${company.latestEarning.eps}`
@@ -328,7 +328,7 @@ export default function CompaniesList({ companies }: CompaniesListProps) {
 
                     <Link
                       href={`/earnings/${company.symbol.toLowerCase()}`}
-                      className="block w-full rounded-lg border border-[#6366F1] bg-[#6366F1]/15 py-2.5 text-center text-sm font-semibold text-[#818CF8] transition-colors hover:bg-[#6366F1]/25"
+                      className="block w-full rounded-lg border border-primary bg-[#6366F1]/15 py-2.5 text-center text-sm font-semibold text-primary-hover transition-colors hover:bg-[#6366F1]/25"
                     >
                       查看财报 →
                     </Link>
@@ -346,7 +346,7 @@ export default function CompaniesList({ companies }: CompaniesListProps) {
                 return (
                   <div
                     key={company.symbol}
-                    className="flex items-center gap-4 rounded-xl border-2 bg-[#111111] p-4 transition-colors hover:bg-[#1A1A1A]"
+                    className="flex items-center gap-4 rounded-xl border-2 bg-surface p-4 transition-colors hover:bg-surface-secondary"
                     style={{ borderColor: style.color }}
                   >
                     <div 
@@ -361,7 +361,7 @@ export default function CompaniesList({ companies }: CompaniesListProps) {
                         <h3 className="font-bold text-white">
                           {company.name}
                         </h3>
-                        <span className="text-sm text-[#64748B]">
+                        <span className="text-sm text-text-tertiary">
                           {company.symbol}
                         </span>
                         {hasAnalyzed && (
@@ -370,7 +370,7 @@ export default function CompaniesList({ companies }: CompaniesListProps) {
                           </span>
                         )}
                       </div>
-                      <p className="text-sm text-[#64748B]">
+                      <p className="text-sm text-text-tertiary">
                         <span style={{ color: style.color }}>{company.sector || "科技"}</span>
                         {company.latestEarning
                           ? ` · Q${company.latestEarning.fiscal_quarter} FY${company.latestEarning.fiscal_year} · ${formatEarningDate(company.latestEarning.report_date)}`
@@ -379,7 +379,7 @@ export default function CompaniesList({ companies }: CompaniesListProps) {
                     </div>
 
                     <div className="hidden flex-shrink-0 text-right sm:block">
-                      <p className="text-sm text-[#64748B]">EPS</p>
+                      <p className="text-sm text-text-tertiary">EPS</p>
                       <p className="font-medium text-white">
                         {company.latestEarning?.eps
                           ? `$${company.latestEarning.eps}`
@@ -399,7 +399,7 @@ export default function CompaniesList({ companies }: CompaniesListProps) {
 
                     <Link
                       href={`/earnings/${company.symbol.toLowerCase()}`}
-                      className="flex-shrink-0 rounded-lg border border-[#6366F1] bg-[#6366F1]/15 px-4 py-2 text-sm font-semibold text-[#818CF8] transition-colors hover:bg-[#6366F1]/25"
+                      className="flex-shrink-0 rounded-lg border border-primary bg-[#6366F1]/15 px-4 py-2 text-sm font-semibold text-primary-hover transition-colors hover:bg-[#6366F1]/25"
                     >
                       查看 →
                     </Link>

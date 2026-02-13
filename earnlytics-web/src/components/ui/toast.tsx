@@ -15,18 +15,18 @@ const toastIcons = {
 
 const toastStyles = {
   default: "bg-surface border-border",
-  success: "bg-surface border-[#22C55E]",
-  error: "bg-surface border-[#EF4444]",
+  success: "bg-surface border-success",
+  error: "bg-surface border-error",
   warning: "bg-surface border-[#F59E0B]",
   info: "bg-surface border-[#3B82F6]",
 };
 
 const iconColors = {
   default: "text-text-secondary",
-  success: "text-[#22C55E]",
-  error: "text-[#EF4444]",
-  warning: "text-[#F59E0B]",
-  info: "text-[#3B82F6]",
+  success: "text-success",
+  error: "text-error",
+  warning: "text-warning",
+  info: "text-info",
 };
 
 type ToastVariant = "default" | "success" | "error" | "warning" | "info";
@@ -140,7 +140,7 @@ function ToastItem({
           <Button
             variant="ghost"
             size="sm"
-            className="mt-2 h-8 px-2 text-[#6366F1] hover:text-[#818CF8] hover:bg-[#6366F1]/10"
+            className="mt-2 h-8 px-2 text-primary hover:text-primary-hover hover:bg-[#6366F1]/10"
             onClick={() => {
               toast.action?.onClick();
               handleDismiss();

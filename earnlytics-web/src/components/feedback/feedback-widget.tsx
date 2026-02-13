@@ -116,7 +116,7 @@ export function FeedbackWidget({ position = "bottom-right" }: FeedbackWidgetProp
                 <select
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#6366F1]"
+                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-primary"
                 >
                   <option value="">选择类别</option>
                   <option value="bug">问题反馈</option>
@@ -132,7 +132,7 @@ export function FeedbackWidget({ position = "bottom-right" }: FeedbackWidgetProp
                   value={feedback}
                   onChange={(e) => setFeedback(e.target.value)}
                   placeholder="请描述您遇到的问题或建议..."
-                  className="w-full h-24 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm resize-none focus:outline-none focus:border-[#6366F1]"
+                  className="w-full h-24 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm resize-none focus:outline-none focus:border-primary"
                 />
               </div>
 

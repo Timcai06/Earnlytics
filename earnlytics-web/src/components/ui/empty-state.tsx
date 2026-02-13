@@ -36,14 +36,14 @@ const iconBgColors = {
 };
 
 const iconColors = {
-  chart: "text-[#6366F1]",
-  search: "text-[#3B82F6]",
+  chart: "text-primary",
+  search: "text-info",
   file: "text-text-secondary",
-  company: "text-[#22C55E]",
-  calendar: "text-[#F59E0B]",
-  alert: "text-[#EF4444]",
-  loading: "text-[#6366F1]",
-  inbox: "text-[#71717A]",
+  company: "text-success",
+  calendar: "text-warning",
+  alert: "text-error",
+  loading: "text-primary",
+  inbox: "text-text-tertiary",
 };
 
 export interface EmptyStateProps {
