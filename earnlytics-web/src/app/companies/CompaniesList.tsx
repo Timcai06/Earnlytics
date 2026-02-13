@@ -113,7 +113,7 @@ export default function CompaniesList({ companies }: CompaniesListProps) {
       <div className="flex flex-col">
         <section className="bg-background px-4 py-20 sm:px-6 lg:px-20">
           <div className="flex flex-col items-center text-center">
-            <h1 className="mb-4 text-3xl font-bold text-white sm:text-[40px]">
+            <h1 className="mb-4 text-3xl font-bold text-white sm:text-4xl">
               科技公司目录
             </h1>
             <p className="text-lg text-text-secondary">
@@ -137,7 +137,7 @@ export default function CompaniesList({ companies }: CompaniesListProps) {
     <div className="flex flex-col">
       <section className="bg-background px-4 py-20 sm:px-6 lg:px-20">
         <div className="flex flex-col items-center text-center">
-          <h1 className="mb-4 text-3xl font-bold text-white sm:text-[40px]">
+          <h1 className="mb-4 text-3xl font-bold text-white sm:text-4xl">
             科技公司目录
           </h1>
           <p className="text-lg text-text-secondary">

@@ -34,12 +34,12 @@ export default function AboutPage() {
   return (
     <div className="flex flex-col">
       {/* About Hero */}
-      <section className="bg-background px-20 py-28">
+      <section className="bg-background px-4 py-16 sm:px-6 sm:py-20 lg:px-20 lg:py-28">
         <div className="mx-auto max-w-4xl text-center">
           <div className="mb-6 inline-flex items-center rounded-2xl bg-primary-light px-4 py-2">
             <span className="text-sm font-semibold text-primary-hover">关于我们</span>
           </div>
-          <h1 className="mb-6 text-[56px] font-bold text-white drop-shadow-[0_0_30px_rgba(99,102,241,0.25)]">
+          <h1 className="mb-6 text-3xl sm:text-4xl lg:text-5xl font-bold text-white drop-shadow-[0_0_30px_rgba(99,102,241,0.25)]">
             关于 Earnlytics
           </h1>
           <p className="mb-8 text-2xl text-text-secondary">让财报分析变得简单易懂</p>
@@ -51,9 +51,9 @@ export default function AboutPage() {
       </section>
 
       {/* Mission Section */}
-      <section className="bg-surface px-20 py-20">
+      <section className="bg-surface px-4 py-12 sm:px-6 sm:py-16 lg:px-20 lg:py-20">
         <div className="mx-auto max-w-6xl">
-          <h2 className="mb-12 text-center text-[40px] font-bold text-white">
+          <h2 className="mb-12 text-center text-2xl sm:text-3xl font-bold text-white">
             我们的使命
           </h2>
 
@@ -79,9 +79,9 @@ export default function AboutPage() {
       </section>
 
       {/* Contact Section */}
-      <section className="bg-surface px-20 py-20">
+      <section className="bg-surface px-4 py-12 sm:px-6 sm:py-16 lg:px-20 lg:py-20">
         <div className="mx-auto max-w-6xl">
-          <h2 className="mb-12 text-center text-[40px] font-bold text-white">
+          <h2 className="mb-12 text-center text-2xl sm:text-3xl font-bold text-white">
             联系我们
           </h2>
 

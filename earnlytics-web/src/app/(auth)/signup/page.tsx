@@ -15,7 +15,7 @@ export default function SignupPage() {
     <div className="flex flex-1 items-center justify-center bg-background px-4 py-20">
       <div className="w-full max-w-[480px] rounded-2xl border border-border bg-white p-12">
         <div className="mb-8 text-center">
-          <h1 className="mb-2 text-[32px] font-bold text-slate-900">
+          <h1 className="mb-2 text-3xl font-bold text-slate-900">
             创建账户
           </h1>
           <p className="text-base text-slate-500">

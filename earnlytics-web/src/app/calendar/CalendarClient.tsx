@@ -91,7 +91,7 @@ export default function CalendarClient({
         <div className="flex flex-col items-center text-center">
           <div className="relative mb-4">
             <HorizontalGlow />
-            <h1 className="relative z-10 text-3xl font-bold text-white md:text-[40px]">
+            <h1 className="relative z-10 text-3xl font-bold text-white md:text-3xl sm:text-4xl">
               财报日历
             </h1>
           </div>

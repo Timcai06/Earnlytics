@@ -7,9 +7,9 @@ export default function ProfilePage() {
   return (
     <div className="flex flex-col">
       {/* Profile Hero */}
-      <section className="bg-background px-20 pt-20 pb-10">
+      <section className="bg-background px-4 pt-16 pb-8 sm:px-6 sm:pt-20 sm:pb-10 lg:px-20">
         <div className="mx-auto max-w-3xl">
-          <h1 className="mb-4 text-[40px] font-bold text-white drop-shadow-[0_0_30px_rgba(99,102,241,0.25)]">
+          <h1 className="mb-4 text-3xl sm:text-4xl font-bold text-white drop-shadow-[0_0_30px_rgba(99,102,241,0.25)]">
             账户设置
           </h1>
           <p className="text-lg text-text-secondary">管理您的个人信息和订阅偏好</p>
@@ -17,7 +17,7 @@ export default function ProfilePage() {
       </section>
 
       {/* Profile Content */}
-      <section className="bg-background px-20 pb-20">
+      <section className="bg-background px-4 pb-16 sm:px-6 sm:pb-20 lg:px-20">
         <div className="mx-auto max-w-3xl">
           {/* Tab Navigation */}
           <div className="mb-8 flex gap-2">

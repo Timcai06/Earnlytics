@@ -45,7 +45,7 @@ export default function LandingPage() {
   return (
     <div className="flex flex-col">
       {/* Hero Section */}
-      <section className="bg-background px-20 py-[120px]">
+      <section className="bg-background px-4 py-16 sm:px-6 sm:py-20 lg:px-20 lg:py-28">
         <div className="flex flex-col items-center text-center">
           {/* Badge */}
           <div className="mb-8 inline-flex items-center gap-2 rounded-2xl bg-primary-light px-4 py-2">
@@ -58,7 +58,7 @@ export default function LandingPage() {
           {/* Title */}
           <div className="relative mb-6">
             <MysticalGlow />
-            <h1 className="relative z-10 text-[64px] font-bold leading-tight text-white">
+            <h1 className="relative z-10 text-4xl font-bold leading-tight text-white sm:text-5xl lg:text-6xl">
               让财报分析变得简单
             </h1>
           </div>
@@ -79,10 +79,10 @@ export default function LandingPage() {
           </div>
 
           {/* Stats */}
-          <div className="flex items-center gap-20">
+          <div className="flex items-center gap-8 sm:gap-12 lg:gap-20">
             {stats.map((stat) => (
               <div key={stat.label} className="flex flex-col items-center gap-2">
-                <span className="text-5xl font-bold text-primary-hover drop-shadow-[0_0_20px_rgba(99,102,241,0.38)]">
+                <span className="text-3xl font-bold text-primary-hover sm:text-4xl lg:text-5xl">
                   {stat.value}
                 </span>
                 <span className="text-base text-text-secondary">{stat.label}</span>
@@ -93,9 +93,9 @@ export default function LandingPage() {
       </section>
 
       {/* Features Section */}
-      <section className="bg-surface px-20 py-20">
+      <section className="bg-surface px-4 py-12 sm:px-6 sm:py-16 lg:px-20 lg:py-20">
         <div className="mx-auto max-w-6xl">
-          <h2 className="mb-12 text-center text-[40px] font-bold text-white">
+          <h2 className="mb-8 text-center text-2xl font-bold text-white sm:mb-12 sm:text-3xl lg:text-4xl">
             为什么选择 Earnlytics
           </h2>
 
@@ -117,9 +117,9 @@ export default function LandingPage() {
       </section>
 
       {/* Companies Showcase */}
-      <section className="bg-background px-20 py-20">
+      <section className="bg-background px-4 py-12 sm:px-6 sm:py-16 lg:px-20 lg:py-20">
         <div className="flex flex-col items-center text-center">
-          <h2 className="mb-6 text-[48px] font-bold text-white">
+          <h2 className="mb-6 text-2xl font-bold text-white sm:text-3xl lg:text-4xl">
             覆盖热门科技公司
           </h2>
           <p className="mb-12 max-w-2xl text-xl text-text-secondary">
@@ -148,9 +148,9 @@ export default function LandingPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="bg-background px-20 py-20">
+      <section className="bg-background px-4 py-12 sm:px-6 sm:py-16 lg:px-20 lg:py-20">
         <div className="flex flex-col items-center text-center">
-          <h2 className="mb-8 text-[48px] font-bold text-white">
+          <h2 className="mb-8 text-2xl font-bold text-white sm:text-3xl lg:text-4xl">
             准备好探索财报洞察了吗？
           </h2>
           <Link

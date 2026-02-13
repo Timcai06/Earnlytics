@@ -273,7 +273,7 @@ export default function EarningsPage({ params }: Props) {
             ].map((metric) => (
               <div key={metric.label} className={`rounded-xl border ${metric.color} bg-surface-secondary p-4 sm:p-7 ${metric.shadow}`}>
                 <p className="mb-2 text-xs text-text-secondary sm:mb-3 sm:text-sm">{metric.label}</p>
-                <p className="mb-1 text-xl font-bold text-white drop-shadow-[0_0_20px_rgba(99,102,241,0.25)] sm:mb-2 sm:text-[32px]">
+                <p className="mb-1 text-xl font-bold text-white drop-shadow-[0_0_20px_rgba(99,102,241,0.25)] sm:mb-2 sm:text-3xl">
                   {metric.value}
                 </p>
                 {metric.change && (
