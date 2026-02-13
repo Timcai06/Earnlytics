@@ -6,24 +6,24 @@ import MysticalGlow from "@/components/ui/mystical-glow";
 export default function LandingPage() {
   const features = [
     {
-      icon: <ZapIcon className="h-10 w-10 text-[#6366F1]" />,
+      icon: <ZapIcon className="h-10 w-10 text-primary" />,
       title: "极速分析",
       description: "财报发布后1小时内完成AI分析，快速把握投资机会",
-      borderColor: "border-[#6366F1]",
+      borderColor: "border-primary",
       shadowColor: "shadow-[0_0_20px_rgba(99,102,241,0.13)]",
     },
     {
-      icon: <BotIcon className="h-10 w-10 text-[#22C55E]" />,
+      icon: <BotIcon className="h-10 w-10 text-success" />,
       title: "AI 智能解读",
       description: "复杂财务数据转化为通俗易懂的中文摘要",
-      borderColor: "border-[#22C55E]",
+      borderColor: "border-success",
       shadowColor: "shadow-[0_0_20px_rgba(34,197,94,0.13)]",
     },
     {
-      icon: <DiamondIcon className="h-10 w-10 text-[#3B82F6]" />,
+      icon: <DiamondIcon className="h-10 w-10 text-info" />,
       title: "完全免费",
       description: "基础功能永久免费，无需注册即可访问",
-      borderColor: "border-[#3B82F6]",
+      borderColor: "border-info",
       shadowColor: "shadow-[0_0_20px_rgba(59,130,246,0.13)]",
     },
   ];
@@ -35,11 +35,11 @@ export default function LandingPage() {
   ];
 
   const companies = [
-    { icon: <AppleIcon className="h-8 w-8" />, name: "Apple", border: "border-[#3F3F46]" },
-    { icon: <WindowIcon className="h-8 w-8" />, name: "Microsoft", border: "border-[#3B82F6]" },
-    { icon: <SearchIcon className="h-8 w-8" />, name: "Google", border: "border-[#22C55E]" },
-    { icon: <CpuIcon className="h-8 w-8 text-[#76B900]" />, name: "NVIDIA", border: "border-[#76B900]" },
-    { icon: <MetaIcon className="h-8 w-8" />, name: "Meta", border: "border-[#6366F1]" },
+    { icon: <AppleIcon className="h-8 w-8" />, name: "Apple", border: "border-border" },
+    { icon: <WindowIcon className="h-8 w-8" />, name: "Microsoft", border: "border-info" },
+    { icon: <SearchIcon className="h-8 w-8" />, name: "Google", border: "border-success" },
+    { icon: <CpuIcon className="h-8 w-8 text-success" />, name: "NVIDIA", border: "border-success" },
+    { icon: <MetaIcon className="h-8 w-8" />, name: "Meta", border: "border-primary" },
   ];
 
   return (
@@ -48,9 +48,9 @@ export default function LandingPage() {
       <section className="bg-background px-20 py-[120px]">
         <div className="flex flex-col items-center text-center">
           {/* Badge */}
-          <div className="mb-8 inline-flex items-center gap-2 rounded-2xl bg-[rgba(99,102,241,0.15)] px-4 py-2">
-            <BotIcon className="h-4 w-4 text-[#818CF8]" />
-            <span className="text-sm font-semibold text-[#818CF8]">
+          <div className="mb-8 inline-flex items-center gap-2 rounded-2xl bg-primary-light px-4 py-2">
+            <BotIcon className="h-4 w-4 text-primary-hover" />
+            <span className="text-sm font-semibold text-primary-hover">
               AI 驱动的财报分析
             </span>
           </div>
@@ -64,7 +64,7 @@ export default function LandingPage() {
           </div>
 
           {/* Subtitle */}
-          <p className="mb-10 max-w-2xl text-xl text-[#D4D4D8]">
+          <p className="mb-10 max-w-2xl text-xl text-text-secondary">
             通过 AI 自动分析美国科技公司财报，1小时内获取深度洞察
           </p>
 
@@ -82,10 +82,10 @@ export default function LandingPage() {
           <div className="flex items-center gap-20">
             {stats.map((stat) => (
               <div key={stat.label} className="flex flex-col items-center gap-2">
-                <span className="text-5xl font-bold text-[#818CF8] drop-shadow-[0_0_20px_rgba(99,102,241,0.38)]">
+                <span className="text-5xl font-bold text-primary-hover drop-shadow-[0_0_20px_rgba(99,102,241,0.38)]">
                   {stat.value}
                 </span>
-                <span className="text-base text-[#D4D4D8]">{stat.label}</span>
+                <span className="text-base text-text-secondary">{stat.label}</span>
               </div>
             ))}
           </div>
@@ -109,7 +109,7 @@ export default function LandingPage() {
                 <h3 className="text-xl font-semibold text-white">
                   {feature.title}
                 </h3>
-                <p className="text-base text-[#A1A1AA] leading-relaxed">{feature.description}</p>
+                <p className="text-base text-text-secondary leading-relaxed">{feature.description}</p>
               </div>
             ))}
           </div>
@@ -122,7 +122,7 @@ export default function LandingPage() {
           <h2 className="mb-6 text-[48px] font-bold text-white">
             覆盖热门科技公司
           </h2>
-          <p className="mb-12 max-w-2xl text-xl text-[#A1A1AA]">
+          <p className="mb-12 max-w-2xl text-xl text-text-secondary">
             追踪 Apple、Microsoft、NVIDIA 等 30+ 家科技巨头的财报动态
           </p>
 
@@ -140,7 +140,7 @@ export default function LandingPage() {
 
           <Link
             href="/companies"
-            className="inline-flex items-center gap-2 rounded-lg border border-[#6366F1] bg-[rgba(99,102,241,0.15)] px-6 py-3 text-base font-medium text-[#E0E7FF] shadow-[0_0_15px_rgba(99,102,241,0.19)] transition-colors hover:bg-[rgba(99,102,241,0.25)]"
+            className="inline-flex items-center gap-2 rounded-lg border border-primary bg-primary-light px-6 py-3 text-base font-medium text-primary-foreground shadow-[0_0_15px_rgba(99,102,241,0.19)] transition-colors hover:bg-primary-hover"
           >
             查看全部 30+ 家公司 →
           </Link>
@@ -155,7 +155,7 @@ export default function LandingPage() {
           </h2>
           <Link
             href="/signup"
-            className="inline-flex items-center gap-2 rounded-lg border border-[#818CF8] bg-[#6366EF] px-8 py-4 text-base font-semibold text-white shadow-[0_8px_30px_rgba(99,102,241,0.4)] transition-colors hover:bg-primary-hover"
+            className="inline-flex items-center gap-2 rounded-lg border border-primary-hover bg-primary px-8 py-4 text-base font-semibold text-white shadow-[0_8px_30px_rgba(99,102,241,0.4)] transition-colors hover:bg-primary-hover"
           >
             立即开始
           </Link>

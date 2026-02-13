@@ -16,16 +16,16 @@ type SortOption = "symbol-asc" | "symbol-desc" | "date-desc" | "date-asc";
 
 const getSectorStyle = (sector: string | null) => {
   const styles: Record<string, { color: string; bgColor: string }> = {
-    "芯片": { color: "#3B82F6", bgColor: "bg-blue-500/10" },
-    "软件": { color: "#10B981", bgColor: "bg-emerald-500/10" },
-    "电商": { color: "#F59E0B", bgColor: "bg-amber-500/10" },
-    "社交媒体": { color: "#8B5CF6", bgColor: "bg-violet-500/10" },
-    "消费电子": { color: "#EC4899", bgColor: "bg-pink-500/10" },
-    "流媒体": { color: "#EF4444", bgColor: "bg-red-500/10" },
-    "汽车": { color: "#06B6D4", bgColor: "bg-cyan-500/10" },
+    "芯片": { color: "text-info", bgColor: "bg-info/10" },
+    "软件": { color: "text-success", bgColor: "bg-success/10" },
+    "电商": { color: "text-warning", bgColor: "bg-warning/10" },
+    "社交媒体": { color: "text-primary", bgColor: "bg-primary/10" },
+    "消费电子": { color: "text-error", bgColor: "bg-error/10" },
+    "流媒体": { color: "text-error", bgColor: "bg-error/10" },
+    "汽车": { color: "text-success", bgColor: "bg-success/10" },
   };
 
-  return styles[sector || ""] || { color: "#6366F1", bgColor: "bg-[#6366F1]/10" };
+  return styles[sector || ""] || { color: "text-primary", bgColor: "bg-primary/10" };
 };
 
 const filters = [
@@ -116,7 +116,7 @@ export default function CompaniesList({ companies }: CompaniesListProps) {
             <h1 className="mb-4 text-3xl font-bold text-white sm:text-[40px]">
               科技公司目录
             </h1>
-            <p className="text-lg text-[#A1A1AA]">
+            <p className="text-lg text-text-secondary">
               探索我们覆盖的美国科技巨头
             </p>
           </div>
@@ -140,7 +140,7 @@ export default function CompaniesList({ companies }: CompaniesListProps) {
           <h1 className="mb-4 text-3xl font-bold text-white sm:text-[40px]">
             科技公司目录
           </h1>
-          <p className="text-lg text-[#A1A1AA]">
+          <p className="text-lg text-text-secondary">
             探索我们覆盖的{companies.length}家美国科技巨头
           </p>
         </div>
@@ -150,13 +150,13 @@ export default function CompaniesList({ companies }: CompaniesListProps) {
         <div className="mx-auto max-w-6xl space-y-4">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="relative flex-1 max-w-md">
-              <SearchIcon className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-[#64748B]" />
+              <SearchIcon className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-text-tertiary" />
               <input
                 type="text"
                 placeholder="搜索公司名称或股票代码..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="h-11 w-full rounded-lg border border-[#3F3F46] bg-[#111111] pl-10 pr-4 text-sm text-white placeholder:text-[#64748B] focus:border-[#6366F1] focus:outline-none"
+                className="h-11 w-full rounded-lg border border-border bg-surface pl-10 pr-4 text-sm text-white placeholder:text-text-tertiary focus:border-primary focus:outline-none"
               />
             </div>
 
