@@ -17,8 +17,8 @@ const toastStyles = {
   default: "bg-surface border-border",
   success: "bg-surface border-success",
   error: "bg-surface border-error",
-  warning: "bg-surface border-[#F59E0B]",
-  info: "bg-surface border-[#3B82F6]",
+  warning: "bg-surface border-warning",
+  info: "bg-surface border-info",
 };
 
 const iconColors = {
@@ -140,7 +140,7 @@ function ToastItem({
           <Button
             variant="ghost"
             size="sm"
-            className="mt-2 h-8 px-2 text-primary hover:text-primary-hover hover:bg-[#6366F1]/10"
+            className="mt-2 h-8 px-2 text-primary hover:text-primary-hover hover:bg-primary/10"
             onClick={() => {
               toast.action?.onClick();
               handleDismiss();

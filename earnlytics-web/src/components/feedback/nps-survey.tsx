@@ -92,7 +92,7 @@ export function NPSSurvey({ delayInSeconds = 30 }: NPSSurveyProps) {
                   onClick={() => setScore(num)}
                   className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors ${
                     score === num
-                      ? "bg-[#6366F1] text-white"
+                      ? "bg-primary text-white"
                       : "bg-slate-800 text-slate-300 hover:bg-slate-700"
                   }`}
                   aria-label={`Score ${num}`}
@@ -105,7 +105,7 @@ export function NPSSurvey({ delayInSeconds = 30 }: NPSSurveyProps) {
             <Button
               onClick={handleSubmit}
               disabled={score === null}
-              className="w-full bg-[#6366F1] hover:bg-[#5558E0] disabled:opacity-50"
+              className="w-full bg-primary hover:bg-primary-hover disabled:opacity-50"
             >
               提交
             </Button>

@@ -44,7 +44,7 @@ export function AnimatedButton({
     >
       {loading && (
         <motion.div
-          className="absolute inset-0 bg-[#6366F1]/20"
+          className="absolute inset-0 bg-primary/20"
           initial={{ x: "-100%" }}
           animate={{ x: "100%" }}
           transition={{

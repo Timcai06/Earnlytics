@@ -65,7 +65,7 @@ export default function SubscribeForm() {
           <Button
             type="submit"
             disabled={status === "loading"}
-            className="bg-[#6366F1] text-white hover:bg-[#4F46E5] disabled:opacity-50"
+            className="bg-primary text-white hover:bg-primary-hover disabled:opacity-50"
           >
             {status === "loading" ? "订阅中..." : "订阅"}
           </Button>

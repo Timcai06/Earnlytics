@@ -166,7 +166,7 @@ export default function CompaniesList({ companies }: CompaniesListProps) {
                   onClick={() => setViewMode("grid")}
                   className={`rounded-md p-2 transition-colors ${
                     viewMode === "grid"
-                      ? "bg-[#6366F1] text-white"
+                      ? "bg-primary text-white"
                       : "text-text-tertiary hover:text-white"
                   }`}
                   title="网格视图"
@@ -177,7 +177,7 @@ export default function CompaniesList({ companies }: CompaniesListProps) {
                   onClick={() => setViewMode("list")}
                   className={`rounded-md p-2 transition-colors ${
                     viewMode === "list"
-                      ? "bg-[#6366F1] text-white"
+                      ? "bg-primary text-white"
                       : "text-text-tertiary hover:text-white"
                   }`}
                   title="列表视图"
@@ -212,8 +212,8 @@ export default function CompaniesList({ companies }: CompaniesListProps) {
                   onClick={() => setActiveFilter(filter.value)}
                   className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-all ${
                     activeFilter === filter.value
-                      ? "bg-[#6366F1] text-white"
-                      : "border border-primary bg-[#6366F1]/10 text-primary-foreground hover:bg-[#6366F1]/20"
+                      ? "bg-primary text-white"
+                      : "border border-primary bg-primary/10 text-primary-foreground hover:bg-primary/20"
                   }`}
                 >
                   {filter.label}
@@ -328,7 +328,7 @@ export default function CompaniesList({ companies }: CompaniesListProps) {
 
                     <Link
                       href={`/earnings/${company.symbol.toLowerCase()}`}
-                      className="block w-full rounded-lg border border-primary bg-[#6366F1]/15 py-2.5 text-center text-sm font-semibold text-primary-hover transition-colors hover:bg-[#6366F1]/25"
+                      className="block w-full rounded-lg border border-primary bg-primary/15 py-2.5 text-center text-sm font-semibold text-primary-hover transition-colors hover:bg-primary/25"
                     >
                       查看财报 →
                     </Link>
@@ -399,7 +399,7 @@ export default function CompaniesList({ companies }: CompaniesListProps) {
 
                     <Link
                       href={`/earnings/${company.symbol.toLowerCase()}`}
-                      className="flex-shrink-0 rounded-lg border border-primary bg-[#6366F1]/15 px-4 py-2 text-sm font-semibold text-primary-hover transition-colors hover:bg-[#6366F1]/25"
+                      className="flex-shrink-0 rounded-lg border border-primary bg-primary/15 px-4 py-2 text-sm font-semibold text-primary-hover transition-colors hover:bg-primary/25"
                     >
                       查看 →
                     </Link>

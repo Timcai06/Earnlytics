@@ -264,7 +264,7 @@ export function IndustryComparisonChart({
       <CardHeader className="pb-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center gap-2">
-            <div className="p-2 bg-[#6366F1]/10 rounded-lg">
+            <div className="p-2 bg-primary/10 rounded-lg">
               <Building2 className="h-5 w-5 text-primary" />
             </div>
             <div>
@@ -316,7 +316,7 @@ export function IndustryComparisonChart({
                 className={cn(
                   "h-7 text-xs",
                   selectedMetric === metric
-                    ? "bg-[#6366F1]/10 text-primary hover:bg-[#6366F1]/20"
+                    ? "bg-primary/10 text-primary hover:bg-primary/20"
                     : "text-text-tertiary hover:text-white hover:bg-surface-secondary"
                 )}
               >
@@ -367,15 +367,15 @@ export function IndustryComparisonChart({
 
         <div className="flex items-center justify-center gap-6 text-xs">
           <div className="flex items-center gap-1.5">
-            <div className="w-3 h-3 bg-[#6366F1] rounded-sm" />
+            <div className="w-3 h-3 bg-primary rounded-sm" />
             <span className="text-text-secondary">当前公司</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <div className="w-3 h-3 bg-[#71717A] rounded-sm" />
+            <div className="w-3 h-3 bg-text-tertiary rounded-sm" />
             <span className="text-text-secondary">同业公司</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <div className="w-3 h-0 border-t-2 border-dashed border-[#F59E0B]" />
+            <div className="w-3 h-0 border-t-2 border-dashed border-warning" />
             <span className="text-text-secondary">行业平均</span>
           </div>
         </div>

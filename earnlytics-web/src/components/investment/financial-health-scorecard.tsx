@@ -207,7 +207,7 @@ function DuPontChart({
           <p className="text-xs text-text-tertiary">权益乘数</p>
         </div>
         <span className="text-text-tertiary text-xl">=</span>
-        <div className="text-center px-3 py-1 bg-[#6366F1]/10 rounded-lg border border-primary/30">
+        <div className="text-center px-3 py-1 bg-primary/10 rounded-lg border border-primary/30">
           <span className="text-xl font-bold text-primary">
             {(roe * 100).toFixed(1)}%
           </span>
@@ -405,7 +405,7 @@ export function FinancialHealthScorecard({
       <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="p-2 bg-[#6366F1]/10 rounded-lg">
+            <div className="p-2 bg-primary/10 rounded-lg">
               <HeartPulse className="h-5 w-5 text-primary" />
             </div>
             <div>

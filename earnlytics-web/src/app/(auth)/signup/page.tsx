@@ -12,7 +12,7 @@ export default function SignupPage() {
   const [password, setPassword] = useState("");
 
   return (
-    <div className="flex flex-1 items-center justify-center bg-[#FAFAFA] px-4 py-20">
+    <div className="flex flex-1 items-center justify-center bg-background px-4 py-20">
       <div className="w-full max-w-[480px] rounded-2xl border border-border bg-white p-12">
         <div className="mb-8 text-center">
           <h1 className="mb-2 text-[32px] font-bold text-slate-900">

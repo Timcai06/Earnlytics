@@ -120,7 +120,7 @@ export default function CalendarClient({
                 </button>
                 <button
                   onClick={goToToday}
-                  className="rounded-lg px-3 py-2 text-sm text-primary hover:bg-[#6366F1] hover:text-white transition-colors"
+                  className="rounded-lg px-3 py-2 text-sm text-primary hover:bg-primary hover:text-white transition-colors"
                 >
                   今天
                 </button>
@@ -165,7 +165,7 @@ export default function CalendarClient({
                       key={day}
                       className={`min-h-[100px] rounded-lg p-2 md:min-h-[120px] md:p-3 ${
                         hasEvent
-                          ? "border border-primary bg-[rgba(99,102,241,0.15)] shadow-[0_0_20px_rgba(99,102,241,0.25)]"
+                          ? "border border-primary bg-primary-light shadow-[0_0_20px_rgba(99,102,241,0.25)]"
                           : "bg-background"
                       }`}
                     >
@@ -177,7 +177,7 @@ export default function CalendarClient({
                           <Link
                             key={event.id}
                             href={`/earnings/${event.symbol}`}
-                            className="block rounded bg-[#6366F1] px-1 py-0.5 transition-transform hover:scale-[1.02] md:px-2 md:py-1"
+                            className="block rounded bg-primary px-1 py-0.5 transition-transform hover:scale-[1.02] md:px-2 md:py-1"
                           >
                             <p className="truncate text-xs font-semibold text-white md:text-sm">
                               {event.symbol}
@@ -195,7 +195,7 @@ export default function CalendarClient({
           {/* Legend */}
           <div className="mt-6 flex flex-col gap-4 rounded-xl border border-border bg-surface-secondary p-4 md:mt-8 md:flex-row md:gap-8 md:p-6">
             <div className="flex items-center gap-2">
-              <div className="h-3 w-3 rounded-full bg-[#6366F1]" />
+              <div className="h-3 w-3 rounded-full bg-primary" />
               <span className="text-sm text-text-secondary">有财报发布</span>
             </div>
             <div className="flex items-center gap-2">
@@ -203,7 +203,7 @@ export default function CalendarClient({
               <span className="text-sm text-text-secondary">无财报</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="h-3 w-3 rounded-full bg-[#22C55E]" />
+              <div className="h-3 w-3 rounded-full bg-success" />
               <span className="text-sm text-text-secondary">已分析</span>
             </div>
           </div>

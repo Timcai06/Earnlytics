@@ -25,14 +25,14 @@ const iconMap = {
 };
 
 const iconBgColors = {
-  chart: "bg-[#6366F1]/15",
-  search: "bg-[#3B82F6]/15",
-  file: "bg-[#A1A1AA]/15",
-  company: "bg-[#22C55E]/15",
-  calendar: "bg-[#F59E0B]/15",
-  alert: "bg-[#EF4444]/15",
-  loading: "bg-[#6366F1]/15",
-  inbox: "bg-[#71717A]/15",
+  chart: "bg-primary/15",
+  search: "bg-info/15",
+  file: "bg-text-secondary/15",
+  company: "bg-success/15",
+  calendar: "bg-warning/15",
+  alert: "bg-error/15",
+  loading: "bg-primary/15",
+  inbox: "bg-text-tertiary/15",
 };
 
 const iconColors = {

@@ -329,7 +329,7 @@ export default function EarningsPage({ params }: Props) {
               </div>
 
               {analysis.highlights && analysis.highlights.length > 0 && (
-                <div className="mb-8 rounded-xl border border-success bg-[rgba(34,197,94,0.1)] p-5 sm:p-7">
+                <div className="mb-8 rounded-xl border border-success bg-success-light p-5 sm:p-7">
                   <h3 className="mb-3 flex items-center gap-2 text-base font-bold text-success sm:mb-4 sm:text-lg">
                     <SparklesIcon className="h-5 w-5" />
                     核心亮点
@@ -346,7 +346,7 @@ export default function EarningsPage({ params }: Props) {
               )}
 
               {analysis.concerns && analysis.concerns.length > 0 && (
-                <div className="mb-8 rounded-xl border border-error bg-[rgba(239,68,68,0.1)] p-5 sm:p-7">
+                <div className="mb-8 rounded-xl border border-error bg-error-light p-5 sm:p-7">
                   <h3 className="mb-3 flex items-center gap-2 text-base font-bold text-error sm:mb-4 sm:text-lg">
                     <AlertTriangleIcon className="h-5 w-5" />
                     关注点

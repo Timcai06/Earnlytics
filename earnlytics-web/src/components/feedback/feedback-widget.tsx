@@ -64,7 +64,7 @@ export function FeedbackWidget({ position = "bottom-right" }: FeedbackWidgetProp
       {!isOpen ? (
         <Button
           onClick={() => setIsOpen(true)}
-          className="rounded-full w-14 h-14 shadow-lg bg-[#6366F1] hover:bg-[#5558E0]"
+          className="rounded-full w-14 h-14 shadow-lg bg-primary hover:bg-primary-hover"
           aria-label="Open feedback"
         >
           <MessageSquare className="w-6 h-6" />
@@ -139,7 +139,7 @@ export function FeedbackWidget({ position = "bottom-right" }: FeedbackWidgetProp
               <Button
                 onClick={handleSubmit}
                 disabled={isSubmitting || (!feedback.trim() && rating === 0)}
-                className="w-full bg-[#6366F1] hover:bg-[#5558E0] disabled:opacity-50"
+                className="w-full bg-primary hover:bg-primary-hover disabled:opacity-50"
               >
                 {isSubmitting ? "发送中..." : "发送反馈"}
               </Button>

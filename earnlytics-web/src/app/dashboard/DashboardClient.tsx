@@ -95,7 +95,7 @@ function StatCard({
           <CardTitle className="text-sm font-medium text-text-secondary">
             {title}
           </CardTitle>
-          <div className="p-2 bg-[#6366F1]/10 rounded-lg">
+          <div className="p-2 bg-primary/10 rounded-lg">
             <Icon className="h-4 w-4 text-primary" />
           </div>
         </div>
@@ -219,7 +219,7 @@ function OverviewTab({ recommendations }: { recommendations: InvestmentRecommend
                   </div>
 
                   <div className="flex items-center gap-4 mb-4 p-3 bg-surface-secondary rounded-lg">
-                    <div className="p-2 bg-[#6366F1]/10 rounded-lg">
+                    <div className="p-2 bg-primary/10 rounded-lg">
                       <Target className="h-4 w-4 text-primary" />
                     </div>
                     <div className="flex-1">
@@ -248,7 +248,7 @@ function OverviewTab({ recommendations }: { recommendations: InvestmentRecommend
                   )}
 
                   <div className="flex gap-2">
-                    <Button asChild className="flex-1 bg-[#6366F1] hover:bg-[#818CF8]">
+                    <Button asChild className="flex-1 bg-primary hover:bg-primary-hover">
                       <Link href={`/analysis/${rec.symbol.toLowerCase()}`}>
                         深度分析
                       </Link>

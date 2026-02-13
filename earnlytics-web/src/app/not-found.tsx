@@ -6,7 +6,7 @@ export default function NotFoundPage() {
       {/* Not Found Content */}
       <section className="flex flex-1 flex-col items-center justify-center bg-background px-20 py-20">
         {/* Large 404 */}
-        <span className="mb-4 text-[160px] font-bold leading-none text-[#27272A] opacity-50">
+        <span className="mb-4 text-[160px] font-bold leading-none text-text-tertiary opacity-50">
           404
         </span>
 
@@ -25,7 +25,7 @@ export default function NotFoundPage() {
           </Link>
           <Link
             href="/companies"
-            className="rounded-lg border border-primary bg-[rgba(99,102,241,0.15)] px-8 py-3.5 text-base font-medium text-primary-foreground shadow-[0_0_15px_rgba(99,102,241,0.19)] transition-colors hover:bg-[rgba(99,102,241,0.25)]"
+            className="rounded-lg border border-primary bg-primary-light px-8 py-3.5 text-base font-medium text-primary-foreground shadow-[0_0_15px_rgba(99,102,241,0.19)] transition-colors hover:bg-primary-light"
           >
             浏览公司目录
           </Link>

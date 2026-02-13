@@ -102,7 +102,7 @@ function CustomTooltip({
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-[#6366F1]" />
+                <div className="w-2 h-2 rounded-full bg-primary" />
                 <span className="text-text-secondary text-sm">营收</span>
               </div>
               <span className="text-white font-semibold">
@@ -112,7 +112,7 @@ function CustomTooltip({
             
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-[#22C55E]" />
+                <div className="w-2 h-2 rounded-full bg-success" />
                 <span className="text-text-secondary text-sm">同比</span>
               </div>
               <span className={`font-semibold ${(data.revenueGrowth || 0) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
@@ -125,7 +125,7 @@ function CustomTooltip({
             {data.qoqGrowth !== null && data.qoqGrowth !== undefined && (
               <div className="flex items-center justify-between pt-1 border-t border-border">
                 <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-[#A1A1AA]" />
+                  <div className="w-2 h-2 rounded-full bg-text-secondary" />
                   <span className="text-text-tertiary text-xs">环比</span>
                 </div>
                 <span className={`text-xs font-medium ${data.qoqGrowth >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
@@ -399,7 +399,7 @@ export function EarningsTrendChart({
       <CardHeader className="pb-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center gap-2">
-            <div className="p-2 bg-[#6366F1]/10 rounded-lg">
+            <div className="p-2 bg-primary/10 rounded-lg">
               <TrendingUp className="h-5 w-5 text-primary" />
             </div>
             <div>

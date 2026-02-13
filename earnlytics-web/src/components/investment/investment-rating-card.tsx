@@ -328,7 +328,7 @@ function TargetPrice({ low, high, currentPrice }: TargetPriceProps) {
           }}
         />
         <div
-          className="absolute h-full bg-[#6366F1]/30 rounded-full"
+          className="absolute h-full bg-primary/30 rounded-full"
           style={{
             left: `${((low - low * 0.8) / (high * 1.2 - low * 0.8)) * 100}%`,
             width: `${((high - low) / (high * 1.2 - low * 0.8)) * 100}%`,
@@ -380,7 +380,7 @@ function KeyPointsSection({ points, defaultExpanded = false }: KeyPointsSectionP
           variant="ghost"
           size="sm"
           onClick={() => setIsExpanded(!isExpanded)}
-          className="text-primary hover:text-primary-hover hover:bg-[#6366F1]/10 -ml-2"
+          className="text-primary hover:text-primary-hover hover:bg-primary/10 -ml-2"
         >
           {isExpanded ? (
             <>
