@@ -319,7 +319,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <AdsenseAd adSlot="xxxxxxxxxx" adFormat="horizontal" />
+      <AdsenseAd adSlot="7363059938" />
 
       {/* Subscribe Section */}
       <SubscribeForm />

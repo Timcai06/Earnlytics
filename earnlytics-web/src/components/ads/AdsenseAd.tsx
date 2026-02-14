@@ -4,7 +4,6 @@ import { useEffect } from "react";
 
 interface AdsenseAdProps {
   adSlot: string;
-  adFormat?: "auto" | "rectangle" | "horizontal" | "vertical";
 }
 
 declare global {
@@ -13,10 +12,7 @@ declare global {
   }
 }
 
-export default function AdsenseAd({ 
-  adSlot, 
-  adFormat = "auto" 
-}: AdsenseAdProps) {
+export default function AdsenseAd({ adSlot }: AdsenseAdProps) {
   useEffect(() => {
     try {
       if (window.adsbygoogle) {
@@ -30,10 +26,10 @@ export default function AdsenseAd({
   return (
     <ins
       className="adsbygoogle my-8 block mx-auto"
-      style={{ display: "block", minHeight: "250px" }}
+      style={{ display: "block" }}
       data-ad-client="ca-pub-4998656796758497"
       data-ad-slot={adSlot}
-      data-ad-format={adFormat}
+      data-ad-format="auto"
       data-full-width-responsive="true"
     />
   );
