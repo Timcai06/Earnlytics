@@ -8,6 +8,7 @@ import SubscribeForm from "@/components/sections/SubscribeForm";
 import HorizontalGlow from "@/components/ui/horizontal-glow";
 import { EarningsListSkeleton, CardSkeleton } from "@/components/ui/skeleton";
 import { NoDataState, CalendarEmptyState } from "@/components/ui/empty-state";
+import AdsenseAd from "@/components/ads/AdsenseAd";
 
 interface EarningsWithCompany {
   id: number;
@@ -317,6 +318,8 @@ export default function HomePage() {
           )}
         </div>
       </section>
+
+      <AdsenseAd adSlot="xxxxxxxxxx" adFormat="horizontal" />
 
       {/* Subscribe Section */}
       <SubscribeForm />
