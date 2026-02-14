@@ -20,8 +20,7 @@ export default function Header({ onMenuToggle, isMenuOpen }: HeaderProps) {
           <span className="text-2xl font-bold text-white">Earnlytics</span>
         </Link>
 
-        {/* Desktop CTA Button */}
-        <div className="hidden lg:block">
+        <div className="hidden">
           <Link
             href="/signup"
             className="rounded-lg border border-primary-hover bg-primary px-6 py-3 text-[15px] font-semibold leading-none text-white shadow-[0_0_24px_rgba(99,102,241,0.67)] transition-colors hover:bg-primary-hover"
