@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { use, useEffect, useState } from "react";
-import { BotIcon, LoaderIcon, XCircleIcon, SparklesIcon, AlertTriangleIcon, BarChart3Icon, ThumbsUpIcon, ThumbsDownIcon, ClockIcon, DatabaseIcon, TrendingUpIcon } from "@/components/icons";
+import { BotIcon, XCircleIcon, SparklesIcon, AlertTriangleIcon, BarChart3Icon, ThumbsUpIcon, ThumbsDownIcon, ClockIcon, DatabaseIcon, TrendingUpIcon } from "@/components/icons";
+import { PageLoading } from "@/components/ui/spinner";
 import { EarningsTrendChart } from "@/components/sections/EarningsTrendChart";
 
 interface EarningWithAnalysis {
@@ -170,14 +171,7 @@ export default function EarningsPage({ params }: Props) {
   }));
 
   if (loading && !earnings) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="text-center">
-          <LoaderIcon className="mx-auto mb-4 h-10 w-10 animate-spin text-primary-hover" />
-          <p className="text-text-secondary">加载中...</p>
-        </div>
-      </div>
-    );
+    return <PageLoading message="加载中..." />;
   }
 
   if (error || !earnings) {
@@ -266,14 +260,14 @@ export default function EarningsPage({ params }: Props) {
         <div className="mx-auto max-w-4xl">
           <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-4 sm:gap-5">
             {[
-              { label: "营收", value: formatCurrency(earnings.revenue), change: earnings.revenue_yoy_growth ? `+${earnings.revenue_yoy_growth}% YoY` : "N/A", color: "border-primary", shadow: "shadow-[0_0_15px_rgba(99,102,241,0.13)]" },
-              { label: "每股收益 (EPS)", value: earnings.eps ? `$${earnings.eps}` : "N/A", change: earnings.eps_estimate ? `预期 $${earnings.eps_estimate}` : "", color: "border-success", shadow: "shadow-[0_0_15px_rgba(34,197,94,0.13)]" },
-              { label: "净利润", value: formatCurrency(earnings.net_income), change: "", color: "border-success", shadow: "shadow-[0_0_15px_rgba(34,197,94,0.13)]" },
-              { label: "EPS超预期", value: earnings.eps_surprise ? `${earnings.eps_surprise > 0 ? '+' : ''}${earnings.eps_surprise}` : "N/A", change: "", color: "border-info", shadow: "shadow-[0_0_15px_rgba(59,130,246,0.13)]" },
+              { label: "营收", value: formatCurrency(earnings.revenue), change: earnings.revenue_yoy_growth ? `+${earnings.revenue_yoy_growth}% YoY` : "N/A" },
+              { label: "每股收益 (EPS)", value: earnings.eps ? `$${earnings.eps}` : "N/A", change: earnings.eps_estimate ? `预期 $${earnings.eps_estimate}` : "" },
+              { label: "净利润", value: formatCurrency(earnings.net_income), change: "" },
+              { label: "EPS超预期", value: earnings.eps_surprise ? `${earnings.eps_surprise > 0 ? '+' : ''}${earnings.eps_surprise}` : "N/A", change: "" },
             ].map((metric) => (
-              <div key={metric.label} className={`rounded-xl border ${metric.color} bg-surface-secondary p-4 sm:p-7 ${metric.shadow}`}>
+              <div key={metric.label} className="rounded-xl border border-success bg-surface-secondary p-4 sm:p-6 shadow-[0_0_15px_rgba(34,197,94,0.13)]">
                 <p className="mb-2 text-xs text-text-secondary sm:mb-3 sm:text-sm">{metric.label}</p>
-                <p className="mb-1 text-xl font-bold text-white drop-shadow-[0_0_20px_rgba(99,102,241,0.25)] sm:mb-2 sm:text-3xl">
+                <p className="mb-1 text-xl font-bold text-white sm:mb-2 sm:text-3xl">
                   {metric.value}
                 </p>
                 {metric.change && (
@@ -284,7 +278,7 @@ export default function EarningsPage({ params }: Props) {
           </div>
 
           {validEarningsHistory.length > 1 && (
-            <div className="mb-8 rounded-xl border border-border bg-surface-secondary p-5 sm:p-7">
+            <div className="mb-8 rounded-xl border border-border bg-surface-secondary p-5 sm:p-6">
               <div className="mb-4 flex items-center gap-2 sm:mb-6">
                 <TrendingUpIcon className="h-5 w-5 text-primary-hover" />
                 <h3 className="text-lg font-bold text-white sm:text-xl">季度趋势对比</h3>
@@ -316,7 +310,7 @@ export default function EarningsPage({ params }: Props) {
 
           {analysis ? (
             <>
-              <div className="mb-8 rounded-xl border-2 border-primary bg-primary-light p-5 shadow-[0_0_30px_rgba(99,102,241,0.25)] sm:p-7">
+              <div className="mb-8 rounded-xl border-2 border-primary bg-primary-light p-5 shadow-[0_0_30px_rgba(99,102,241,0.25)] sm:p-6">
                 <div className="mb-4 flex items-center gap-3 sm:mb-5">
                   <BotIcon className="h-6 w-6 text-primary-hover sm:h-7 sm:w-7" />
                   <h2 className="text-xl font-bold text-primary-hover drop-shadow-[0_0_20px_rgba(99,102,241,0.5)] sm:text-2xl">
@@ -329,7 +323,7 @@ export default function EarningsPage({ params }: Props) {
               </div>
 
               {analysis.highlights && analysis.highlights.length > 0 && (
-                <div className="mb-8 rounded-xl border border-success bg-success-light p-5 sm:p-7">
+                <div className="mb-8 rounded-xl border border-success bg-success-light p-5 sm:p-6">
                   <h3 className="mb-3 flex items-center gap-2 text-base font-bold text-success sm:mb-4 sm:text-lg">
                     <SparklesIcon className="h-5 w-5" />
                     核心亮点
@@ -346,7 +340,7 @@ export default function EarningsPage({ params }: Props) {
               )}
 
               {analysis.concerns && analysis.concerns.length > 0 && (
-                <div className="mb-8 rounded-xl border border-error bg-error-light p-5 sm:p-7">
+                <div className="mb-8 rounded-xl border border-error bg-error-light p-5 sm:p-6">
                   <h3 className="mb-3 flex items-center gap-2 text-base font-bold text-error sm:mb-4 sm:text-lg">
                     <AlertTriangleIcon className="h-5 w-5" />
                     关注点
@@ -371,7 +365,7 @@ export default function EarningsPage({ params }: Props) {
             </div>
           )}
 
-          <div className="mb-8 rounded-xl border border-border bg-surface-secondary p-5 sm:p-7">
+          <div className="mb-8 rounded-xl border border-border bg-surface-secondary p-5 sm:p-6">
             <h3 className="mb-4 text-lg font-bold text-white sm:mb-6 sm:text-xl">历史财报</h3>
               {validEarningsHistory.length > 1 ? (
               <div className="space-y-3">
@@ -425,7 +419,7 @@ export default function EarningsPage({ params }: Props) {
             )}
           </div>
 
-          <div className="rounded-xl border border-border bg-surface p-5 sm:p-7">
+          <div className="rounded-xl border border-border bg-surface p-5 sm:p-6">
             <h3 className="mb-4 text-base font-semibold text-white sm:mb-5 sm:text-lg">这篇分析有帮助吗？</h3>
             <div className="flex gap-3 sm:gap-4">
               <button className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface-secondary px-4 py-2 text-sm text-white hover:bg-surface-secondary sm:px-6 sm:py-3">

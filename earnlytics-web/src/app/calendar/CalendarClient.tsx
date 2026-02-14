@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import HorizontalGlow from "@/components/ui/horizontal-glow"
+import { SectionLoading } from "@/components/ui/spinner"
 
 interface CalendarEvent {
   id: number
@@ -144,9 +145,7 @@ export default function CalendarClient({
 
             {/* Calendar Days */}
             {loading ? (
-              <div className="flex items-center justify-center py-20">
-                <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-              </div>
+              <SectionLoading className="py-20" />
             ) : (
               <div className="grid grid-cols-7 gap-2">
                 {/* Empty cells for days before the first day of month */}

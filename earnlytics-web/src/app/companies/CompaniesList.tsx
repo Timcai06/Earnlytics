@@ -6,6 +6,7 @@ import type { CompanyWithEarnings } from "./page";
 import { SearchIcon, LayoutGridIcon, ListIcon, ArrowUpDownIcon } from "@/components/icons";
 import { CompanyCardSkeleton } from "@/components/ui/skeleton";
 import { SearchEmptyState, NoDataState } from "@/components/ui/empty-state";
+import { Input } from "@/components/ui/input";
 
 interface CompaniesListProps {
   companies: CompanyWithEarnings[];
@@ -15,17 +16,17 @@ type ViewMode = "grid" | "list";
 type SortOption = "symbol-asc" | "symbol-desc" | "date-desc" | "date-asc";
 
 const getSectorStyle = (sector: string | null) => {
-  const styles: Record<string, { color: string; bgColor: string }> = {
-    "芯片": { color: "text-info", bgColor: "bg-info/10" },
-    "软件": { color: "text-success", bgColor: "bg-success/10" },
-    "电商": { color: "text-warning", bgColor: "bg-warning/10" },
-    "社交媒体": { color: "text-primary", bgColor: "bg-primary/10" },
-    "消费电子": { color: "text-error", bgColor: "bg-error/10" },
-    "流媒体": { color: "text-error", bgColor: "bg-error/10" },
-    "汽车": { color: "text-success", bgColor: "bg-success/10" },
+  const styles: Record<string, { color: string; bgColor: string; borderColor: string }> = {
+    "芯片": { color: "text-info", bgColor: "bg-info/10", borderColor: "border-info" },
+    "软件": { color: "text-success", bgColor: "bg-success/10", borderColor: "border-success" },
+    "电商": { color: "text-warning", bgColor: "bg-warning/10", borderColor: "border-warning" },
+    "社交媒体": { color: "text-primary", bgColor: "bg-primary/10", borderColor: "border-primary" },
+    "消费电子": { color: "text-error", bgColor: "bg-error/10", borderColor: "border-error" },
+    "流媒体": { color: "text-warning", bgColor: "bg-warning/10", borderColor: "border-warning" },
+    "汽车": { color: "text-success", bgColor: "bg-success/10", borderColor: "border-success" },
   };
 
-  return styles[sector || ""] || { color: "text-primary", bgColor: "bg-primary/10" };
+  return styles[sector || ""] || { color: "text-primary", bgColor: "bg-primary/10", borderColor: "border-primary" };
 };
 
 const filters = [
@@ -151,12 +152,12 @@ export default function CompaniesList({ companies }: CompaniesListProps) {
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="relative flex-1 max-w-md">
               <SearchIcon className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-text-tertiary" />
-              <input
+              <Input
                 type="text"
                 placeholder="搜索公司名称或股票代码..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="h-11 w-full rounded-lg border border-border bg-surface pl-10 pr-4 text-sm text-white placeholder:text-text-tertiary focus:border-primary focus:outline-none"
+                className="h-11 w-full rounded-lg border border-border bg-surface pl-10 pr-4 text-sm text-white placeholder:text-text-tertiary"
               />
             </div>
 
@@ -259,13 +260,11 @@ export default function CompaniesList({ companies }: CompaniesListProps) {
                 return (
                   <div
                     key={company.symbol}
-                    className="rounded-2xl border-2 bg-surface p-6 transition-all hover:bg-surface-secondary"
-                    style={{ borderColor: style.color }}
+                    className={`rounded-2xl border-2 bg-surface p-6 transition-all hover:bg-surface-secondary ${style.borderColor}`}
                   >
                     <div className="mb-4 flex items-start gap-4">
                       <div 
-                        className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-2xl text-2xl font-bold text-white sm:h-20 sm:w-20 sm:text-3xl"
-                        style={{ backgroundColor: style.color + "20", color: style.color }}
+                        className={`flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-2xl text-2xl font-bold sm:h-20 sm:w-20 sm:text-3xl ${style.bgColor} ${style.color}`}
                       >
                         {company.symbol[0]}
                       </div>
@@ -346,12 +345,10 @@ export default function CompaniesList({ companies }: CompaniesListProps) {
                 return (
                   <div
                     key={company.symbol}
-                    className="flex items-center gap-4 rounded-xl border-2 bg-surface p-4 transition-colors hover:bg-surface-secondary"
-                    style={{ borderColor: style.color }}
+                    className={`flex items-center gap-4 rounded-xl border-2 bg-surface p-4 transition-colors hover:bg-surface-secondary ${style.borderColor}`}
                   >
                     <div 
-                      className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl text-xl font-bold text-white"
-                      style={{ backgroundColor: style.color + "20", color: style.color }}
+                      className={`flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl text-xl font-bold ${style.bgColor} ${style.color}`}
                     >
                       {company.symbol[0]}
                     </div>
@@ -371,7 +368,7 @@ export default function CompaniesList({ companies }: CompaniesListProps) {
                         )}
                       </div>
                       <p className="text-sm text-text-tertiary">
-                        <span style={{ color: style.color }}>{company.sector || "科技"}</span>
+                        <span className={style.color}>{company.sector || "科技"}</span>
                         {company.latestEarning
                           ? ` · Q${company.latestEarning.fiscal_quarter} FY${company.latestEarning.fiscal_year} · ${formatEarningDate(company.latestEarning.report_date)}`
                           : " · 暂无财报数据"}

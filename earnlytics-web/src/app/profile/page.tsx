@@ -9,7 +9,7 @@ export default function ProfilePage() {
       {/* Profile Hero */}
       <section className="bg-background px-4 pt-16 pb-8 sm:px-6 sm:pt-20 sm:pb-10 lg:px-20">
         <div className="mx-auto max-w-3xl">
-          <h1 className="mb-4 text-3xl sm:text-4xl font-bold text-white drop-shadow-[0_0_30px_rgba(99,102,241,0.25)]">
+          <h1 className="mb-4 text-3xl sm:text-4xl font-bold text-white">
             账户设置
           </h1>
           <p className="text-lg text-text-secondary">管理您的个人信息和订阅偏好</p>
@@ -36,7 +36,7 @@ export default function ProfilePage() {
           </div>
 
           {/* Profile Card */}
-          <div className="rounded-2xl border border-primary bg-surface-secondary p-8 shadow-[0_0_30px_rgba(99,102,241,0.19)]">
+          <div className="rounded-2xl border border-primary bg-surface-secondary p-6 shadow-[0_0_30px_rgba(99,102,241,0.19)]">
             {/* Avatar Section */}
             <div className="mb-8 flex items-center gap-6">
               <div className="flex h-24 w-24 items-center justify-center rounded-full border-2 border-primary bg-primary-light text-3xl font-bold text-primary-hover">

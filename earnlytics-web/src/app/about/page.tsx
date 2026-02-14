@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Input } from "@/components/ui/input";
 
 export default function AboutPage() {
   const missions = [
@@ -39,7 +40,7 @@ export default function AboutPage() {
           <div className="mb-6 inline-flex items-center rounded-2xl bg-primary-light px-4 py-2">
             <span className="text-sm font-semibold text-primary-hover">关于我们</span>
           </div>
-          <h1 className="mb-6 text-3xl sm:text-4xl lg:text-5xl font-bold text-white drop-shadow-[0_0_30px_rgba(99,102,241,0.25)]">
+          <h1 className="mb-6 text-3xl sm:text-4xl lg:text-5xl font-bold text-white">
             关于 Earnlytics
           </h1>
           <p className="mb-8 text-2xl text-text-secondary">让财报分析变得简单易懂</p>
@@ -61,7 +62,7 @@ export default function AboutPage() {
             {missions.map((mission) => (
               <div
                 key={mission.title}
-                className={`rounded-2xl border ${mission.border} bg-surface-secondary p-8 ${mission.shadow}`}
+                className={`rounded-2xl border ${mission.border} bg-surface-secondary p-6 ${mission.shadow}`}
               >
                 <div className={`mb-4 flex h-16 w-16 items-center justify-center rounded-xl ${mission.iconBg}`}>
                   <span className={`text-2xl font-bold ${mission.iconColor}`}>
@@ -107,18 +108,20 @@ export default function AboutPage() {
                   <label className="mb-2 block text-sm font-medium text-white">
                     姓名
                   </label>
-                  <input
+                  <Input
                     type="text"
-                    className="h-12 w-full rounded-lg border border-border bg-surface px-4 text-white"
+                    placeholder="请输入您的姓名"
+                    className="h-12"
                   />
                 </div>
                 <div>
                   <label className="mb-2 block text-sm font-medium text-white">
                     邮箱
                   </label>
-                  <input
+                  <Input
                     type="email"
-                    className="h-12 w-full rounded-lg border border-border bg-surface px-4 text-white"
+                    placeholder="请输入您的邮箱"
+                    className="h-12"
                   />
                 </div>
                 <div>
