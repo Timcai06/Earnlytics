@@ -2,14 +2,45 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 
 export default function SignupPage() {
+  const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+
+    try {
+      const response = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.error || "注册失败");
+        return;
+      }
+
+      router.push("/login?registered=true");
+    } catch {
+      setError("网络错误，请稍后重试");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="flex flex-1 items-center justify-center bg-background px-4 py-20">
@@ -23,7 +54,13 @@ export default function SignupPage() {
           </p>
         </div>
 
-        <form className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-5">
+          {error && (
+            <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">
+              {error}
+            </div>
+          )}
+
           <div className="space-y-2">
             <Label htmlFor="name" className="text-sm font-medium text-slate-900">
               姓名
@@ -34,6 +71,8 @@ export default function SignupPage() {
               placeholder="您的姓名"
               value={name}
               onChange={(e) => setName(e.target.value)}
+              required
+              minLength={2}
               className="h-12 border-border px-4"
             />
           </div>
@@ -48,6 +87,7 @@ export default function SignupPage() {
               placeholder="name@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              required
               className="h-12 border-border px-4"
             />
           </div>
@@ -62,15 +102,18 @@ export default function SignupPage() {
               placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              required
+              minLength={6}
               className="h-12 border-border px-4"
             />
           </div>
 
           <button
             type="submit"
-            className="h-12 w-full rounded-lg bg-primary text-base font-semibold text-white transition-colors hover:bg-primary-hover"
+            disabled={loading}
+            className="h-12 w-full rounded-lg bg-primary text-base font-semibold text-white transition-colors hover:bg-primary-hover disabled:opacity-50"
           >
-            创建账户
+            {loading ? "注册中..." : "创建账户"}
           </button>
         </form>
 

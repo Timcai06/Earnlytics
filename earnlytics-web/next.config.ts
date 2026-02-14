@@ -82,9 +82,9 @@ const nextConfig: NextConfig = {
     ];
   },
 
-  // Turbopack configuration
   turbopack: {
     resolveExtensions: [".tsx", ".ts", ".jsx", ".js"],
+    root: "/Users/justin/Desktop/earnlytics/earnlytics-web",
   },
 };
 

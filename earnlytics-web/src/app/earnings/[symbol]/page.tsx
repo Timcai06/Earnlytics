@@ -96,7 +96,7 @@ export default function EarningsPage({ params }: Props) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [retries, setRetries] = useState(0);
-  const [activeTab, setActiveTab] = useState<'revenue' | 'eps' | 'growth'>('revenue');
+
   const maxRetries = 3;
 
   // 过滤掉没有数据的财报记录（防御性编程）
@@ -284,27 +284,7 @@ export default function EarningsPage({ params }: Props) {
                 <h3 className="text-lg font-bold text-white sm:text-xl">季度趋势对比</h3>
               </div>
 
-              <div className="mb-4 flex gap-2 border-b border-border pb-4">
-                {[
-                  { key: 'revenue', label: '营收趋势' },
-                  { key: 'eps', label: 'EPS趋势' },
-                  { key: 'growth', label: '同比增长' },
-                ].map((tab) => (
-                  <button
-                    key={tab.key}
-                    onClick={() => setActiveTab(tab.key as typeof activeTab)}
-                    className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors sm:px-4 sm:py-2 ${
-                      activeTab === tab.key
-                        ? 'bg-primary text-white'
-                        : 'text-text-secondary hover:bg-surface-secondary hover:text-white'
-                    }`}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
-              </div>
-
-              <EarningsTrendChart data={trendData} defaultType={activeTab} />
+              <EarningsTrendChart data={trendData} />
             </div>
           )}
 

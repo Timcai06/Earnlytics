@@ -20,23 +20,22 @@ export default function Header({ onMenuToggle, isMenuOpen }: HeaderProps) {
           <span className="text-2xl font-bold text-white">Earnlytics</span>
         </Link>
 
-        <div className="hidden">
+        <div className="flex items-center gap-4">
           <Link
-            href="/signup"
-            className="rounded-lg border border-primary-hover bg-primary px-6 py-3 text-[15px] font-semibold leading-none text-white shadow-[0_0_24px_rgba(99,102,241,0.67)] transition-colors hover:bg-primary-hover"
+            href="/login"
+            className="text-sm font-medium text-text-secondary hover:text-white transition-colors"
           >
-            免费订阅
+            登录
           </Link>
+          
+          <button
+            onClick={onMenuToggle}
+            className="flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-surface text-white transition-colors hover:bg-surface-secondary"
+            aria-label={isMenuOpen ? "关闭菜单" : "打开菜单"}
+          >
+            {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
         </div>
-
-        {/* Menu Toggle Button - Shows on all screen sizes */}
-        <button
-          onClick={onMenuToggle}
-          className="flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-surface text-white transition-colors hover:bg-surface-secondary"
-          aria-label={isMenuOpen ? "关闭菜单" : "打开菜单"}
-        >
-          {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-        </button>
       </div>
     </header>
   );

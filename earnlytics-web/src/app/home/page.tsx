@@ -164,7 +164,16 @@ export default function HomePage() {
         setUpcomingEarnings(mappedUpcoming);
       } catch (e: any) {
         console.error('Error fetching data:', e);
-        setError(e.message);
+        console.error('Error details:', {
+          message: e?.message,
+          error: e?.error,
+          error_description: e?.error_description,
+          code: e?.code,
+          stack: e?.stack,
+          raw: e
+        });
+        const errorMessage = e?.message || e?.error_description || e?.error || (typeof e === 'object' ? JSON.stringify(e) : String(e));
+        setError(errorMessage || 'Unknown error occurred');
       } finally {
         setLoading(false);
       }

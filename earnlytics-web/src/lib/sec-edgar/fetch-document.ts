@@ -134,34 +134,71 @@ export async function fetchFilingDocument(
   }
 }
 
-/**
- * 从HTML中提取MD&A部分
- */
 export function extractMDAndA(html: string): string {
-  // 简单的文本提取逻辑
-  // 实际应用中需要更复杂的HTML解析
-  const mdAndAMatch = html.match(/Item\s+7\.\s+Management[\s\S]*?Item\s+8/i);
-  if (mdAndAMatch) {
-    return cleanHtmlText(mdAndAMatch[0]);
+  const patterns = [
+    /Item\s*7[.\s]+Management.*?s[\s\S]*?Discussion[\s\S]*?Analysis[\s\S]*?(?:Item\s*8|ITEM\s*8)/i,
+    /Item\s*7[.\s]+Management[\s\S]*?Discussion[\s\S]*?Analysis[\s\S]*?(?:Item\s*7A|ITEM\s*7A)/i,
+    /<a[^>]*>Item\s*7<\/a>[\s\S]*?(?:<a[^>]*>Item\s*8<\/a>|<a[^>]*>ITEM\s*8<\/a>)/i,
+  ];
+
+  for (const pattern of patterns) {
+    const match = html.match(pattern);
+    if (match) {
+      const cleaned = cleanHtmlText(match[0]);
+      if (cleaned.length > 200) {
+        return cleaned;
+      }
+    }
   }
+
+  const textContent = cleanHtmlText(html);
+  const mdAndAIndex = textContent.search(/Management.*?s\s+Discussion\s+and\s+Analysis/i);
+  if (mdAndAIndex !== -1) {
+    const start = Math.max(0, mdAndAIndex - 100);
+    const end = Math.min(textContent.length, mdAndAIndex + 8000);
+    return textContent.substring(start, end);
+  }
+
   return '';
 }
 
-/**
- * 从HTML中提取风险因素
- */
 export function extractRiskFactors(html: string): string[] {
-  const risks: string[] = [];
-  const riskMatch = html.match(/Item\s+1A\.\s+Risk\s+Factors([\s\S]*?)Item\s+1B/i);
-  
-  if (riskMatch) {
-    const riskSection = cleanHtmlText(riskMatch[1]);
-    // 简单的分条逻辑
-    const riskItems = riskSection.split(/\n\s*\n/);
-    return riskItems.slice(0, 5); // 取前5条
+  const patterns = [
+    /Item\s*1A[.\s]+Risk\s*Factors[\s\S]*?(?:Item\s*1B|ITEM\s*1B|Item\s*2|ITEM\s*2)/i,
+    /<a[^>]*>Item\s*1A<\/a>[\s\S]*?(?:<a[^>]*>Item\s*1B<\/a>|<a[^>]*>Item\s*2<\/a>)/i,
+  ];
+
+  for (const pattern of patterns) {
+    const riskMatch = html.match(pattern);
+    if (riskMatch) {
+      const riskSection = cleanHtmlText(riskMatch[0]);
+      const riskItems = riskSection
+        .split(/\n\s*\n|\r?\n\s*[-•]\s*/)
+        .map(item => item.trim())
+        .filter(item => item.length > 30 && item.length < 1000)
+        .slice(0, 8);
+
+      if (riskItems.length > 0) {
+        return riskItems;
+      }
+    }
   }
-  
-  return risks;
+
+  const textContent = cleanHtmlText(html);
+  const riskIndex = textContent.search(/Risk\s*Factors/i);
+  if (riskIndex !== -1) {
+    const start = Math.max(0, riskIndex);
+    const end = Math.min(textContent.length, riskIndex + 5000);
+    const section = textContent.substring(start, end);
+    const paragraphs = section
+      .split(/\n\s*\n/)
+      .map(p => p.trim())
+      .filter(p => p.length > 50 && p.length < 800)
+      .slice(0, 5);
+    return paragraphs;
+  }
+
+  return [];
 }
 
 /**

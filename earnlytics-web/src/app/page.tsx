@@ -3,6 +3,31 @@ import { ArrowRight } from "lucide-react";
 import { ZapIcon, BotIcon, DiamondIcon, AppleIcon, WindowIcon, SearchIcon, CpuIcon, MetaIcon } from "@/components/icons";
 import MysticalGlow from "@/components/ui/mystical-glow";
 
+const steps = [
+  { step: 1, title: "选择公司", desc: "从30+科技公司中选择感兴趣的目标" },
+  { step: 2, title: "查看财报", desc: "实时获取最新财报数据和历史趋势" },
+  { step: 3, title: "AI分析", desc: "1小时内获得专业AI分析报告" }
+];
+
+const faqs = [
+  {
+    q: "Earnlytics真的免费吗？",
+    a: "是的，基础功能永久免费，无需注册即可使用所有核心功能。"
+  },
+  {
+    q: "AI分析的准确性如何？",
+    a: "我们的AI模型经过大量财报数据训练，能够准确提取关键财务指标和趋势。"
+  },
+  {
+    q: "支持哪些公司？",
+    a: "当前覆盖Apple、Microsoft、Google、NVIDIA、Meta等30+家主流科技公司。"
+  },
+  {
+    q: "数据更新频率是多少？",
+    a: "财报发布后1小时内即可获得AI分析结果，数据与官方同步。"
+  }
+];
+
 export default function LandingPage() {
   const features = [
     {
@@ -68,14 +93,20 @@ export default function LandingPage() {
             通过 AI 自动分析美国科技公司财报，1小时内获取深度洞察
           </p>
 
-          <div className="mb-16">
+          <div className="mb-16 flex flex-col items-center gap-4">
             <Link
               href="/home"
-              className="inline-flex items-center gap-2 rounded-lg bg-primary px-8 py-4 text-base font-semibold text-white shadow-[0_4px_20px_rgba(99,102,241,0.6)] transition-colors hover:bg-primary-hover"
+              className="inline-flex items-center gap-2 rounded-lg bg-primary px-8 py-4 text-base font-semibold text-white shadow-[0_4px_20px_rgba(99,102,241,0.6)] transition-all hover:bg-primary-hover hover:scale-105"
             >
-              开始探索
+              免费开始分析
               <ArrowRight className="h-4 w-4" />
             </Link>
+            <span className="flex items-center gap-2 text-sm text-text-secondary">
+              <svg className="h-4 w-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+              无需注册 · 永久免费
+            </span>
           </div>
 
           {/* Stats */}
@@ -110,6 +141,25 @@ export default function LandingPage() {
                   {feature.title}
                 </h3>
                 <p className="text-base text-text-secondary leading-relaxed">{feature.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-background px-4 py-12 sm:px-6 sm:py-16 lg:px-20 lg:py-20">
+        <div className="mx-auto max-w-6xl">
+          <h2 className="mb-12 text-center text-2xl font-bold text-white sm:text-3xl lg:text-4xl">
+            3步开始智能财报分析
+          </h2>
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
+            {steps.map((item) => (
+              <div key={item.step} className="flex flex-col items-center text-center">
+                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary text-xl font-bold text-white">
+                  {item.step}
+                </div>
+                <h3 className="mb-2 text-xl font-semibold text-white">{item.title}</h3>
+                <p className="text-text-secondary">{item.desc}</p>
               </div>
             ))}
           </div>
@@ -159,6 +209,22 @@ export default function LandingPage() {
           >
             立即开始
           </Link>
+        </div>
+      </section>
+
+      <section className="bg-surface px-4 py-12 sm:px-6 sm:py-16 lg:px-20 lg:py-20">
+        <div className="mx-auto max-w-3xl">
+          <h2 className="mb-12 text-center text-2xl font-bold text-white sm:text-3xl lg:text-4xl">
+            常见问题
+          </h2>
+          <div className="space-y-4">
+            {faqs.map((faq, index) => (
+              <div key={index} className="rounded-xl border border-border bg-surface-secondary p-6">
+                <h3 className="mb-2 text-lg font-semibold text-white">{faq.q}</h3>
+                <p className="text-text-secondary">{faq.a}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
     </div>

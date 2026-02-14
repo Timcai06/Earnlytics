@@ -44,6 +44,7 @@ interface AnalysisData {
   filingType: string;
   filingDate: string;
   dataSource: string;
+  externalUrl?: string;
   stockPrice?: {
     symbol: string;
     price: number;
@@ -188,7 +189,6 @@ async function getAnalysisData(symbol: string, earningsId?: string): Promise<Ana
       .from("earnings")
       .select("id, fiscal_year, fiscal_quarter, report_date, company_id, revenue, net_income, eps")
       .eq("company_id", company.id)
-      .not("revenue", "is", null)
       .order("fiscal_year", { ascending: false })
       .order("fiscal_quarter", { ascending: false })
       .limit(1)
@@ -210,10 +210,36 @@ async function getAnalysisData(symbol: string, earningsId?: string): Promise<Ana
     .select("summary, highlights, concerns, sentiment")
     .eq("earnings_id", latestEarning.id)
     .single();
-  
+
   if (analysisError && analysisError.code !== "PGRST116") {
     console.error(`Error fetching AI analysis for earnings ${latestEarning.id}:`, analysisError);
   }
+
+  let { data: document, error: documentError } = await supabase
+    .from("earnings_documents")
+    .select("content, source_url")
+    .eq("earnings_id", latestEarning.id)
+    .single();
+
+  if (documentError && documentError.code === "PGRST116") {
+    const { data: latestDoc } = await supabase
+      .from("earnings_documents")
+      .select("earnings_id, content, source_url")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .single();
+
+    if (latestDoc) {
+      console.log(`No document for earnings ${latestEarning.id}, using latest document from earnings ${latestDoc.earnings_id}`);
+      document = latestDoc;
+    }
+  }
+
+  console.log(`Document query result for earnings ${latestEarning.id}:`, {
+    document: document ? 'found' : 'null',
+    content: document?.content ? 'has content' : 'no content',
+    documentError: documentError ? JSON.stringify(documentError) : 'null'
+  });
 
   const [stockPrice, earningsHistory] = await Promise.all([
     fetchStockPrice(company.symbol),
@@ -318,6 +344,7 @@ async function getAnalysisData(symbol: string, earningsId?: string): Promise<Ana
     filingType: `FY${latestEarning.fiscal_year} Q${latestEarning.fiscal_quarter}`,
     filingDate: latestEarning.report_date,
     dataSource: "unknown",
+    externalUrl: document?.source_url,
     stockPrice: stockPrice,
   };
 }
@@ -581,6 +608,7 @@ export default async function AnalysisPage({ params, searchParams }: { params: P
             ] : [],
             sentiment: data.rating === 'buy' || data.rating === 'strong_buy' ? 'positive' : data.rating === 'sell' || data.rating === 'strong_sell' ? 'negative' : 'neutral',
           }}
+          externalUrl={data.externalUrl}
         />
       </div>
     </div>

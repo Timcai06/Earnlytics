@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -27,6 +27,8 @@ import {
   BarChart3,
   LineChart as LineChartIcon,
   AreaChart as AreaChartIcon,
+  Layers,
+  Calendar,
 } from "lucide-react";
 
 type ChartType = "bar" | "line" | "area" | "dual";
@@ -58,11 +60,12 @@ function formatCurrency(value: number | null): string {
 }
 
 function filterDataByTimeRange(data: TrendData[], range: TimeRange): TrendData[] {
-  if (range === "ALL") return data;
+  if (range === "ALL" || data.length === 0) return data;
 
-  const now = new Date();
+  // Use latest data date instead of current date for accurate filtering
+  const latestDate = new Date(Math.max(...data.map(d => new Date(d.date).getTime())));
   const years = range === "1Y" ? 1 : range === "3Y" ? 3 : 5;
-  const cutoffDate = new Date(now.getFullYear() - years, now.getMonth(), 1);
+  const cutoffDate = new Date(latestDate.getFullYear() - years, latestDate.getMonth(), latestDate.getDate());
 
   return data.filter((item) => new Date(item.date) >= cutoffDate);
 }
@@ -70,9 +73,29 @@ function filterDataByTimeRange(data: TrendData[], range: TimeRange): TrendData[]
 function calculateQoQGrowth(data: TrendData[]): TrendData[] {
   return data.map((item, index) => {
     if (index === 0) return { ...item, qoqGrowth: null };
-    const prevRevenue = data[index - 1].revenue;
+
+    // FIX #2: Find the actual previous quarter by time order (not just array index)
+    const prevItem = data[index - 1];
+    const currDate = new Date(item.date);
+    const prevDate = new Date(prevItem.date);
+
+    // Validate if quarters are consecutive (~90 days apart, allow 80-100 day range)
+    const daysDiff = (currDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24);
+    const isConsecutiveQuarter = daysDiff >= 80 && daysDiff <= 100;
+
+    // Don't calculate QoQ if not consecutive (e.g., cross fiscal year: FY23 Q4 -> FY24 Q1)
+    if (!isConsecutiveQuarter) {
+      return { ...item, qoqGrowth: null };
+    }
+
+    const prevRevenue = prevItem.revenue;
     const currRevenue = item.revenue;
-    if (!prevRevenue || !currRevenue) return { ...item, qoqGrowth: null };
+
+    // FIX #2: Add division by zero check
+    if (!prevRevenue || !currRevenue || prevRevenue === 0) {
+      return { ...item, qoqGrowth: null };
+    }
+
     const qoqGrowth = ((currRevenue - prevRevenue) / prevRevenue) * 100;
     return { ...item, qoqGrowth: Number(qoqGrowth.toFixed(1)) };
   });
@@ -184,32 +207,94 @@ export function EarningsTrendChart({
   title = "财报趋势",
   className,
 }: EarningsTrendChartProps) {
-  const [chartType, setChartType] = useState<ChartType>("bar");
+  // FIX #9: Persist chart configuration to localStorage
+  const [chartType, setChartType] = useState<ChartType>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('earnings-chart-config');
+      if (saved) {
+        const config = JSON.parse(saved);
+        return config.chartType || 'bar';
+      }
+    }
+    return 'bar';
+  });
   const [dataType, setDataType] = useState<DataType>(defaultType);
-  const [timeRange, setTimeRange] = useState<TimeRange>("ALL");
+  const [timeRange, setTimeRange] = useState<TimeRange>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('earnings-chart-config');
+      if (saved) {
+        const config = JSON.parse(saved);
+        return config.timeRange || 'ALL';
+      }
+    }
+    return 'ALL';
+  });
+  const [isAnimating, setIsAnimating] = useState(false);
+  // FIX #6: Add data point selection for interactivity
+  const [selectedPoint, setSelectedPoint] = useState<string | null>(null);
 
-  const processedData = useMemo(() => {
-    const sorted = [...data].sort(
+  // FIX #4: Dynamic animation configuration based on device performance
+  const animationConfig = useMemo(() => {
+    if (typeof window === 'undefined') return { duration: 1000, isAnimationActive: true };
+
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) return { duration: 0, isAnimationActive: false };
+
+    // Reduce animation duration on mobile for better performance
+    const isMobile = window.innerWidth < 768;
+    return {
+      duration: isMobile ? 300 : 600,
+      isAnimationActive: true
+    };
+  }, []);
+
+  // FIX #1: Use layered memoization for better performance
+  // Each layer only recalculates when its specific dependency changes
+  const sortedData = useMemo(() => {
+    return [...data].sort(
       (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
     );
-    const filtered = filterDataByTimeRange(sorted, timeRange);
-    return calculateQoQGrowth(filtered);
-  }, [data, timeRange]);
+  }, [data]);
 
-  const exportData = () => {
-    const csvContent = [
-      ["季度", "日期", "营收", "EPS", "同比增长", "环比增长"].join(","),
-      ...processedData.map((item) =>
-        [item.quarter, item.date, item.revenue, item.eps, item.revenueGrowth, item.qoqGrowth].join(",")
-      ),
-    ].join("\n");
+  const filteredData = useMemo(() => {
+    return filterDataByTimeRange(sortedData, timeRange);
+  }, [sortedData, timeRange]);
 
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = `earnings-trend-${dataType}-${timeRange}.csv`;
-    link.click();
+  const processedData = useMemo(() => {
+    return calculateQoQGrowth(filteredData);
+  }, [filteredData]);
+
+  const exportData = (format: 'csv' | 'json') => {
+    if (format === 'csv') {
+      const csvContent = [
+        ["季度", "日期", "营收", "EPS", "同比增长", "环比增长"].join(","),
+        ...processedData.map((item) =>
+          [item.quarter, item.date, item.revenue, item.eps, item.revenueGrowth, item.qoqGrowth].join(",")
+        ),
+      ].join("\n");
+
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = `earnings-trend-${dataType}-${timeRange}.csv`;
+      link.click();
+    } else if (format === 'json') {
+      const jsonContent = JSON.stringify(processedData, null, 2);
+      const blob = new Blob([jsonContent], { type: "application/json;charset=utf-8;" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = `earnings-trend-${dataType}-${timeRange}.json`;
+      link.click();
+    }
   };
+
+  // Save chart configuration to localStorage
+  useEffect(() => {
+    localStorage.setItem('earnings-chart-config', JSON.stringify({
+      chartType,
+      timeRange,
+    }));
+  }, [chartType, timeRange]);
 
   const dataTypeConfig = {
     revenue: {
@@ -232,7 +317,32 @@ export function EarningsTrendChart({
     },
   };
 
+  const chartTypeIcons = {
+    bar: BarChart3,
+    line: LineChartIcon,
+    area: AreaChartIcon,
+    dual: Layers,
+  };
+
   const config = dataTypeConfig[dataType];
+
+  const latestData = processedData[processedData.length - 1];
+
+  const getMetricValue = () => {
+    if (!latestData) return null;
+    switch (dataType) {
+      case 'revenue':
+        return { value: latestData.revenue, growth: latestData.revenueGrowth, label: '营收' };
+      case 'eps':
+        return { value: latestData.eps, growth: null, label: 'EPS' };
+      case 'growth':
+        return { value: latestData.revenueGrowth, growth: null, label: '同比增长' };
+      default:
+        return null;
+    }
+  };
+
+  const currentMetric = getMetricValue();
 
   const getBarColor = (entry: TrendData) => {
     const growth = entry.revenueGrowth;
@@ -304,11 +414,18 @@ export function EarningsTrendChart({
             yAxisId="left"
             dataKey="revenue"
             radius={[4, 4, 0, 0]}
-            animationDuration={1000}
+            animationDuration={isAnimating ? 0 : animationConfig.duration}
             animationEasing="ease-out"
+            isAnimationActive={!isAnimating && animationConfig.isAnimationActive}
+            onClick={(data) => setSelectedPoint(data.quarter)}
           >
             {processedData.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={getBarColor(entry)} />
+              <Cell
+                key={`cell-${index}`}
+                fill={getBarColor(entry)}
+                opacity={selectedPoint === entry.quarter ? 1 : 0.8}
+                cursor="pointer"
+              />
             ))}
           </Bar>
           <Line
@@ -319,8 +436,9 @@ export function EarningsTrendChart({
             strokeWidth={2}
             dot={{ fill: "#22C55E", strokeWidth: 2, r: 4 }}
             activeDot={{ r: 6, fill: "#22C55E" }}
-            animationDuration={1000}
+            animationDuration={isAnimating ? 0 : animationConfig.duration}
             animationEasing="ease-out"
+            isAnimationActive={!isAnimating && animationConfig.isAnimationActive}
           />
         </ComposedChart>
       );
@@ -340,8 +458,9 @@ export function EarningsTrendChart({
             strokeWidth={2}
             dot={{ fill: config.color, strokeWidth: 2, r: 4 }}
             activeDot={{ r: 6, fill: config.color }}
-            animationDuration={1000}
+            animationDuration={isAnimating ? 0 : animationConfig.duration}
             animationEasing="ease-out"
+            isAnimationActive={!isAnimating && animationConfig.isAnimationActive}
           />
         </LineChart>
       );
@@ -366,8 +485,9 @@ export function EarningsTrendChart({
             stroke={config.color}
             strokeWidth={2}
             fill={`url(#gradient-${dataType})`}
-            animationDuration={1000}
+            animationDuration={isAnimating ? 0 : animationConfig.duration}
             animationEasing="ease-out"
+            isAnimationActive={!isAnimating && animationConfig.isAnimationActive}
           />
         </AreaChart>
       );
@@ -382,13 +502,20 @@ export function EarningsTrendChart({
         <Bar
           dataKey={dataKey}
           radius={[4, 4, 0, 0]}
-          animationDuration={1000}
+          animationDuration={isAnimating ? 0 : animationConfig.duration}
           animationEasing="ease-out"
+          isAnimationActive={!isAnimating && animationConfig.isAnimationActive}
+          onClick={(data) => setSelectedPoint(data.quarter)}
         >
           {dataType === "revenue" && processedData.map((entry, index) => (
-            <Cell key={`cell-${index}`} fill={getBarColor(entry)} />
+            <Cell
+              key={`cell-${index}`}
+              fill={getBarColor(entry)}
+              opacity={selectedPoint === entry.quarter ? 1 : 0.8}
+              cursor="pointer"
+            />
           ))}
-          {dataType !== "revenue" && <Cell fill={config.color} />}
+          {dataType !== "revenue" && <Cell fill={config.color} cursor="pointer" />}
         </Bar>
       </BarChart>
     );
@@ -396,100 +523,172 @@ export function EarningsTrendChart({
 
   return (
     <Card className={cn("overflow-hidden bg-surface border-border", className)}>
-      <CardHeader className="pb-4">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <div className="p-2 bg-primary/10 rounded-lg">
+      {/* Header with Key Metrics */}
+      <CardHeader className="pb-3 space-y-4">
+        {/* Title Row */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 bg-primary/10 rounded-xl">
               <TrendingUp className="h-5 w-5 text-primary" />
             </div>
             <div>
               <h3 className="text-lg font-semibold text-white">{title}</h3>
-              <p className="text-xs text-text-tertiary">
+              <p className="text-xs text-text-tertiary flex items-center gap-1">
+                <Calendar className="h-3 w-3" />
                 {processedData.length} 个季度数据
               </p>
             </div>
           </div>
+          
+          {currentMetric && (
+            <div className="text-right">
+              <div className="text-2xl font-bold text-white">
+                {dataType === 'eps' ? `$${currentMetric.value?.toFixed(2) || '--'}` : 
+                 dataType === 'growth' ? `${currentMetric.value?.toFixed(1) || '--'}%` :
+                 formatCurrency(currentMetric.value)}
+              </div>
+              <div className="flex items-center justify-end gap-2 text-xs">
+                <span className="text-text-tertiary">{currentMetric.label}</span>
+                {currentMetric.growth !== null && currentMetric.growth !== undefined && (
+                  <span className={currentMetric.growth >= 0 ? 'text-emerald-400' : 'text-red-400'}>
+                    {currentMetric.growth > 0 ? '+' : ''}{currentMetric.growth.toFixed(1)}%
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="flex items-center bg-surface-secondary rounded-lg p-1">
+        {/* Control Panel - Layer 1: Data Type */}
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-medium text-text-secondary uppercase tracking-wider">指标</span>
+            <div className="flex items-center gap-1 bg-surface-secondary/50 rounded-lg p-1">
               {( ["revenue", "eps", "growth"] as DataType[]).map((type) => {
                 const TypeIcon = dataTypeConfig[type].icon;
+                const isActive = dataType === type;
                 return (
                   <Button
                     key={type}
                     variant="ghost"
                     size="sm"
-                    onClick={() => setDataType(type)}
+                    onClick={() => {
+                      if (isAnimating) return;
+                      setIsAnimating(true);
+                      setDataType(type);
+                      setTimeout(() => setIsAnimating(false), 300);
+                    }}
                     className={cn(
-                      "h-8 px-2 text-xs",
-                      dataType === type
-                        ? "bg-surface-secondary text-white"
-                        : "text-text-tertiary hover:text-white"
+                      "h-7 px-3 text-xs font-medium transition-all duration-200",
+                      isActive
+                        ? "bg-primary text-white hover:bg-primary/90 shadow-sm"
+                        : "text-text-secondary hover:text-white hover:bg-surface-secondary"
                     )}
                   >
-                    <TypeIcon className="w-3.5 h-3.5 mr-1" />
+                    <TypeIcon className={cn("h-3.5 w-3.5 mr-1.5", isActive && "text-white")} />
                     {dataTypeConfig[type].label}
                   </Button>
                 );
               })}
             </div>
+          </div>
 
-            <div className="flex items-center bg-surface-secondary rounded-lg p-1">
-              {(["bar", "line", "area", "dual"] as ChartType[]).map((type) => {
-                const label = type === "dual" ? "双轴" : type === "bar" ? "柱状" : type === "line" ? "折线" : "面积";
-                return (
-                  <Button
-                    key={type}
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setChartType(type)}
-                    className={cn(
-                      "h-8 px-2 text-xs",
-                      chartType === type
-                        ? "bg-surface-secondary text-white"
-                        : "text-text-tertiary hover:text-white"
-                    )}
-                  >
-                    {label}
-                  </Button>
-                );
-              })}
+          {/* Control Panel - Layer 2: Chart Type & Time Range */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-medium text-text-secondary uppercase tracking-wider">图表</span>
+              <div className="flex items-center gap-1 bg-surface-secondary/50 rounded-lg p-1">
+                {(["bar", "line", "area", "dual"] as ChartType[]).map((type) => {
+                  const Icon = chartTypeIcons[type];
+                  const isActive = chartType === type;
+                  return (
+                    <Button
+                      key={type}
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        if (isAnimating) return;
+                        setIsAnimating(true);
+                        setChartType(type);
+                        setTimeout(() => setIsAnimating(false), 300);
+                      }}
+                      className={cn(
+                        "h-7 w-7 p-0 transition-all duration-200",
+                        isActive
+                          ? "bg-surface-secondary text-white"
+                          : "text-text-tertiary hover:text-white hover:bg-surface-secondary"
+                      )}
+                      title={type === "dual" ? "双轴" : type === "bar" ? "柱状图" : type === "line" ? "折线图" : "面积图"}
+                    >
+                      <Icon className="h-4 w-4" />
+                    </Button>
+                  );
+                })}
+              </div>
             </div>
 
-            <div className="flex items-center bg-surface-secondary rounded-lg p-1">
-              {(["1Y", "3Y", "5Y", "ALL"] as TimeRange[]).map((range) => (
-                <Button
-                  key={range}
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setTimeRange(range)}
-                  className={cn(
-                    "h-8 px-2 text-xs",
-                    timeRange === range
-                      ? "bg-surface-secondary text-white"
-                      : "text-text-tertiary hover:text-white"
-                  )}
-                >
-                  {range === "ALL" ? "全部" : range}
-                </Button>
-              ))}
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-medium text-text-secondary uppercase tracking-wider">时间</span>
+              <div className="flex items-center gap-1 bg-surface-secondary/50 rounded-lg p-1">
+                {(["1Y", "3Y", "5Y", "ALL"] as TimeRange[]).map((range) => {
+                  const isActive = timeRange === range;
+                  return (
+                    <Button
+                      key={range}
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        if (isAnimating) return;
+                        setIsAnimating(true);
+                        setTimeRange(range);
+                        setTimeout(() => setIsAnimating(false), 300);
+                      }}
+                      className={cn(
+                        "h-7 px-2.5 text-xs font-medium transition-all duration-200",
+                        isActive
+                          ? "bg-surface-secondary text-white"
+                          : "text-text-tertiary hover:text-white hover:bg-surface-secondary"
+                      )}
+                    >
+                      {range === "ALL" ? "全部" : range}
+                    </Button>
+                  );
+                })}
+              </div>
+              
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => exportData('csv')}
+                className="h-7 px-2.5 border-border/50 text-text-secondary hover:text-white hover:bg-surface-secondary text-xs"
+              >
+                <Download className="h-3.5 w-3.5 mr-1" />
+                导出
+              </Button>
             </div>
-
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={exportData}
-              className="h-8 border-border text-text-secondary hover:text-white hover:bg-surface-secondary"
-            >
-              <Download className="w-4 h-4 mr-1" />
-              导出
-            </Button>
           </div>
         </div>
+
+        {/* Legend */}
+        {dataType === 'revenue' && (
+          <div className="flex items-center gap-4 text-xs">
+            <span className="text-text-tertiary">图例:</span>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1.5">
+                <div className="w-2.5 h-2.5 rounded-sm bg-emerald-500" />
+                <span className="text-text-secondary">增长</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="w-2.5 h-2.5 rounded-sm bg-red-500" />
+                <span className="text-text-secondary">下降</span>
+              </div>
+            </div>
+          </div>
+        )}
       </CardHeader>
 
       <CardContent>
-        <div className="h-[300px] w-full">
+        <div className="h-[250px] sm:h-[300px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             {renderChart()}
           </ResponsiveContainer>

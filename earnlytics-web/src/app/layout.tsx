@@ -4,8 +4,28 @@ import { ClientLayout } from "./ClientLayout";
 import Script from "next/script";
 
 export const metadata: Metadata = {
-  title: "Earnlytics - AI驱动的财报分析平台",
-  description: "AI驱动的美国科技公司财报分析平台。财报发布后1小时内生成AI分析，专注30+科技巨头。",
+  title: "Earnlytics - AI财报分析 | 1小时内获取投资洞察",
+  description: "专业的AI财报分析平台，覆盖Apple、Microsoft等30+科技公司。财报发布后1小时内生成深度分析，帮助投资者快速把握机会。",
+  keywords: ["财报分析", "AI投资", "美股财报", "财务分析", "投资工具", "科技股", " earnings analysis", "AI finance"],
+  authors: [{ name: "Earnlytics" }],
+  creator: "Earnlytics",
+  openGraph: {
+    title: "Earnlytics - AI财报分析平台",
+    description: "1小时内获取专业财报分析，覆盖30+科技公司",
+    url: "https://earnlytics-ebon.vercel.app",
+    siteName: "Earnlytics",
+    locale: "zh_CN",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Earnlytics - AI财报分析",
+    description: "专业的AI财报分析平台，1小时获取投资洞察",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({
