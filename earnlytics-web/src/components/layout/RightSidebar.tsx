@@ -21,12 +21,30 @@ export default function RightSidebar({ isOpen, onClose }: RightSidebarProps) {
 
   return (
     <>
-      {/* Desktop Sidebar - Always visible on large screens */}
-      <aside className="fixed right-0 top-[87px] z-30 hidden h-[calc(100vh-87px)] w-64 flex-col border-l border-border bg-surface lg:flex">
+      {/* Overlay */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+          onClick={onClose}
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside className={`fixed right-0 top-[87px] z-50 h-[calc(100vh-87px)] w-64 flex-col border-l border-border bg-surface transition-transform duration-300 lg:translate-x-0 ${
+        isOpen ? "translate-x-0" : "translate-x-full"
+      }`}>
         <div className="flex flex-col p-4">
-          <h2 className="mb-6 px-4 text-xs font-semibold uppercase tracking-wider text-text-tertiary">
-            导航
-          </h2>
+          <div className="mb-6 flex items-center justify-between px-4">
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-text-tertiary">
+              导航
+            </h2>
+            <button 
+              onClick={onClose}
+              className="lg:hidden"
+            >
+              <X className="h-5 w-5 text-text-secondary" />
+            </button>
+          </div>
           <nav className="flex flex-col gap-1">
             {navItems.map((item) => {
               const Icon = item.icon;
