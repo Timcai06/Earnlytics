@@ -65,15 +65,13 @@ export default function SignupPage() {
             <Label htmlFor="name" className="text-sm font-medium text-slate-900">
               姓名
             </Label>
-            <Input
+            <input
               id="name"
               type="text"
               placeholder="您的姓名"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              required
-              minLength={2}
-              className="h-12 border-border px-4"
+              className="flex h-12 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
             />
           </div>
 
@@ -81,14 +79,13 @@ export default function SignupPage() {
             <Label htmlFor="email" className="text-sm font-medium text-slate-900">
               邮箱地址
             </Label>
-            <Input
+            <input
               id="email"
               type="email"
               placeholder="name@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              required
-              className="h-12 border-border px-4"
+              className="flex h-12 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
             />
           </div>
 
@@ -96,15 +93,13 @@ export default function SignupPage() {
             <Label htmlFor="password" className="text-sm font-medium text-slate-900">
               密码
             </Label>
-            <Input
+            <input
               id="password"
               type="password"
               placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              required
-              minLength={6}
-              className="h-12 border-border px-4"
+              className="flex h-12 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
             />
           </div>
 

@@ -31,22 +31,26 @@ ALTER TABLE feedback ENABLE ROW LEVEL SECURITY;
 ALTER TABLE nps_surveys ENABLE ROW LEVEL SECURITY;
 
 -- Allow anonymous insert
+DROP POLICY IF EXISTS "Allow anonymous feedback insert" ON feedback;
 CREATE POLICY "Allow anonymous feedback insert"
   ON feedback FOR INSERT
   TO anon
   WITH CHECK (true);
 
+DROP POLICY IF EXISTS "Allow anonymous NPS insert" ON nps_surveys;
 CREATE POLICY "Allow anonymous NPS insert"
   ON nps_surveys FOR INSERT
   TO anon
   WITH CHECK (true);
 
 -- Allow admin select
+DROP POLICY IF EXISTS "Allow admin feedback select" ON feedback;
 CREATE POLICY "Allow admin feedback select"
   ON feedback FOR SELECT
   TO authenticated
   USING (auth.role() = 'authenticated');
 
+DROP POLICY IF EXISTS "Allow admin NPS select" ON nps_surveys;
 CREATE POLICY "Allow admin NPS select"
   ON nps_surveys FOR SELECT
   TO authenticated

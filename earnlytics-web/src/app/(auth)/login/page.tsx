@@ -1,9 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 
@@ -11,6 +10,51 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const user = localStorage.getItem("user");
+    if (user) {
+      window.location.href = "/profile";
+    }
+  }, []);
+
+  const handleLogin = async () => {
+    if (!email || !password) {
+      setError("请输入邮箱和密码");
+      return;
+    }
+    
+    setError("");
+    setLoading(true);
+
+    try {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.error || "登录失败");
+        setLoading(false);
+        return;
+      }
+
+      if (data.user) {
+        localStorage.setItem("user", JSON.stringify(data.user));
+      }
+
+      window.location.href = "/home";
+    } catch {
+      setError("网络错误，请稍后重试");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="flex flex-1 items-center justify-center bg-background px-4 py-20">
@@ -25,17 +69,23 @@ export default function LoginPage() {
         </div>
 
         <form className="space-y-5">
+          {error && (
+            <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">
+              {error}
+            </div>
+          )}
+
           <div className="space-y-2">
             <Label htmlFor="email" className="text-sm font-medium text-slate-900">
               邮箱地址
             </Label>
-            <Input
+            <input
               id="email"
               type="email"
               placeholder="name@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="h-12 border-border px-4"
+              className="flex h-12 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
             />
           </div>
 
@@ -43,13 +93,13 @@ export default function LoginPage() {
             <Label htmlFor="password" className="text-sm font-medium text-slate-900">
               密码
             </Label>
-            <Input
+            <input
               id="password"
               type="password"
               placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="h-12 border-border px-4"
+              className="flex h-12 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
             />
           </div>
 
@@ -73,10 +123,12 @@ export default function LoginPage() {
           </div>
 
           <button
-            type="submit"
-            className="h-12 w-full rounded-lg bg-primary text-base font-semibold text-white transition-colors hover:bg-primary-hover"
+            type="button"
+            onClick={handleLogin}
+            disabled={loading}
+            className="h-12 w-full rounded-lg bg-primary text-base font-semibold text-white transition-colors hover:bg-primary-hover disabled:opacity-50"
           >
-            登录
+            {loading ? "登录中..." : "登录"}
           </button>
         </form>
 

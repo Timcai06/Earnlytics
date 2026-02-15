@@ -2,13 +2,33 @@
 
 import Link from "next/link";
 import { BarChart3, Menu, X } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface HeaderProps {
   onMenuToggle: () => void;
   isMenuOpen: boolean;
 }
 
+interface User {
+  id: number;
+  name: string;
+  email: string;
+}
+
 export default function Header({ onMenuToggle, isMenuOpen }: HeaderProps) {
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      const parsed = JSON.parse(storedUser);
+      console.log("Header: 用户已登录", parsed);
+      setUser(parsed);
+    } else {
+      console.log("Header: 用户未登录");
+    }
+  }, []);
+
   return (
     <header className="sticky top-0 z-40 h-[87px] border-b border-border bg-background/80 backdrop-blur-md">
       <div className="flex h-full items-center justify-between px-4 sm:px-6 lg:px-8">
@@ -21,12 +41,21 @@ export default function Header({ onMenuToggle, isMenuOpen }: HeaderProps) {
         </Link>
 
         <div className="flex items-center gap-4">
-          <Link
-            href="/login"
-            className="text-sm font-medium text-text-secondary hover:text-white transition-colors"
-          >
-            登录
-          </Link>
+          {user ? (
+            <Link
+              href="/profile"
+              className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-hover"
+            >
+              {user.name || "个人主页"}
+            </Link>
+          ) : (
+            <Link
+              href="/login"
+              className="text-sm font-medium text-text-secondary hover:text-white transition-colors"
+            >
+              登录
+            </Link>
+          )}
           
           <button
             onClick={onMenuToggle}

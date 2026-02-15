@@ -2,17 +2,46 @@
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useEffect, useState } from "react";
+
+interface User {
+  id: number;
+  name: string;
+  email: string;
+}
 
 export default function ProfilePage() {
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    window.location.href = "/home";
+  };
+
   return (
     <div className="flex flex-col">
       {/* Profile Hero */}
       <section className="bg-background px-4 pt-16 pb-8 sm:px-6 sm:pt-20 sm:pb-10 lg:px-20">
-        <div className="mx-auto max-w-3xl">
-          <h1 className="mb-4 text-3xl sm:text-4xl font-bold text-white">
-            账户设置
-          </h1>
-          <p className="text-lg text-text-secondary">管理您的个人信息和订阅偏好</p>
+        <div className="mx-auto max-w-3xl flex items-center justify-between">
+          <div>
+            <h1 className="mb-4 text-3xl sm:text-4xl font-bold text-white">
+              账户设置
+            </h1>
+            <p className="text-lg text-text-secondary">管理您的个人信息和订阅偏好</p>
+          </div>
+          <button
+            onClick={handleLogout}
+            className="rounded-lg border border-red-500/50 bg-red-500/10 px-4 py-2 text-sm font-medium text-red-400 transition-colors hover:bg-red-500/20"
+          >
+            退出登录
+          </button>
         </div>
       </section>
 
@@ -40,7 +69,7 @@ export default function ProfilePage() {
             {/* Avatar Section */}
             <div className="mb-8 flex items-center gap-6">
               <div className="flex h-24 w-24 items-center justify-center rounded-full border-2 border-primary bg-primary-light text-3xl font-bold text-primary-hover">
-                张
+                {user?.name?.[0] || "用户"}
               </div>
               <button className="rounded-lg border border-primary bg-primary-light px-4 py-2 text-sm font-medium text-primary-foreground shadow-[0_0_10px_rgba(99,102,241,0.13)]">
                 更换头像
@@ -56,7 +85,7 @@ export default function ProfilePage() {
                 <Input
                   id="name"
                   type="text"
-                  defaultValue="张三"
+                  defaultValue={user?.name || ""}
                   className="h-12 border-border bg-surface px-4 text-white"
                 />
               </div>
@@ -68,7 +97,7 @@ export default function ProfilePage() {
                 <Input
                   id="email"
                   type="email"
-                  defaultValue="zhangsan@example.com"
+                  defaultValue={user?.email || ""}
                   disabled
                   className="h-12 border-border bg-surface px-4 text-text-secondary"
                 />

@@ -28,6 +28,7 @@ CREATE INDEX IF NOT EXISTS idx_stock_prices_symbol_timestamp ON stock_prices(sym
 ALTER TABLE stock_prices ENABLE ROW LEVEL SECURITY;
 
 -- 创建公开读取策略
+DROP POLICY IF EXISTS "Allow public read access" ON stock_prices;
 CREATE POLICY "Allow public read access" ON stock_prices
   FOR SELECT USING (true);
 

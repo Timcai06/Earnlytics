@@ -2,7 +2,7 @@
 -- Phase 6: Week 8 - Smart Alert System Infrastructure
 
 -- Alert rules table
-CREATE TABLE alert_rules (
+CREATE TABLE IF NOT EXISTS alert_rules (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   
   -- User reference
@@ -36,13 +36,13 @@ CREATE TABLE alert_rules (
 );
 
 -- Index for active rules lookup
-CREATE INDEX idx_alert_rules_active ON alert_rules(is_active) WHERE is_active = true;
-CREATE INDEX idx_alert_rules_user ON alert_rules(user_id, is_active);
-CREATE INDEX idx_alert_rules_symbol ON alert_rules(symbol) WHERE symbol IS NOT NULL;
-CREATE INDEX idx_alert_rules_type ON alert_rules(rule_type, is_active);
+CREATE INDEX IF NOT EXISTS idx_alert_rules_active ON alert_rules(is_active) WHERE is_active = true;
+CREATE INDEX IF NOT EXISTS idx_alert_rules_user ON alert_rules(user_id, is_active);
+CREATE INDEX IF NOT EXISTS idx_alert_rules_symbol ON alert_rules(symbol) WHERE symbol IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_alert_rules_type ON alert_rules(rule_type, is_active);
 
 -- Alert history table
-CREATE TABLE alert_history (
+CREATE TABLE IF NOT EXISTS alert_history (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   
   -- References
@@ -73,13 +73,13 @@ CREATE TABLE alert_history (
 );
 
 -- Index for alert history queries
-CREATE INDEX idx_alert_history_user ON alert_history(user_id, created_at DESC);
-CREATE INDEX idx_alert_history_unread ON alert_history(user_id, is_read) WHERE is_read = false;
-CREATE INDEX idx_alert_history_rule ON alert_history(rule_id, created_at DESC);
-CREATE INDEX idx_alert_history_symbol ON alert_history(symbol, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_alert_history_user ON alert_history(user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_alert_history_unread ON alert_history(user_id, is_read) WHERE is_read = false;
+CREATE INDEX IF NOT EXISTS idx_alert_history_rule ON alert_history(rule_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_alert_history_symbol ON alert_history(symbol, created_at DESC);
 
 -- User notification preferences
-CREATE TABLE user_notification_preferences (
+CREATE TABLE IF NOT EXISTS user_notification_preferences (
   user_id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   
   -- Channel preferences
@@ -108,7 +108,7 @@ CREATE TABLE user_notification_preferences (
 );
 
 -- Email queue for batch processing
-CREATE TABLE email_queue (
+CREATE TABLE IF NOT EXISTS email_queue (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   
   -- Recipient
@@ -136,11 +136,11 @@ CREATE TABLE email_queue (
 );
 
 -- Index for email queue processing
-CREATE INDEX idx_email_queue_pending ON email_queue(status, scheduled_at) WHERE status = 'pending';
-CREATE INDEX idx_email_queue_user ON email_queue(user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_email_queue_pending ON email_queue(status, scheduled_at) WHERE status = 'pending';
+CREATE INDEX IF NOT EXISTS idx_email_queue_user ON email_queue(user_id, created_at DESC);
 
 -- Alert templates for common scenarios
-CREATE TABLE alert_templates (
+CREATE TABLE IF NOT EXISTS alert_templates (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   
   -- Template metadata
@@ -206,16 +206,19 @@ INSERT INTO alert_templates (rule_type, name, description, title_template, messa
 );
 
 -- Trigger to update updated_at
+DROP TRIGGER IF EXISTS update_alert_rules_updated_at ON alert_rules;
 CREATE TRIGGER update_alert_rules_updated_at
   BEFORE UPDATE ON alert_rules
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_user_notification_preferences_updated_at ON user_notification_preferences;
 CREATE TRIGGER update_user_notification_preferences_updated_at
   BEFORE UPDATE ON user_notification_preferences
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_alert_templates_updated_at ON alert_templates;
 CREATE TRIGGER update_alert_templates_updated_at
   BEFORE UPDATE ON alert_templates
   FOR EACH ROW
@@ -314,24 +317,28 @@ ALTER TABLE user_notification_preferences ENABLE ROW LEVEL SECURITY;
 ALTER TABLE email_queue ENABLE ROW LEVEL SECURITY;
 
 -- Policy: Users can only manage their own rules
+DROP POLICY IF EXISTS user_alert_rules ON alert_rules;
 CREATE POLICY user_alert_rules ON alert_rules
   FOR ALL
   TO authenticated
   USING (user_id = auth.uid());
 
 -- Policy: Users can only see their own alerts
+DROP POLICY IF EXISTS user_alert_history ON alert_history;
 CREATE POLICY user_alert_history ON alert_history
   FOR ALL
   TO authenticated
   USING (user_id = auth.uid());
 
 -- Policy: Users can only manage their own preferences
+DROP POLICY IF EXISTS user_notification_prefs ON user_notification_preferences;
 CREATE POLICY user_notification_prefs ON user_notification_preferences
   FOR ALL
   TO authenticated
   USING (user_id = auth.uid());
 
 -- Policy: Users can only see their own emails
+DROP POLICY IF EXISTS user_email_queue ON email_queue;
 CREATE POLICY user_email_queue ON email_queue
   FOR ALL
   TO authenticated

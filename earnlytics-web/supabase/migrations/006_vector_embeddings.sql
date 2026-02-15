@@ -5,7 +5,7 @@
 CREATE EXTENSION IF NOT EXISTS vector;
 
 -- Document embeddings table for RAG (Retrieval-Augmented Generation)
-CREATE TABLE document_embeddings (
+CREATE TABLE IF NOT EXISTS document_embeddings (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   
   -- Source document reference
@@ -31,18 +31,18 @@ CREATE TABLE document_embeddings (
 );
 
 -- Index for symbol-based queries
-CREATE INDEX idx_document_embeddings_symbol ON document_embeddings(symbol);
+CREATE INDEX IF NOT EXISTS idx_document_embeddings_symbol ON document_embeddings(symbol);
 
 -- Index for source type queries
-CREATE INDEX idx_document_embeddings_source ON document_embeddings(source_type, source_id);
+CREATE INDEX IF NOT EXISTS idx_document_embeddings_source ON document_embeddings(source_type, source_id);
 
 -- HNSW index for fast vector similarity search
-CREATE INDEX idx_document_embeddings_embedding ON document_embeddings 
+CREATE INDEX IF NOT EXISTS idx_document_embeddings_embedding ON document_embeddings 
 USING hnsw (embedding vector_cosine_ops)
 WITH (m = 16, ef_construction = 64);
 
 -- Conversation history for chat interface
-CREATE TABLE chat_conversations (
+CREATE TABLE IF NOT EXISTS chat_conversations (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   
   -- User reference (null for anonymous users)
@@ -60,7 +60,7 @@ CREATE TABLE chat_conversations (
 );
 
 -- Chat messages within conversations
-CREATE TABLE chat_messages (
+CREATE TABLE IF NOT EXISTS chat_messages (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   
   -- Reference to conversation
@@ -84,10 +84,10 @@ CREATE TABLE chat_messages (
 );
 
 -- Index for conversation messages
-CREATE INDEX idx_chat_messages_conversation ON chat_messages(conversation_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_chat_messages_conversation ON chat_messages(conversation_id, created_at);
 
 -- Knowledge base articles for common investment questions
-CREATE TABLE knowledge_base (
+CREATE TABLE IF NOT EXISTS knowledge_base (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   
   -- Article metadata
@@ -111,8 +111,8 @@ CREATE TABLE knowledge_base (
 );
 
 -- Index for knowledge base queries
-CREATE INDEX idx_knowledge_base_category ON knowledge_base(category) WHERE is_published = true;
-CREATE INDEX idx_knowledge_base_slug ON knowledge_base(slug);
+CREATE INDEX IF NOT EXISTS idx_knowledge_base_category ON knowledge_base(category) WHERE is_published = true;
+CREATE INDEX IF NOT EXISTS idx_knowledge_base_slug ON knowledge_base(slug);
 
 -- Function to update updated_at timestamp
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -124,11 +124,13 @@ END;
 $$ language 'plpgsql';
 
 -- Triggers for updated_at
+DROP TRIGGER IF EXISTS update_chat_conversations_updated_at ON chat_conversations;
 CREATE TRIGGER update_chat_conversations_updated_at
   BEFORE UPDATE ON chat_conversations
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_knowledge_base_updated_at ON knowledge_base;
 CREATE TRIGGER update_knowledge_base_updated_at
   BEFORE UPDATE ON knowledge_base
   FOR EACH ROW
@@ -184,12 +186,14 @@ ALTER TABLE chat_messages ENABLE ROW LEVEL SECURITY;
 ALTER TABLE knowledge_base ENABLE ROW LEVEL SECURITY;
 
 -- Policy: Users can only see their own conversations
+DROP POLICY IF EXISTS user_conversations ON chat_conversations;
 CREATE POLICY user_conversations ON chat_conversations
   FOR ALL
   TO authenticated
   USING (user_id = auth.uid());
 
 -- Policy: Users can only see messages from their conversations
+DROP POLICY IF EXISTS user_messages ON chat_messages;
 CREATE POLICY user_messages ON chat_messages
   FOR ALL
   TO authenticated
@@ -200,6 +204,7 @@ CREATE POLICY user_messages ON chat_messages
   );
 
 -- Policy: Knowledge base is publicly readable
+DROP POLICY IF EXISTS public_knowledge_base ON knowledge_base;
 CREATE POLICY public_knowledge_base ON knowledge_base
   FOR SELECT
   TO anon, authenticated
@@ -256,7 +261,7 @@ INSERT INTO knowledge_base (category, title, slug, content, summary, keywords, i
   ARRAY['投资组合', '分散投资', '风险管理', '仓位管理', '科技股'],
   true,
   NOW()
-);
+) ON CONFLICT (slug) DO NOTHING;
 
 -- Grant permissions to service role
 GRANT ALL ON document_embeddings TO service_role;

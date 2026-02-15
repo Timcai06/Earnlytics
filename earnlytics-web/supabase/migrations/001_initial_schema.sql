@@ -66,12 +66,15 @@ ALTER TABLE ai_analyses ENABLE ROW LEVEL SECURITY;
 ALTER TABLE subscribers ENABLE ROW LEVEL SECURITY;
 
 -- 创建公开读取策略
+DROP POLICY IF EXISTS "Allow public read access" ON companies;
 CREATE POLICY "Allow public read access" ON companies
   FOR SELECT USING (true);
 
+DROP POLICY IF EXISTS "Allow public read access" ON earnings;
 CREATE POLICY "Allow public read access" ON earnings
   FOR SELECT USING (true);
 
+DROP POLICY IF EXISTS "Allow public read access" ON ai_analyses;
 CREATE POLICY "Allow public read access" ON ai_analyses
   FOR SELECT USING (true);
 

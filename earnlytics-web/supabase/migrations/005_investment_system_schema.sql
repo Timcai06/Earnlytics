@@ -187,28 +187,36 @@ ALTER TABLE document_access_logs ENABLE ROW LEVEL SECURITY;
 -- 创建公开读取策略
 -- ============================================
 
+DROP POLICY IF EXISTS "Allow public read access" ON company_valuation;
 CREATE POLICY "Allow public read access" ON company_valuation
   FOR SELECT USING (true);
 
+DROP POLICY IF EXISTS "Allow public read access" ON industry_benchmarks;
 CREATE POLICY "Allow public read access" ON industry_benchmarks
   FOR SELECT USING (true);
 
+DROP POLICY IF EXISTS "Allow public read access" ON peer_comparison;
 CREATE POLICY "Allow public read access" ON peer_comparison
   FOR SELECT USING (true);
 
+DROP POLICY IF EXISTS "Allow public read access" ON research_reports;
 CREATE POLICY "Allow public read access" ON research_reports
   FOR SELECT USING (true);
 
+DROP POLICY IF EXISTS "Allow public read access" ON analyst_tracking;
 CREATE POLICY "Allow public read access" ON analyst_tracking
   FOR SELECT USING (true);
 
+DROP POLICY IF EXISTS "Allow public read access" ON earnings_consensus;
 CREATE POLICY "Allow public read access" ON earnings_consensus
   FOR SELECT USING (true);
 
+DROP POLICY IF EXISTS "Allow public read access" ON earnings_documents;
 CREATE POLICY "Allow public read access" ON earnings_documents
   FOR SELECT USING (true);
 
 -- 访问日志仅限管理员查看
+DROP POLICY IF EXISTS "Allow public insert" ON document_access_logs;
 CREATE POLICY "Allow public insert" ON document_access_logs
   FOR INSERT WITH CHECK (true);
 
