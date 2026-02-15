@@ -7,8 +7,12 @@ import { AppleIcon } from "@/components/icons";
 import SubscribeForm from "@/components/sections/SubscribeForm";
 import HorizontalGlow from "@/components/ui/horizontal-glow";
 import { EarningsListSkeleton, CardSkeleton } from "@/components/ui/skeleton";
-import { NoDataState, CalendarEmptyState } from "@/components/ui/empty-state";
-import AdsenseAd from "@/components/ads/AdsenseAd";
+import { NoDataState } from "@/components/ui/empty-state";
+// New Components
+import HeroSearch from "@/components/home/HeroSearch";
+import MarketTicker from "@/components/home/MarketTicker";
+import EarningsCard from "@/components/home/EarningsCard";
+import CalendarTimeline from "@/components/home/CalendarTimeline";
 
 interface EarningsWithCompany {
   id: number;
@@ -45,28 +49,6 @@ function formatCurrency(value: number | null): string {
   return `$${value.toLocaleString()}`;
 }
 
-function formatDate(dateStr: string): string {
-  const date = new Date(dateStr);
-  const month = date.getMonth() + 1;
-  const day = date.getDate();
-  const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
-  const weekday = weekdays[date.getDay()];
-  return `${month}月${day}日 ${weekday}`;
-}
-
-function getEarningsBadge(epsSurprise: number | null, sentiment: string | null): { text: string; color: string } {
-  if (epsSurprise && epsSurprise > 0) {
-    return { text: '超预期', color: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' };
-  }
-  if (sentiment === 'positive') {
-    return { text: '积极', color: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' };
-  }
-  if (sentiment === 'negative') {
-    return { text: '消极', color: 'bg-red-500/15 text-red-400 border-red-500/30' };
-  }
-  return { text: '中性', color: 'bg-surface-secondary text-text-secondary border-border' };
-}
-
 export default function HomePage() {
   const [latestEarnings, setLatestEarnings] = useState<EarningsWithCompany[]>([]);
   const [upcomingEarnings, setUpcomingEarnings] = useState<CalendarEvent[]>([]);
@@ -77,13 +59,13 @@ export default function HomePage() {
     async function fetchData() {
       try {
         setLoading(true);
-        
+
         if (!supabase) {
           setError('Database not configured');
           setLoading(false);
           return;
         }
-        
+
         const { data: latestData, error: latestError } = await supabase
           .from('earnings')
           .select(`
@@ -105,13 +87,13 @@ export default function HomePage() {
           `)
           .not('revenue', 'is', null)
           .order('report_date', { ascending: false })
-          .limit(5);
+          .limit(6); // Increased limit for grid
 
         if (latestError) throw latestError;
 
         const today = new Date();
-        const nextWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
-        
+        const nextWeek = new Date(today.getTime() + 14 * 24 * 60 * 60 * 1000); // 2 weeks lookahead
+
         const { data: upcomingData, error: upcomingError } = await supabase
           .from('earnings')
           .select(`
@@ -127,7 +109,7 @@ export default function HomePage() {
           .gte('report_date', today.toISOString().split('T')[0])
           .lte('report_date', nextWeek.toISOString().split('T')[0])
           .order('report_date', { ascending: true })
-          .limit(5);
+          .limit(10);
 
         if (upcomingError) throw upcomingError;
 
@@ -164,17 +146,7 @@ export default function HomePage() {
         setUpcomingEarnings(mappedUpcoming);
       } catch (e: unknown) {
         console.error('Error fetching data:', e);
-        const errorObj = e as Record<string, unknown>;
-        console.error('Error details:', {
-          message: errorObj?.message,
-          error: errorObj?.error,
-          error_description: errorObj?.error_description,
-          code: errorObj?.code,
-          stack: errorObj?.stack,
-          raw: e
-        });
-        const errorMessage = String(errorObj?.message || errorObj?.error_description || errorObj?.error || (typeof e === 'object' && e !== null ? JSON.stringify(e) : String(e)));
-        setError(errorMessage || 'Unknown error occurred');
+        setError('加载数据失败，请重试');
       } finally {
         setLoading(false);
       }
@@ -184,154 +156,83 @@ export default function HomePage() {
   }, []);
 
   return (
-    <div className="flex flex-col">
-      {/* Hero Section */}
-      <section className="bg-background px-4 py-16 sm:px-6 lg:px-20 lg:py-20">
-        <div className="flex flex-col items-center text-center">
-          <div className="relative mb-6">
-            <HorizontalGlow />
-            <h1 className="relative z-10 text-3xl font-bold text-white sm:text-4xl lg:text-5xl">
-              探索科技公司财报
+    <div className="min-h-screen bg-background flex flex-col">
+      {/* 1. Market Ticker (Top Bar) */}
+      <MarketTicker />
+
+      {/* 2. Hero Section (Compact) */}
+      <section className="relative px-4 py-12 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl flex flex-col items-center text-center">
+          <HorizontalGlow />
+          <div className="relative z-10 w-full flex flex-col items-center gap-6">
+            <h1 className="text-3xl font-bold text-white sm:text-4xl lg:text-5xl tracking-tight">
+              金融指挥中心
             </h1>
+            <p className="max-w-xl text-lg text-text-secondary">
+              实时洞察 • 深度分析 • 智能决策
+            </p>
+            <div className="w-full mt-4">
+              <HeroSearch />
+            </div>
           </div>
-          <p className="max-w-2xl text-lg text-text-secondary">
-            AI 驱动的财报分析，让复杂数据变得简单易懂
-          </p>
         </div>
       </section>
 
-      {/* Latest Earnings Section */}
-      <section className="bg-surface px-4 py-12 sm:px-6 lg:px-20 lg:py-16">
-        <div className="mx-auto max-w-6xl">
-          <div className="mb-8 flex items-center justify-between">
-            <h2 className="text-2xl font-bold text-white sm:text-3xl">最新财报</h2>
-            <Link 
-              href="/companies" 
-              className="text-sm font-medium text-primary-hover hover:text-primary transition-colors"
-            >
-              查看全部 →
-            </Link>
-          </div>
+      {/* 3. Bento Grid Dashboard */}
+      <main className="flex-1 px-4 sm:px-6 lg:px-8 pb-20">
+        <div className="mx-auto max-w-7xl grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-          {loading ? (
-            <EarningsListSkeleton count={3} />
-          ) : error ? (
-            <NoDataState 
-              title="加载失败" 
-              description="无法获取财报数据，请稍后重试"
-            />
-          ) : latestEarnings.length === 0 ? (
-            <NoDataState 
-              title="暂无财报数据" 
-              description="目前还没有已发布的财报数据"
-            />
-          ) : (
-            <div className="space-y-4">
-              {latestEarnings.map((item) => {
-                const badge = getEarningsBadge(item.eps_surprise, item.ai_analyses?.sentiment || null);
-                return (
-                  <Link
+          {/* Left Column: Earnings Feed (2/3) */}
+          <div className="lg:col-span-2 space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                最新财报
+              </h2>
+            </div>
+
+            {loading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <EarningsListSkeleton count={4} />
+              </div>
+            ) : error ? (
+              <NoDataState title="加载失败" description={error} />
+            ) : latestEarnings.length === 0 ? (
+              <NoDataState title="暂无数据" description="近期没有财报发布" />
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {latestEarnings.map((item) => (
+                  <EarningsCard
                     key={item.id}
-                    href={`/earnings/${item.companies?.symbol?.toLowerCase()}`}
-                    className="flex flex-col sm:flex-row sm:items-center gap-4 rounded-xl border border-border bg-surface p-4 transition-all hover:border-primary/50 hover:bg-surface-secondary sm:gap-6 sm:p-6"
-                  >
-                    <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl bg-surface-secondary text-white sm:h-16 sm:w-16">
-                      <AppleIcon className="h-7 w-7 sm:h-8 sm:w-8" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-lg font-semibold text-white">{item.companies?.name}</h3>
-                      <p className="text-sm text-text-tertiary">
-                        Q{item.fiscal_quarter} FY{item.fiscal_year} · {item.report_date}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-4 sm:gap-8">
-                      <div className="text-center">
-                        <p className="text-xs text-text-tertiary">营收</p>
-                        <p className="text-base font-semibold text-emerald-400 sm:text-lg">{formatCurrency(item.revenue)}</p>
-                      </div>
-                      <div className="text-center">
-                        <p className="text-xs text-text-tertiary">EPS</p>
-                        <p className="text-base font-semibold text-white sm:text-lg">{item.eps ? `$${item.eps}` : 'N/A'}</p>
-                      </div>
-                      <div className="text-center">
-                        <p className="text-xs text-text-tertiary">同比</p>
-                        <p className="text-base font-semibold text-white sm:text-lg">
-                          {item.revenue_yoy_growth ? `+${item.revenue_yoy_growth}%` : 'N/A'}
-                        </p>
-                      </div>
-                    </div>
-                    <span className={`rounded-lg px-3 py-1 text-xs font-medium border ${badge.color} whitespace-nowrap`}>
-                      {badge.text}
-                    </span>
-                  </Link>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* Calendar Preview Section */}
-      <section className="bg-background px-4 py-12 sm:px-6 lg:px-20 lg:py-16">
-        <div className="mx-auto max-w-6xl">
-          <div className="mb-8 flex items-center justify-between">
-            <h2 className="text-2xl font-bold text-white sm:text-3xl">本周财报预告</h2>
-            <Link 
-              href="/calendar" 
-              className="text-sm font-medium text-primary-hover hover:text-primary transition-colors"
-            >
-              查看完整日历 →
-            </Link>
+                    companyName={item.companies?.name || "Unknown"}
+                    ticker={item.companies?.symbol || ""}
+                    quarter={item.fiscal_quarter.toString()}
+                    fiscalYear={item.fiscal_year}
+                    reportDate={item.report_date}
+                    revenue={formatCurrency(item.revenue)}
+                    revenueGrowth={item.revenue_yoy_growth}
+                    eps={item.eps ? `$${item.eps}` : "N/A"}
+                    epsSurprise={item.eps_surprise}
+                    logo={<AppleIcon className="h-6 w-6" />} // Placeholder logo
+                  />
+                ))}
+              </div>
+            )}
           </div>
 
-          {loading ? (
-            <div className="grid gap-4 md:grid-cols-2">
-              <CardSkeleton />
-              <CardSkeleton />
-            </div>
-          ) : error ? (
-            <CalendarEmptyState 
-              title="加载失败" 
-              description="无法获取财报日历数据"
-            />
-          ) : upcomingEarnings.length === 0 ? (
-            <CalendarEmptyState 
-              title="暂无即将发布的财报" 
-              description="未来7天内没有 scheduled 的财报发布"
-            />
-          ) : (
-            <div className="grid gap-4 md:grid-cols-2">
-              {upcomingEarnings.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex items-center gap-4 rounded-xl border border-success/30 bg-surface p-4 transition-colors hover:bg-surface-secondary"
-                >
-                  <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-emerald-500/10">
-                    <span className="text-sm font-bold text-emerald-400">
-                      {formatDate(item.date).split(' ')[0]}
-                    </span>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-white truncate">
-                      {item.companyName}
-                    </p>
-                    <p className="text-sm text-text-tertiary">
-                      {item.symbol} · Q{item.fiscalQuarter} FY{item.fiscalYear}
-                    </p>
-                  </div>
-                  <span className="text-sm text-emerald-400 whitespace-nowrap">
-                    {formatDate(item.date).split(' ')[1]}
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
+          {/* Right Column: Sidebar (1/3) */}
+          <div className="space-y-6">
+            {/* Calendar Timeline */}
+            <CalendarTimeline events={upcomingEarnings} />
+
+            {/* Placeholder for Watchlist or Other Widget */}
+            {/* <div className="rounded-2xl border border-white/5 bg-surface/30 backdrop-blur-md p-6 h-64 flex items-center justify-center text-text-tertiary">
+                    Watchlist Coming Soon...
+                </div> */}
+          </div>
         </div>
-      </section>
+      </main>
 
-      <AdsenseAd adSlot="7363059938" />
-
-      {/* Subscribe Section */}
       <SubscribeForm />
     </div>
   );
