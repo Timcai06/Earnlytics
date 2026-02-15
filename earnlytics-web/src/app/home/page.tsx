@@ -184,11 +184,20 @@ export default function HomePage() {
 
           {/* Left Column: Earnings Feed (2/3) */}
           <div className="lg:col-span-2 space-y-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                最新财报
-              </h2>
+            {/* Header: Latest Earnings */}
+            <div className="grid grid-cols-1 lg:grid-cols-2">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                  最新财报
+                </h2>
+                <Link
+                  href="/companies"
+                  className="px-4 py-1.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/10 text-xs font-medium text-text-secondary hover:text-white transition-all duration-200"
+                >
+                  全部公司
+                </Link>
+              </div>
             </div>
 
             {loading ? (
@@ -222,7 +231,19 @@ export default function HomePage() {
 
           {/* Right Column: Sidebar (1/3) */}
           <div className="space-y-6">
-            {/* Calendar Timeline */}
+            {/* Header: Earnings Calendar */}
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                <span className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+                财报日历
+              </h2>
+              <Link
+                href="/calendar"
+                className="px-4 py-1.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/10 text-xs font-medium text-text-secondary hover:text-white transition-all duration-200"
+              >
+                完整日历
+              </Link>
+            </div>
             <CalendarTimeline events={upcomingEarnings} />
 
             {/* Placeholder for Watchlist or Other Widget */}

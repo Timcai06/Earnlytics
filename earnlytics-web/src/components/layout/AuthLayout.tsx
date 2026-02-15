@@ -72,7 +72,7 @@ export default function AuthLayout({ children, title, subtitle }: AuthLayoutProp
                         </Link>
 
                         <h2
-                            className={`mb-4 text-3xl font-bold leading-tight text-white xl:text-4xl transition-all duration-700 ${mounted ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
+                            className={`mb-4 text-center text-3xl font-bold leading-tight text-white xl:text-4xl transition-all duration-700 ${mounted ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
                                 }`}
                         >
                             让财报分析
@@ -82,7 +82,7 @@ export default function AuthLayout({ children, title, subtitle }: AuthLayoutProp
                             </span>
                         </h2>
                         <p
-                            className={`mb-10 max-w-md text-base leading-relaxed text-text-secondary transition-all duration-700 delay-100 ${mounted ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
+                            className={`mb-8 text-center text-base leading-relaxed text-text-secondary transition-all duration-700 delay-100 ${mounted ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
                                 }`}
                         >
                             通过 AI 自动分析美国科技公司财报，
@@ -90,36 +90,40 @@ export default function AuthLayout({ children, title, subtitle }: AuthLayoutProp
                             快速获取深度洞察与投资建议。
                         </p>
 
-                        {/* Features */}
-                        <div className="space-y-5">
+                        {/* Decorator Line */}
+                        <div
+                            className={`mx-auto mb-10 h-px max-w-[200px] bg-gradient-to-r from-transparent via-primary/50 to-transparent transition-all duration-700 delay-200 ${mounted ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
+                                }`}
+                        />
+
+                        {/* Features - 2 Column Grid */}
+                        <div className={`grid grid-cols-2 gap-4 transition-all duration-700 delay-300 ${mounted ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
+                            }`}>
                             {features.map((feature, i) => (
                                 <div
                                     key={feature.title}
-                                    className={`flex items-start gap-4 transition-all duration-500 ${mounted ? "translate-x-0 opacity-100" : "-translate-x-4 opacity-0"
+                                    className={`flex flex-col items-center text-center p-4 rounded-xl border border-border bg-surface-secondary/50 hover:bg-surface-secondary transition-colors duration-300 ${i === 2 ? "col-span-2 max-w-[200px] mx-auto" : ""
                                         }`}
-                                    style={{ transitionDelay: `${200 + i * 100}ms` }}
                                 >
-                                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-border bg-surface-secondary">
+                                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-border bg-surface mb-3">
                                         {feature.icon}
                                     </div>
-                                    <div>
-                                        <h3 className="text-sm font-semibold text-white">{feature.title}</h3>
-                                        <p className="text-sm text-text-tertiary">{feature.description}</p>
-                                    </div>
+                                    <h3 className="text-sm font-semibold text-white">{feature.title}</h3>
+                                    <p className="text-xs text-text-tertiary mt-1">{feature.description}</p>
                                 </div>
                             ))}
                         </div>
                     </div>
 
-                    {/* Bottom Stats */}
+                    {/* Bottom Stats - Centered & Prominent */}
                     <div
-                        className={`relative z-10 flex items-center gap-8 transition-all duration-700 delay-500 ${mounted ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
+                        className={`relative z-10 flex justify-center items-center gap-12 py-6 border-t border-b border-border/50 transition-all duration-700 delay-500 ${mounted ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
                             }`}
                     >
                         {stats.map((stat) => (
-                            <div key={stat.label} className="flex flex-col">
-                                <span className="text-2xl font-bold text-primary-hover">{stat.value}</span>
-                                <span className="text-xs text-text-tertiary">{stat.label}</span>
+                            <div key={stat.label} className="flex flex-col items-center">
+                                <span className="text-3xl font-bold text-primary-hover">{stat.value}</span>
+                                <span className="text-xs text-text-tertiary mt-1">{stat.label}</span>
                             </div>
                         ))}
                     </div>

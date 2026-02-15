@@ -21,18 +21,6 @@ export default function CalendarTimeline({ events }: CalendarTimelineProps) {
 
     return (
         <div className="rounded-2xl border border-white/5 bg-surface/30 backdrop-blur-md p-6">
-            <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                    <Calendar className="h-5 w-5 text-primary" />
-                    财报日历
-                </h3>
-                <Link
-                    href="/calendar"
-                    className="text-xs font-medium text-primary-hover hover:text-primary transition-colors"
-                >
-                    查看全部
-                </Link>
-            </div>
 
             <div className="relative border-l border-white/10 ml-2 space-y-6">
                 {events.length === 0 ? (
@@ -75,6 +63,6 @@ export default function CalendarTimeline({ events }: CalendarTimelineProps) {
                     })
                 )}
             </div>
-        </div>
+        </div >
     );
 }
