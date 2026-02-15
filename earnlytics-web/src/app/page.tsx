@@ -96,9 +96,9 @@ export default function LandingPage() {
           <div className="mb-16 flex flex-col items-center gap-4">
             <Link
               href="/home"
-              className="group relative inline-flex cursor-pointer items-center gap-2 overflow-hidden rounded-lg bg-primary px-8 py-4 text-base font-semibold text-white shadow-[var(--shadow-button-cta)] transition-all duration-300 ease-out hover:scale-105 hover:shadow-[var(--shadow-glow-lg)] active:scale-[0.98]"
+              className="group relative inline-flex cursor-pointer items-center gap-2 overflow-hidden rounded-full bg-gradient-to-r from-primary via-[#818cf8] to-primary bg-[length:200%_auto] px-8 py-4 text-base font-semibold text-white shadow-[0_0_20px_rgba(99,102,241,0.5)] transition-all duration-300 hover:bg-[center_right] hover:scale-105 hover:shadow-[0_0_30px_rgba(99,102,241,0.7)] active:scale-[0.98]"
             >
-              <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent group-hover:animate-shimmer" />
+              <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-shimmer" />
               <span className="relative flex items-center gap-2">
                 免费开始分析
                 <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
@@ -192,8 +192,9 @@ export default function LandingPage() {
 
           <Link
             href="/companies"
-            className="group relative inline-flex cursor-pointer items-center gap-2 overflow-hidden rounded-lg border border-primary bg-transparent px-8 py-4 text-base font-semibold text-primary transition-all duration-300 ease-out hover:border-primary-hover hover:bg-primary-hover/10 hover:text-primary-hover hover:shadow-[var(--shadow-glow-sm)] hover:scale-105 active:scale-[0.98]"
+            className="group relative inline-flex cursor-pointer items-center gap-2 overflow-hidden rounded-full bg-gradient-to-r from-primary via-[#818cf8] to-primary bg-[length:200%_auto] px-8 py-4 text-base font-semibold text-white shadow-[0_0_20px_rgba(99,102,241,0.5)] transition-all duration-300 hover:bg-[center_right] hover:scale-105 hover:shadow-[0_0_30px_rgba(99,102,241,0.7)] active:scale-[0.98]"
           >
+            <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-shimmer" />
             <span className="relative flex items-center gap-2">
               查看全部 30+ 家公司
               <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />

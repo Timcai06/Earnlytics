@@ -30,13 +30,13 @@ export default function MysticalGlow() {
         }
 
         @keyframes glow-core {
-          0%, 100% { opacity: 0.85; }
-          50% { opacity: 1; }
+          0%, 100% { opacity: 0.3; }
+          50% { opacity: 0.5; }
         }
 
         @keyframes glow-outer {
-          0%, 100% { opacity: 0.6; }
-          50% { opacity: 0.9; }
+          0%, 100% { opacity: 0.2; }
+          50% { opacity: 0.4; }
         }
 
         .animate-glow-core {
