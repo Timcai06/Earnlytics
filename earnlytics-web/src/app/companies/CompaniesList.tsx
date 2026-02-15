@@ -7,6 +7,7 @@ import { SearchIcon, LayoutGridIcon, ListIcon, ArrowUpDownIcon } from "@/compone
 import { CompanyCardSkeleton } from "@/components/ui/skeleton";
 import { SearchEmptyState, NoDataState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
+import HorizontalGlow from "@/components/ui/horizontal-glow";
 
 interface CompaniesListProps {
   companies: CompanyWithEarnings[];
@@ -110,18 +111,19 @@ export default function CompaniesList({ companies }: CompaniesListProps) {
   };
 
   if (companies.length === 0) {
-    return (
-      <div className="flex flex-col">
-        <section className="bg-background px-4 py-20 sm:px-6 lg:px-20">
-          <div className="flex flex-col items-center text-center">
-            <h1 className="mb-4 text-3xl font-bold text-white sm:text-4xl">
-              科技公司目录
-            </h1>
-            <p className="text-lg text-text-secondary">
-              探索我们覆盖的美国科技巨头
-            </p>
-          </div>
-        </section>
+  return (
+    <div className="flex flex-col">
+      <section className="relative px-4 py-20 sm:px-6 lg:px-20 overflow-hidden">
+        <HorizontalGlow />
+        <div className="relative z-10 mx-auto flex flex-col items-center text-center">
+          <h1 className="mb-4 text-3xl font-bold text-white sm:text-4xl tracking-tight">
+            科技公司目录
+          </h1>
+          <p className="text-lg text-text-secondary">
+            探索我们覆盖的{companies.length}家美国科技巨头
+          </p>
+        </div>
+      </section>
         <section className="bg-background px-4 pb-24 sm:px-6 lg:px-20">
           <div className="mx-auto max-w-6xl">
             <NoDataState 
@@ -260,8 +262,9 @@ export default function CompaniesList({ companies }: CompaniesListProps) {
                 return (
                   <div
                     key={company.symbol}
-                    className={`rounded-2xl border-2 bg-surface p-6 transition-all hover:bg-surface-secondary ${style.borderColor}`}
+                    className={`group relative overflow-hidden rounded-2xl border-2 bg-surface p-6 transition-all hover:bg-surface-secondary hover:-translate-y-1 ${style.borderColor}`}
                   >
+                    <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-primary/10 blur-3xl transition-opacity duration-500 group-hover:opacity-100" />
                     <div className="mb-4 flex items-start gap-4">
                       <div 
                         className={`flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-2xl text-2xl font-bold sm:h-20 sm:w-20 sm:text-3xl ${style.bgColor} ${style.color}`}
@@ -274,7 +277,8 @@ export default function CompaniesList({ companies }: CompaniesListProps) {
                             {company.name}
                           </h3>
                           {hasAnalyzed && (
-                            <span className="flex-shrink-0 rounded-full bg-emerald-500/15 px-2 py-0.5 text-xs font-medium text-emerald-400">
+                            <span className="flex-shrink-0 flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-2 py-0.5 text-xs font-medium text-emerald-400">
+                              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
                               AI分析
                             </span>
                           )}
@@ -345,8 +349,9 @@ export default function CompaniesList({ companies }: CompaniesListProps) {
                 return (
                   <div
                     key={company.symbol}
-                    className={`flex items-center gap-4 rounded-xl border-2 bg-surface p-4 transition-colors hover:bg-surface-secondary ${style.borderColor}`}
+                    className={`group relative overflow-hidden flex items-center gap-4 rounded-xl border-2 bg-surface p-4 transition-colors hover:bg-surface-secondary hover:-translate-y-1 ${style.borderColor}`}
                   >
+                    <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-primary/10 blur-2xl transition-opacity duration-500 group-hover:opacity-100" />
                     <div 
                       className={`flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl text-xl font-bold ${style.bgColor} ${style.color}`}
                     >
@@ -362,7 +367,8 @@ export default function CompaniesList({ companies }: CompaniesListProps) {
                           {company.symbol}
                         </span>
                         {hasAnalyzed && (
-                          <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-xs font-medium text-emerald-400">
+                          <span className="flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 text-xs font-medium text-emerald-400">
+                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
                             AI
                           </span>
                         )}
