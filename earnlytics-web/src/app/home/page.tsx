@@ -132,8 +132,8 @@ export default function HomePage() {
         if (upcomingError) throw upcomingError;
 
         const mappedLatest = latestData
-          ?.filter((item: any) => item.companies !== null && item.revenue > 0)
-          .map((item: any) => ({
+          ?.filter((item) => item.companies !== null && item.revenue > 0)
+          .map((item) => ({
             id: item.id,
             fiscal_year: item.fiscal_year,
             fiscal_quarter: item.fiscal_quarter,
@@ -147,8 +147,8 @@ export default function HomePage() {
           })) || [];
 
         const mappedUpcoming = upcomingData
-          ?.filter((e: any) => e.companies !== null)
-          .map((e: any) => {
+          ?.filter((e) => e.companies !== null)
+          .map((e) => {
             const company = Array.isArray(e.companies) ? e.companies[0] : e.companies;
             return {
               id: e.id,
@@ -162,17 +162,18 @@ export default function HomePage() {
 
         setLatestEarnings(mappedLatest);
         setUpcomingEarnings(mappedUpcoming);
-      } catch (e: any) {
+      } catch (e: unknown) {
         console.error('Error fetching data:', e);
+        const errorObj = e as Record<string, unknown>;
         console.error('Error details:', {
-          message: e?.message,
-          error: e?.error,
-          error_description: e?.error_description,
-          code: e?.code,
-          stack: e?.stack,
+          message: errorObj?.message,
+          error: errorObj?.error,
+          error_description: errorObj?.error_description,
+          code: errorObj?.code,
+          stack: errorObj?.stack,
           raw: e
         });
-        const errorMessage = e?.message || e?.error_description || e?.error || (typeof e === 'object' ? JSON.stringify(e) : String(e));
+        const errorMessage = String(errorObj?.message || errorObj?.error_description || errorObj?.error || (typeof e === 'object' && e !== null ? JSON.stringify(e) : String(e)));
         setError(errorMessage || 'Unknown error occurred');
       } finally {
         setLoading(false);

@@ -43,8 +43,8 @@ export async function GET(
     const { data: benchmark } = await supabase
       .from('industry_benchmarks')
       .select('*')
-      .eq('sector', (valuation.companies as any).sector)
-      .eq('industry', (valuation.companies as any).industry)
+      .eq('sector', (valuation.companies as { sector?: string })?.sector)
+      .eq('industry', (valuation.companies as { industry?: string })?.industry)
       .order('date', { ascending: false })
       .limit(1)
       .single();

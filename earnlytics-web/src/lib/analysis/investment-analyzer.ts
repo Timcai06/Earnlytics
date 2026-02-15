@@ -67,13 +67,67 @@ export interface InvestmentAnalysis {
   investmentHorizon: 'short' | 'medium' | 'long';
 }
 
-// 分析数据接口
+interface Financials {
+  net_income?: number;
+  revenue?: number;
+  total_assets?: number;
+  shareholders_equity?: number;
+}
+
+interface CompanyData {
+  id: number;
+  symbol: string;
+  name: string;
+  sector?: string;
+  industry?: string;
+  [key: string]: unknown;
+}
+
+interface ValuationData {
+  company_id: number;
+  current_price?: number;
+  pe_ratio_ttm?: number;
+  pb_ratio?: number;
+  ps_ratio_ttm?: number;
+  roe?: number;
+  roa?: number;
+  market_cap?: number;
+  [key: string]: unknown;
+}
+
+interface EarningsData {
+  company_id: number;
+  revenue?: number;
+  net_income?: number;
+  eps?: number;
+  gross_margin?: number;
+  net_margin?: number;
+  revenue_yoy_growth?: number;
+  profit_yoy_growth?: number;
+  report_date?: string;
+  [key: string]: unknown;
+}
+
+interface BenchmarkData {
+  sector?: string;
+  industry?: string;
+  avg_pe?: number;
+  avg_roe?: number;
+  [key: string]: unknown;
+}
+
+interface PeerData {
+  company_id: number;
+  percentile?: number;
+  [key: string]: unknown;
+}
+
 interface AnalysisData {
-  company: any;
-  valuation: any;
-  earnings: any;
-  benchmark: any;
-  peers: any[];
+  company: CompanyData;
+  valuation: ValuationData | null;
+  earnings: EarningsData | null;
+  benchmark: BenchmarkData | null;
+  peers: PeerData[];
 }
 
 /**
@@ -142,7 +196,7 @@ export class InvestmentAnalyzer {
   /**
    * 计算杜邦分析
    */
-  private calculateDuPont(financials: any): { netMargin: number; assetTurnover: number; equityMultiplier: number } {
+  private calculateDuPont(financials: Financials): { netMargin: number; assetTurnover: number; equityMultiplier: number } {
     const netIncome = financials?.net_income || 0;
     const revenue = financials?.revenue || 1;
     const totalAssets = financials?.total_assets || 1;

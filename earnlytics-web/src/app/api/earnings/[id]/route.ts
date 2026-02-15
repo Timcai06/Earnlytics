@@ -48,9 +48,8 @@ export async function GET(
     return NextResponse.json({ earnings: data })
   } catch (error) {
     console.error('Unexpected error:', error)
-    const err = error as Error
     return NextResponse.json(
-      { error: 'Internal server error', message: err.message },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }

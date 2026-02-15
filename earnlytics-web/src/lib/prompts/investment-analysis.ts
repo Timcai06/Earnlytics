@@ -197,7 +197,7 @@ export const INVESTMENT_ANALYSIS_PROMPT = `你是一位拥有20年经验的资�
 // Prompt模板填充函数
 export function fillPromptTemplate(
   template: string,
-  data: Record<string, any>
+  data: Record<string, unknown>
 ): string {
   let filled = template;
   
@@ -209,13 +209,67 @@ export function fillPromptTemplate(
   return filled;
 }
 
+interface CompanyInfo {
+  name?: string;
+  symbol?: string;
+  sector?: string;
+  [key: string]: unknown;
+}
+
+interface ValuationInfo {
+  current_price?: number;
+  roe?: number;
+  roa?: number;
+  pe_ratio?: number;
+  pb_ratio?: number;
+  ps_ratio?: number;
+  free_cash_flow?: number;
+  equity_multiplier?: number;
+  fcf_status?: string;
+  debt_level?: string;
+  interest_coverage?: number;
+  pe_min?: number;
+  pe_max?: number;
+  historical_avg_pe?: number;
+  pe_percentile?: number;
+  fair_pe?: number;
+  dcf_value?: number;
+  [key: string]: unknown;
+}
+
+interface EarningsInfo {
+  revenue?: number;
+  net_income?: number;
+  eps?: number;
+  gross_margin?: number;
+  net_margin?: number;
+  revenue_yoy_growth?: number;
+  profit_yoy_growth?: number;
+  operating_cash_flow?: number;
+  asset_turnover?: number;
+  ocf_ratio?: number;
+  revenue_cagr_3y?: number;
+  profit_cagr_3y?: number;
+  [key: string]: unknown;
+}
+
+interface BenchmarkInfo {
+  pe_avg?: number;
+  roe_rank?: number;
+  total_peers?: number;
+  growth_rank?: number;
+  roe_avg?: number;
+  growth_avg?: number;
+  [key: string]: unknown;
+}
+
 // 生成分析数据的辅助函数
 export function generateAnalysisData(
-  company: any,
-  valuation: any,
-  earnings: any,
-  benchmark: any
-): Record<string, any> {
+  company: CompanyInfo,
+  valuation: ValuationInfo | null,
+  earnings: EarningsInfo | null,
+  benchmark: BenchmarkInfo | null
+): Record<string, unknown> {
   return {
     companyName: company.name,
     symbol: company.symbol,
@@ -282,8 +336,8 @@ export function generateAnalysisData(
     // 估值
     historicalAvgPE: valuation?.historical_avg_pe || 'N/A',
     pePercentile: valuation?.pe_percentile || 'N/A',
-    vsIndustryPE: valuation?.pe_ratio > benchmark?.pe_avg ? 'premium' : 'discount',
-    vsHistoricalPE: valuation?.pe_ratio > valuation?.historical_avg_pe ? 'above_avg' : 'below_avg',
+    vsIndustryPE: (valuation?.pe_ratio ?? 0) > (benchmark?.pe_avg ?? 0) ? 'premium' : 'discount',
+    vsHistoricalPE: (valuation?.pe_ratio ?? 0) > (valuation?.historical_avg_pe ?? 0) ? 'above_avg' : 'below_avg',
     fairPE: valuation?.fair_pe || 'N/A',
     dcfValue: valuation?.dcf_value || 'N/A',
     

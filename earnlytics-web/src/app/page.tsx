@@ -35,21 +35,21 @@ export default function LandingPage() {
       title: "极速分析",
       description: "财报发布后1小时内完成AI分析，快速把握投资机会",
       borderColor: "border-primary",
-      shadowColor: "shadow-[0_0_20px_rgba(99,102,241,0.13)]",
+      shadowColor: "shadow-[var(--shadow-card-primary)]",
     },
     {
       icon: <BotIcon className="h-10 w-10 text-success" />,
       title: "AI 智能解读",
       description: "复杂财务数据转化为通俗易懂的中文摘要",
       borderColor: "border-success",
-      shadowColor: "shadow-[0_0_20px_rgba(34,197,94,0.13)]",
+      shadowColor: "shadow-[var(--shadow-focus-success)]",
     },
     {
       icon: <DiamondIcon className="h-10 w-10 text-info" />,
       title: "完全免费",
       description: "基础功能永久免费，无需注册即可访问",
       borderColor: "border-info",
-      shadowColor: "shadow-[0_0_20px_rgba(59,130,246,0.13)]",
+      shadowColor: "shadow-[var(--shadow-card-primary)]",
     },
   ];
 
@@ -96,12 +96,14 @@ export default function LandingPage() {
           <div className="mb-16 flex flex-col items-center gap-4">
             <Link
               href="/home"
-              className="inline-flex items-center gap-2 rounded-lg bg-primary px-8 py-4 text-base font-semibold text-white shadow-[0_4px_20px_rgba(99,102,241,0.6)] transition-all hover:bg-primary-hover hover:scale-105"
+              className="group relative inline-flex cursor-pointer items-center gap-2 overflow-hidden rounded-lg bg-primary px-8 py-4 text-base font-semibold text-white shadow-[var(--shadow-button-cta)] transition-all duration-300 ease-out hover:scale-105 hover:shadow-[var(--shadow-glow-lg)] active:scale-[0.98]"
             >
-              免费开始分析
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-            <span className="flex items-center gap-2 text-sm text-text-secondary">
+              <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent group-hover:animate-shimmer" />
+              <span className="relative flex items-center gap-2">
+                免费开始分析
+                <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+              </span>
+            </Link>            <span className="flex items-center gap-2 text-sm text-text-secondary">
               <svg className="h-4 w-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
               </svg>
@@ -134,7 +136,7 @@ export default function LandingPage() {
             {features.map((feature) => (
               <div
                 key={feature.title}
-                className={`flex flex-col gap-4 rounded-xl border ${feature.borderColor} bg-surface-secondary p-8 ${feature.shadowColor}`}
+                className={`flex flex-col gap-4 rounded-xl border ${feature.borderColor} bg-surface-secondary p-6 sm:p-8 ${feature.shadowColor}`}
               >
                 {feature.icon}
                 <h3 className="text-xl font-semibold text-white">
@@ -190,27 +192,25 @@ export default function LandingPage() {
 
           <Link
             href="/companies"
-            className="inline-flex items-center gap-2 rounded-lg border border-primary bg-primary-light px-6 py-3 text-base font-medium text-primary-foreground shadow-[0_0_15px_rgba(99,102,241,0.19)] transition-colors hover:bg-primary-hover"
+            className="group relative inline-flex cursor-pointer items-center gap-2 overflow-hidden rounded-lg border border-primary bg-transparent px-8 py-4 text-base font-semibold text-primary transition-all duration-300 ease-out hover:border-primary-hover hover:bg-primary-hover/10 hover:text-primary-hover hover:shadow-[var(--shadow-glow-sm)] hover:scale-105 active:scale-[0.98]"
           >
-            查看全部 30+ 家公司 →
+            <span className="relative flex items-center gap-2">
+              查看全部 30+ 家公司
+              <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+            </span>
           </Link>
+
         </div>
+
       </section>
 
-      {/* CTA Section */}
-      <section className="bg-background px-4 py-12 sm:px-6 sm:py-16 lg:px-20 lg:py-20">
-        <div className="flex flex-col items-center text-center">
-          <h2 className="mb-8 text-2xl font-bold text-white sm:text-3xl lg:text-4xl">
-            准备好探索财报洞察了吗？
-          </h2>
-          <Link
-            href="/signup"
-            className="inline-flex items-center gap-2 rounded-lg border border-primary-hover bg-primary px-8 py-4 text-base font-semibold text-white shadow-[0_8px_30px_rgba(99,102,241,0.4)] transition-colors hover:bg-primary-hover"
-          >
-            立即开始
-          </Link>
-        </div>
-      </section>
+
+
+
+
+
+
+
 
       <section className="bg-surface px-4 py-12 sm:px-6 sm:py-16 lg:px-20 lg:py-20">
         <div className="mx-auto max-w-3xl">

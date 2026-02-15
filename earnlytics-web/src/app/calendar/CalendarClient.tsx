@@ -106,7 +106,7 @@ export default function CalendarClient({
       <section className="bg-background px-6 pb-24 md:px-20">
         <div className="mx-auto max-w-6xl">
           {/* Calendar Grid */}
-          <div className="rounded-2xl border border-primary bg-surface-secondary p-4 shadow-[0_0_20px_rgba(99,102,241,0.13)] md:p-8">
+          <div className="rounded-2xl border border-primary bg-surface-secondary p-4 shadow-[var(--shadow-card-primary)] md:p-8">
             {/* Header */}
             <div className="mb-4 flex flex-col items-center justify-between gap-4 md:mb-6 md:flex-row">
               <h2 className="text-xl font-bold text-white md:text-2xl">
@@ -164,7 +164,7 @@ export default function CalendarClient({
                       key={day}
                       className={`min-h-[100px] rounded-lg p-2 md:min-h-[120px] md:p-3 ${
                         hasEvent
-                          ? "border border-primary bg-primary-light shadow-[0_0_20px_rgba(99,102,241,0.25)]"
+                          ? "border border-primary bg-primary-light shadow-[var(--shadow-card-highlight)]"
                           : "bg-background"
                       }`}
                     >

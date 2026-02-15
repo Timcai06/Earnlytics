@@ -8,7 +8,7 @@ export default function AboutPage() {
       title: "AI 驱动",
       description: "利用人工智能技术，快速分析海量财报数据，提取关键洞察",
       border: "border-primary",
-      shadow: "shadow-[0_0_20px_rgba(99,102,241,0.13)]",
+      shadow: "shadow-[var(--shadow-card-primary)]",
       iconBg: "bg-primary-light",
       iconColor: "text-primary",
     },
@@ -17,7 +17,7 @@ export default function AboutPage() {
       title: "中文友好",
       description: "为中国投资者提供母语财报解读，消除语言障碍",
       border: "border-success",
-      shadow: "shadow-[0_0_20px_rgba(34,197,94,0.13)]",
+      shadow: "shadow-[var(--shadow-focus-success)]",
       iconBg: "bg-success-light",
       iconColor: "text-success",
     },
@@ -26,7 +26,7 @@ export default function AboutPage() {
       title: "完全免费",
       description: "基础功能永久免费，降低投资信息获取门槛",
       border: "border-info",
-      shadow: "shadow-[0_0_20px_rgba(59,130,246,0.13)]",
+      shadow: "shadow-[var(--shadow-card-primary)]",
       iconBg: "bg-info-light",
       iconColor: "text-info",
     },
@@ -102,7 +102,7 @@ export default function AboutPage() {
             </div>
 
             {/* Contact Form */}
-            <div className="rounded-2xl border border-primary bg-surface-secondary p-8 shadow-[0_0_30px_rgba(99,102,241,0.19)]">
+            <div className="rounded-2xl border border-primary bg-surface-secondary p-6 sm:p-8 shadow-[var(--shadow-card-primary-lg)]">
               <div className="space-y-4">
                 <div>
                   <label className="mb-2 block text-sm font-medium text-white">
@@ -133,7 +133,7 @@ export default function AboutPage() {
                     className="w-full rounded-lg border border-border bg-surface px-4 py-3 text-white"
                   />
                 </div>
-                <button className="h-12 w-full rounded-lg bg-primary text-base font-semibold text-white shadow-[0_4px_20px_rgba(99,102,241,0.6)] transition-colors hover:bg-primary-hover">
+                <button className="h-12 w-full rounded-lg bg-primary text-base font-semibold text-white shadow-[var(--shadow-button-cta)] transition-colors hover:bg-primary-hover">
                   发送留言
                 </button>
               </div>

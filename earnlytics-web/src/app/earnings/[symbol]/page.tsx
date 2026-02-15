@@ -265,7 +265,7 @@ export default function EarningsPage({ params }: Props) {
               { label: "净利润", value: formatCurrency(earnings.net_income), change: "" },
               { label: "EPS超预期", value: earnings.eps_surprise ? `${earnings.eps_surprise > 0 ? '+' : ''}${earnings.eps_surprise}` : "N/A", change: "" },
             ].map((metric) => (
-              <div key={metric.label} className="rounded-xl border border-success bg-surface-secondary p-4 sm:p-6 shadow-[0_0_15px_rgba(34,197,94,0.13)]">
+              <div key={metric.label} className="rounded-xl border border-success bg-surface-secondary p-4 sm:p-6 shadow-[var(--shadow-focus-success)]">
                 <p className="mb-2 text-xs text-text-secondary sm:mb-3 sm:text-sm">{metric.label}</p>
                 <p className="mb-1 text-xl font-bold text-white sm:mb-2 sm:text-3xl">
                   {metric.value}
@@ -290,10 +290,10 @@ export default function EarningsPage({ params }: Props) {
 
           {analysis ? (
             <>
-              <div className="mb-8 rounded-xl border-2 border-primary bg-primary-light p-5 shadow-[0_0_30px_rgba(99,102,241,0.25)] sm:p-6">
+              <div className="mb-8 rounded-xl border-2 border-primary bg-primary-light p-5 shadow-[var(--shadow-card-highlight)] sm:p-6">
                 <div className="mb-4 flex items-center gap-3 sm:mb-5">
                   <BotIcon className="h-6 w-6 text-primary-hover sm:h-7 sm:w-7" />
-                  <h2 className="text-xl font-bold text-primary-hover drop-shadow-[0_0_20px_rgba(99,102,241,0.5)] sm:text-2xl">
+                  <h2 className="text-xl font-bold text-primary-hover drop-shadow-[var(--shadow-text-glow)] sm:text-2xl">
                     AI 分析摘要
                   </h2>
                 </div>
@@ -337,7 +337,7 @@ export default function EarningsPage({ params }: Props) {
               )}
             </>
           ) : (
-            <div className="mb-8 rounded-xl border-2 border-primary bg-primary-light p-7 shadow-[0_0_30px_rgba(99,102,241,0.25)]">
+            <div className="mb-8 rounded-xl border-2 border-primary bg-primary-light p-6 sm:p-8 shadow-[var(--shadow-card-highlight)]">
               <div className="flex items-center justify-center gap-3 py-8">
                 <BotIcon className="h-6 w-6 animate-pulse text-primary-hover" />
                 <p className="text-primary-hover">AI 分析正在生成中...</p>

@@ -174,7 +174,19 @@ export async function getConversationHistory(
     throw new Error(`Failed to get history: ${error.message}`)
   }
 
-  return (data || []).map((msg: any) => ({
+  interface DBChatMessage {
+    id: string;
+    conversation_id: string;
+    role: 'user' | 'assistant' | 'system';
+    content: string;
+    model?: string;
+    tokens_used?: number;
+    sources?: RAGSource[];
+    processing_time_ms?: number;
+    created_at: string;
+  }
+
+  return (data || []).map((msg: DBChatMessage) => ({
     id: msg.id,
     conversationId: msg.conversation_id,
     role: msg.role,

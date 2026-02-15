@@ -79,7 +79,13 @@ async function fetchEarningsWithFinancials(companyId: number) {
   return earnings || [];
 }
 
-function calculateRevenueCAGR(earnings: any[]) {
+interface Earning {
+  fiscal_year: number;
+  fiscal_quarter: number;
+  revenue: number;
+}
+
+function calculateRevenueCAGR(earnings: Earning[]) {
   if (earnings.length < 2) return 0;
   
   const sorted = [...earnings].sort((a, b) => {

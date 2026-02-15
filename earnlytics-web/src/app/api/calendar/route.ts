@@ -37,8 +37,8 @@ export async function GET(request: Request) {
   const events = earnings?.map(e => ({
     id: e.id,
     date: e.report_date,
-    symbol: (e.companies as any)?.symbol,
-    companyName: (e.companies as any)?.name,
+    symbol: (e.companies as { symbol?: string })?.symbol,
+    companyName: (e.companies as { name?: string })?.name,
     fiscalYear: e.fiscal_year,
     fiscalQuarter: e.fiscal_quarter,
   })) || []

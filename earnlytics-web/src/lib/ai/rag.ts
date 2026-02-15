@@ -39,7 +39,18 @@ export async function searchDocuments(
     throw new Error(`Failed to search documents: ${error.message}`)
   }
 
-  return (data || []).map((item: any) => ({
+  interface SearchDocument {
+    id: string;
+    source_type: string;
+    source_id: string;
+    symbol: string;
+    title: string;
+    content_chunk: string;
+    similarity: number;
+    metadata: Record<string, unknown>;
+  }
+
+  return (data || []).map((item: SearchDocument) => ({
     id: item.id,
     sourceType: item.source_type,
     sourceId: item.source_id,

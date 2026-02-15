@@ -57,7 +57,7 @@ export default function RightSidebar({ isOpen, onClose }: RightSidebarProps) {
                   onClick={onClose}
                   className={`flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200 ${
                     isActive
-                      ? "bg-primary text-white shadow-[0_0_20px_rgba(99,102,241,0.3)]"
+                      ? "bg-primary text-white shadow-[var(--shadow-toggle-button)]"
                       : "text-text-secondary hover:bg-surface-secondary hover:text-white"
                   }`}
                 >
