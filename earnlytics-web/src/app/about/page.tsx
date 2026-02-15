@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
+import AdsenseAd from "@/components/ads/AdsenseAd";
 
 export const metadata: Metadata = {
   title: "关于我们 - Earnlytics | AI财报分析平台",
@@ -160,6 +161,8 @@ export default function AboutPage() {
           </div>
         </div>
       </section>
+
+      <AdsenseAd adSlot="8940210543" />
     </div>
   );
 }

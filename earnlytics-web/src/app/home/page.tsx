@@ -10,6 +10,7 @@ import { EarningsListSkeleton, CardSkeleton } from "@/components/ui/skeleton";
 import { NoDataState } from "@/components/ui/empty-state";
 // New Components
 import HeroSearch from "@/components/home/HeroSearch";
+import HeroStats from "@/components/home/HeroStats";
 import MarketTicker from "@/components/home/MarketTicker";
 import EarningsCard from "@/components/home/EarningsCard";
 import CalendarTimeline from "@/components/home/CalendarTimeline";
@@ -188,16 +189,23 @@ export default function HomePage() {
       {/* 2. Hero Section (Compact) */}
       <section className="relative px-4 py-12 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl flex flex-col items-center text-center">
-          <HorizontalGlow />
           <div className="relative z-10 w-full flex flex-col items-center gap-6">
             <h1 className="text-3xl font-bold text-white sm:text-4xl lg:text-5xl tracking-tight">
               金融指挥中心
             </h1>
-            <p className="max-w-xl text-lg text-text-secondary">
-              实时洞察 • 深度分析 • 智能决策
-            </p>
-            <div className="w-full mt-4">
+            <div className="flex flex-col items-center gap-2 w-full">
+              <p className="max-w-xl text-lg text-text-secondary">
+                实时洞察 • 深度分析 • 智能决策
+              </p>
+
+              <div className="relative w-full h-1 mx-auto opacity-80">
+                <HorizontalGlow />
+              </div>
+            </div>
+
+            <div className="w-full mt-10 flex flex-col items-center gap-20">
               <HeroSearch />
+              <HeroStats />
             </div>
           </div>
         </div>
@@ -278,9 +286,9 @@ export default function HomePage() {
                 </div> */}
           </div>
         </div>
-      </main>
+      </main >
 
       <SubscribeForm />
-    </div>
+    </div >
   );
 }

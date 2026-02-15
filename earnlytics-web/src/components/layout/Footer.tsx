@@ -5,6 +5,7 @@ export default function Footer() {
 
   const footerLinks = [
     { label: "关于我们", href: "/about" },
+    { label: "联系我们", href: "/contact" },
     { label: "隐私政策", href: "/privacy" },
     { label: "使用条款", href: "/terms" },
   ];

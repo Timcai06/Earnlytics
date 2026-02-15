@@ -2,14 +2,30 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import type { CompanyWithEarnings } from "./page";
 import { LayoutGridIcon, ListIcon, ArrowUpDownIcon } from "@/components/icons";
+import { SearchIcon, XIcon } from "lucide-react";
 import { CompanyCardSkeleton } from "@/components/ui/skeleton";
 import { SearchEmptyState, NoDataState } from "@/components/ui/empty-state";
 import HorizontalGlow from "@/components/ui/horizontal-glow";
-import HeroSearch from "@/components/home/HeroSearch";
 import CompanyListStats from "@/components/companies/CompanyListStats";
+
+/** Highlight matching prefix text in a string */
+function HighlightMatch({ text, query }: { text: string; query: string }) {
+  if (!query.trim()) return <>{text}</>;
+  const lowerText = text.toLowerCase();
+  const lowerQuery = query.toLowerCase().trim();
+  const idx = lowerText.indexOf(lowerQuery);
+  if (idx === -1) return <>{text}</>;
+  return (
+    <>
+      {text.slice(0, idx)}
+      <span className="text-primary font-semibold">{text.slice(idx, idx + lowerQuery.length)}</span>
+      {text.slice(idx + lowerQuery.length)}
+    </>
+  );
+}
 
 interface CompaniesListProps {
   companies: CompanyWithEarnings[];
@@ -63,10 +79,17 @@ export default function CompaniesList({ companies }: CompaniesListProps) {
   const [sortBy, setSortBy] = useState<SortOption>("symbol-asc");
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [isLoading, setIsLoading] = useState(true);
+  const [isFocused, setIsFocused] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 300);
     return () => clearTimeout(timer);
+  }, []);
+
+  const handleClearSearch = useCallback(() => {
+    setSearchQuery("");
+    inputRef.current?.focus();
   }, []);
 
   const filteredAndSortedCompanies = useMemo(() => {
@@ -77,11 +100,11 @@ export default function CompaniesList({ companies }: CompaniesListProps) {
     }
 
     if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
+      const query = searchQuery.toLowerCase().trim();
       result = result.filter(
         (c) =>
-          c.name.toLowerCase().includes(query) ||
-          c.symbol.toLowerCase().includes(query)
+          c.name.toLowerCase().startsWith(query) ||
+          c.symbol.toLowerCase().startsWith(query)
       );
     }
 
@@ -126,8 +149,8 @@ export default function CompaniesList({ companies }: CompaniesListProps) {
               <p className="max-w-xl text-lg text-text-secondary">
                 探索 0 家美国科技公司财报数据
               </p>
-              <div className="w-full mt-4">
-                <HeroSearch />
+              <div className="w-full mt-4 max-w-2xl mx-auto">
+                {/* Inline search - no results to filter */}
               </div>
             </div>
           </div>
@@ -156,8 +179,43 @@ export default function CompaniesList({ companies }: CompaniesListProps) {
             <p className="max-w-xl text-lg text-text-secondary">
               探索 {companies.length} 家美国科技公司财报数据
             </p>
-            <div className="w-full mt-4">
-              <HeroSearch />
+            <div className="relative w-full mt-4 max-w-2xl mx-auto">
+              {/* Glow Effect */}
+              <div
+                className={`absolute -inset-1 rounded-xl bg-gradient-to-r from-primary via-violet-500 to-primary blur-2xl transition-opacity duration-500 ${isFocused ? "opacity-60" : "opacity-30"
+                  }`}
+              />
+              <div className="relative flex items-center overflow-hidden rounded-xl border border-white/10 bg-surface/80 backdrop-blur-xl shadow-2xl transition-all duration-300 hover:border-white/20 focus-within:border-primary/50 focus-within:bg-surface/90">
+                <div className="flex h-14 w-14 items-center justify-center text-text-secondary">
+                  <SearchIcon className={`h-6 w-6 transition-colors ${isFocused ? "text-primary" : ""}`} />
+                </div>
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onFocus={() => setIsFocused(true)}
+                  onBlur={() => setIsFocused(false)}
+                  placeholder="输入公司代码或名称实时筛选 (例如: A, AAPL, Apple)"
+                  className="h-14 w-full bg-transparent pr-6 text-lg text-white placeholder-text-tertiary focus:outline-none"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={handleClearSearch}
+                    className="flex-shrink-0 mr-4 p-1.5 rounded-lg text-text-tertiary hover:text-white hover:bg-white/10 transition-colors"
+                    title="清除搜索"
+                  >
+                    <XIcon className="h-5 w-5" />
+                  </button>
+                )}
+                {!searchQuery && (
+                  <div className="hidden sm:flex items-center pr-4">
+                    <kbd className="rounded border border-white/10 px-2 py-1 text-xs text-text-tertiary">
+                      实时
+                    </kbd>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -282,7 +340,7 @@ export default function CompaniesList({ companies }: CompaniesListProps) {
                       <div className="min-w-0 flex-1">
                         <div className="flex items-start justify-between gap-2">
                           <h3 className="truncate text-xl font-bold text-white sm:text-2xl">
-                            {company.name}
+                            <HighlightMatch text={company.name} query={searchQuery} />
                           </h3>
                           {hasAnalyzed && (
                             <span className="flex-shrink-0 flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-2 py-0.5 text-xs font-medium text-emerald-400">
@@ -292,7 +350,7 @@ export default function CompaniesList({ companies }: CompaniesListProps) {
                           )}
                         </div>
                         <p className="text-sm text-text-tertiary">
-                          NASDAQ: {company.symbol}
+                          NASDAQ: <HighlightMatch text={company.symbol} query={searchQuery} />
                         </p>
                         <span
                           className={`inline-block mt-1 rounded-full px-2 py-0.5 text-xs ${style.bgColor}`}
@@ -368,10 +426,10 @@ export default function CompaniesList({ companies }: CompaniesListProps) {
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
                         <h3 className="font-bold text-white">
-                          {company.name}
+                          <HighlightMatch text={company.name} query={searchQuery} />
                         </h3>
                         <span className="text-sm text-text-tertiary">
-                          {company.symbol}
+                          <HighlightMatch text={company.symbol} query={searchQuery} />
                         </span>
                         {hasAnalyzed && (
                           <span className="flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 text-xs font-medium text-emerald-400">

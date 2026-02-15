@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import AdsenseAd from "@/components/ads/AdsenseAd";
 
 export const metadata: Metadata = {
   title: "使用条款 - Earnlytics",
@@ -78,6 +79,8 @@ export default function TermsPage() {
           <p className="text-sm">最后更新日期：2026年2月</p>
         </section>
       </div>
+
+      <AdsenseAd adSlot="8940210543" />
     </div>
   );
 }
