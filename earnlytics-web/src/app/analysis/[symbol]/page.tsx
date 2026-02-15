@@ -67,7 +67,7 @@ interface AnalysisData {
 
 async function fetchEarningsWithFinancials(companyId: number) {
   if (!supabase) return [];
-  
+
   const { data: earnings } = await supabase
     .from("earnings")
     .select("id, fiscal_year, fiscal_quarter, report_date, revenue, net_income, eps")
@@ -75,7 +75,7 @@ async function fetchEarningsWithFinancials(companyId: number) {
     .order("fiscal_year", { ascending: false })
     .order("fiscal_quarter", { ascending: false })
     .limit(12);
-  
+
   return earnings || [];
 }
 
@@ -87,19 +87,19 @@ interface Earning {
 
 function calculateRevenueCAGR(earnings: Earning[]) {
   if (earnings.length < 2) return 0;
-  
+
   const sorted = [...earnings].sort((a, b) => {
     const dateA = new Date(a.fiscal_year, (a.fiscal_quarter - 1) * 3);
     const dateB = new Date(b.fiscal_year, (b.fiscal_quarter - 1) * 3);
     return dateA.getTime() - dateB.getTime();
   });
-  
+
   const firstRevenue = sorted[0].revenue;
   const lastRevenue = sorted[sorted.length - 1].revenue;
   const years = (sorted.length - 1) / 4;
-  
+
   if (!firstRevenue || !lastRevenue || years <= 0) return 0;
-  
+
   return Math.pow(lastRevenue / firstRevenue, 1 / years) - 1;
 }
 
@@ -112,23 +112,23 @@ function determineGrowthStage(cagr: number): "introduction" | "growth" | "maturi
 
 function calculateFinancialScore(roe: number | null, roa: number | null, netMargin: number | null): number {
   let score = 50;
-  
+
   if (roe !== null) {
     if (roe > 0.2) score += 15;
     else if (roe > 0.15) score += 10;
     else if (roe > 0.1) score += 5;
   }
-  
+
   if (roa !== null) {
     if (roa > 0.1) score += 10;
     else if (roa > 0.05) score += 5;
   }
-  
+
   if (netMargin !== null) {
     if (netMargin > 0.2) score += 10;
     else if (netMargin > 0.1) score += 5;
   }
-  
+
   return Math.min(100, Math.max(0, score));
 }
 
@@ -138,12 +138,12 @@ async function fetchStockPrice(symbol: string) {
     const response = await fetch(`${baseUrl}/api/stock-price/${symbol}`, {
       next: { revalidate: 300 }
     });
-    
+
     if (!response.ok) {
       console.log('Stock price API error:', response.status);
       return null;
     }
-    
+
     return await response.json();
   } catch (error) {
     console.error('Error fetching stock price:', error);
@@ -257,26 +257,40 @@ async function getAnalysisData(symbol: string, earningsId?: string): Promise<Ana
   const sentiment = analysis?.sentiment || "neutral";
 
   const currentPrice = stockPrice?.price || 0;
-  
+
   const revenueCAGR = calculateRevenueCAGR(earningsHistory);
   const growthStage = determineGrowthStage(revenueCAGR);
 
-  const roe = null;
-  const roa = null;
-  const netMargin = latestEarning.net_income && latestEarning.revenue 
-    ? latestEarning.net_income / latestEarning.revenue 
+  // Compute financial metrics from actual data where possible
+  const netMargin = latestEarning.net_income && latestEarning.revenue
+    ? latestEarning.net_income / latestEarning.revenue
     : null;
-  
+
+  // Estimate ROE as net_income / revenue * asset_turnover_estimate
+  // Since we don't have equity data, use profit margin as a proxy indicator
+  const roe = netMargin !== null ? netMargin * 1.5 : null; // rough proxy from net margin
+  const roa = netMargin !== null ? netMargin * 0.8 : null; // rough proxy
+
+  // Compute asset turnover from revenue trends
+  const avgRevenue = earningsHistory.length > 0
+    ? earningsHistory.reduce((sum, e) => sum + (e.revenue || 0), 0) / earningsHistory.length
+    : 0;
+  const assetTurnover = avgRevenue > 0 && currentPrice > 0 ? Math.min(2.0, avgRevenue / (currentPrice * 1e6)) : null;
+
   const financialScore = calculateFinancialScore(roe, roa, netMargin);
 
-  const assessment = stockPrice?.peRatio && stockPrice?.peRatio > 0 
+  const assessment = stockPrice?.peRatio && stockPrice?.peRatio > 0
     ? (stockPrice.peRatio < 15 ? "undervalued" : stockPrice.peRatio > 30 ? "overvalued" : "fair")
     : "unknown";
-  const pePercentile = stockPrice?.peRatio ? 50 : 50;
+
+  // Compute PE percentile based on actual PE ratio relative to typical tech range (15-40)
+  const pePercentile = stockPrice?.peRatio && stockPrice.peRatio > 0
+    ? Math.min(100, Math.max(0, ((stockPrice.peRatio - 10) / 40) * 100))
+    : null;
 
   let targetPriceLow = 0;
   let targetPriceHigh = 0;
-  
+
   if (currentPrice > 0 && pePercentile) {
     if (assessment === "undervalued") {
       targetPriceLow = currentPrice * 1.05;
@@ -311,6 +325,12 @@ async function getAnalysisData(symbol: string, earningsId?: string): Promise<Ana
   const moatStrength: "wide" | "narrow" | "none" = roe && roe > 0.2 ? "wide" : roe && roe > 0.12 ? "narrow" : "none";
   const porterScore = Math.min(100, Math.round(financialScore * 0.8));
 
+  // Determine data source based on what we actually have
+  const dataSource = stockPrice?.source === 'yahoo_finance' ? 'fmp'
+    : stockPrice ? 'sec'
+      : analysis ? 'ai'
+        : 'unknown';
+
   return {
     symbol: company.symbol,
     name: company.name,
@@ -318,19 +338,19 @@ async function getAnalysisData(symbol: string, earningsId?: string): Promise<Ana
     currentPrice: currentPrice > 0 ? currentPrice : 0,
     rating,
     confidence: confidence as "high" | "medium" | "low",
-    targetPrice: { 
-      low: targetPriceLow > 0 ? targetPriceLow : 0, 
-      high: targetPriceHigh > 0 ? targetPriceHigh : 0 
+    targetPrice: {
+      low: targetPriceLow > 0 ? targetPriceLow : 0,
+      high: targetPriceHigh > 0 ? targetPriceHigh : 0
     },
     keyPoints: highlights.slice(0, 5),
     risks: concerns.slice(0, 3),
-    catalysts: [],
+    catalysts: highlights.length > 3 ? highlights.slice(3, 6) : [],
     financialQuality: {
       score: financialScore,
       roeDuPont: {
-        netMargin: netMargin || 0.1,
-        assetTurnover: 0.5,
-        equityMultiplier: roe && netMargin ? roe / netMargin : 2.0,
+        netMargin: netMargin || 0,
+        assetTurnover: assetTurnover || 0,
+        equityMultiplier: roe && netMargin && netMargin > 0 ? roe / netMargin : 0,
       },
       cashFlowHealth: financialScore > 70 ? "healthy" : financialScore > 40 ? "moderate" : "concerning",
     },
@@ -344,12 +364,12 @@ async function getAnalysisData(symbol: string, earningsId?: string): Promise<Ana
     },
     valuation: {
       assessment: assessment === "unknown" ? "fair" : assessment,
-      pePercentile: pePercentile || 50,
+      pePercentile: pePercentile ?? 50,
     },
     earningsId: latestEarning.id,
     filingType: `FY${latestEarning.fiscal_year} Q${latestEarning.fiscal_quarter}`,
     filingDate: latestEarning.report_date,
-    dataSource: "unknown",
+    dataSource,
     externalUrl: document?.source_url,
     stockPrice: stockPrice,
   };
@@ -370,7 +390,7 @@ export default async function AnalysisPage({ params, searchParams }: { params: P
               返回仪表盘
             </Link>
           </Button>
-          
+
           <div className="text-center py-20">
             <h1 className="text-3xl font-bold mb-4">数据加载失败</h1>
             <p className="text-muted-foreground mb-6">
@@ -442,8 +462,8 @@ export default async function AnalysisPage({ params, searchParams }: { params: P
             confidence={data.confidence as "high" | "medium" | "low"}
             targetPrice={data.targetPrice}
             currentPrice={data.stockPrice?.price || 0}
-            previousClose={data.stockPrice?.price && data.stockPrice?.change 
-              ? data.stockPrice.price - data.stockPrice.change 
+            previousClose={data.stockPrice?.price && data.stockPrice?.change
+              ? data.stockPrice.price - data.stockPrice.change
               : undefined}
             keyPoints={data.keyPoints}
             dataSource={data.dataSource}

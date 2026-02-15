@@ -3,8 +3,7 @@
 > AI-driven US tech company earnings analysis platform with Chinese summaries.
 
 **Production**: https://earnlytics-ebon.vercel.app  
-**Status**: Plan 3 Week 7 Complete (87.5%) → Week 8 In Progress  
-**Last Updated**: 2026-02-11
+**Last Updated**: 2026-02-15
 
 ## 🎯 Current Progress
 
@@ -13,7 +12,7 @@
 | **Plan 1: MVP** | ✅ Complete | 100% | 10 pages, Vercel deployed |
 | **Plan 2: AI Automation** | ✅ Complete | 100% | DeepSeek AI, 23 earnings analyzed, GitHub Actions |
 | **Plan 3: Scale** | 🚀 Week 7 Done | 87.5% | 30 companies, 109 earnings, 100% AI coverage, email subscription |
-| **Plan 3: Week 8** | ⏳ In Progress | 0% | AdSense application prep |
+| **Plan 3: Week 8** | ✅ Complete | 100% | AdSense application prep, privacy, terms, contact pages |
 
 ### Database Status (Based on Code Analysis)
 - **Companies**: 30 (Tier 1/2/3) - scripts support tier2/tier3 insertion
@@ -97,16 +96,11 @@ npm run lint                              # Lint check
 | **Plan 1: MVP** | Week 1-2 | 10 pages, 10 companies | ✅ Complete | 10+ pages in app/, shadcn/ui components |
 | **Plan 2: AI Automation** | Week 3-4 | AI analysis, automation | ✅ Complete | ai.ts, analyze-batch.ts, GitHub Actions |
 | **Plan 3: Scale** | Month 2 | 30 companies, 109 earnings | 🚀 87.5% | tier2/tier3 scripts, backfill scripts |
-| **Plan 3: Week 8** | Current | AdSense application | ⏳ In Progress | privacy/, terms/ directories exist |
+| **Plan 3: Week 8** | Current | AdSense application, privacy, terms, contact pages | ✅ Complete | privacy/, terms/, contact/ directories exist |
 | **Plan 4: Growth** | Month 3 | SEO, traffic growth | 📋 Planned | - |
 | **Plan 5: Commercialization** | Month 4-6 | Monetization | 📋 Planned | - |
 
-### Week 8 Tasks (In Progress - Based on Code Structure)
-- [ ] Complete Privacy Policy page (`/privacy`)
-- [ ] Complete Terms of Service page (`/terms`)  
-- [ ] Complete Contact page (`/contact`)
-- [ ] AdSense integration
-- [ ] Submit AdSense application
+
 
 ## 💰 Cost Analysis (Based on Actual Implementation)
 
@@ -195,5 +189,4 @@ npm run lint                              # Lint check
 **Production**: https://earnlytics-ebon.vercel.app  
 **GitHub**: https://github.com/Timcai06/Earnlytics  
 **Branch**: main  
-**Last Updated**: 2026-02-11  
-**Next Update**: After Week 8 tasks completion
+**Last Updated**: 2026-02-15

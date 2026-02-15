@@ -1,6 +1,12 @@
 "use client";
 
-export default function HorizontalGlow() {
+interface HorizontalGlowProps {
+  position?: "middle" | "bottom"
+}
+
+export default function HorizontalGlow({ position = "middle" }: HorizontalGlowProps) {
+  const topValue = position === "bottom" ? "100%" : "50%"
+  
   return (
     <>
       <div
@@ -9,8 +15,8 @@ export default function HorizontalGlow() {
           position: "absolute",
           left: "10%",
           right: "10%",
-          top: "50%",
-          marginTop: "-1px",
+          top: topValue,
+          marginTop: position === "bottom" ? "24px" : "-1px",
           height: "2px",
           background: `
             linear-gradient(90deg,

@@ -77,20 +77,76 @@ async function getInvestmentRecommendations(): Promise<InvestmentRecommendation[
     companiesMap.set(c.id, c);
   });
 
+  // Fetch stock prices for all symbols
+  const symbolList = [...new Set(
+    analyses
+      .map(a => {
+        const e = earningsMap.get(a.earnings_id);
+        const c = e ? companiesMap.get(e.company_id) : undefined;
+        return c?.symbol;
+      })
+      .filter(Boolean) as string[]
+  )];
+
+  const stockPriceMap = new Map<string, { price: number; change_percent: number }>();
+  if (symbolList.length > 0) {
+    const { data: prices } = await supabase
+      .from('stock_prices')
+      .select('symbol, price, change_percent')
+      .in('symbol', symbolList)
+      .order('timestamp', { ascending: false });
+
+    if (prices) {
+      for (const p of prices) {
+        if (!stockPriceMap.has(p.symbol)) {
+          stockPriceMap.set(p.symbol, { price: p.price, change_percent: p.change_percent });
+        }
+      }
+    }
+  }
+
   return analyses.map((analysis) => {
     const earning = earningsMap.get(analysis.earnings_id);
     const company = earning ? companiesMap.get(earning.company_id) : undefined;
     const highlights = analysis?.highlights || [];
     const sentiment = analysis?.sentiment || "neutral";
+    const symbol = company?.symbol || '';
+
+    const stockData = stockPriceMap.get(symbol);
+    const currentPrice = stockData?.price || 0;
+
+    // Compute target prices based on sentiment and current price
+    let targetPriceLow = 0;
+    let targetPriceHigh = 0;
+    if (currentPrice > 0) {
+      if (sentiment === "positive") {
+        targetPriceLow = currentPrice * 1.05;
+        targetPriceHigh = currentPrice * 1.25;
+      } else if (sentiment === "negative") {
+        targetPriceLow = currentPrice * 0.75;
+        targetPriceHigh = currentPrice * 0.95;
+      } else {
+        targetPriceLow = currentPrice * 0.9;
+        targetPriceHigh = currentPrice * 1.1;
+      }
+    }
+
+    // Compute confidence based on data availability
+    let confidence = "low";
+    if (currentPrice > 0 && analysis) {
+      confidence = "high";
+    } else if (currentPrice > 0 || analysis) {
+      confidence = "medium";
+    }
 
     return {
-      symbol: company?.symbol || '',
+      symbol,
       name: company?.name || '',
       rating: sentiment === "positive" ? "buy" : sentiment === "negative" ? "sell" : "hold",
-      confidence: "medium",
-      targetPriceLow: 0,
-      targetPriceHigh: 0,
-      currentPrice: 0,
+      confidence,
+      targetPriceLow,
+      targetPriceHigh,
+      currentPrice,
       keyPoints: Array.isArray(highlights) ? highlights.slice(0, 3) : [],
       updatedAt: analysis.created_at,
     };
@@ -131,9 +187,9 @@ export default async function DashboardPage() {
         </p>
       </div>
 
-      <DashboardClient 
-        initialRecommendations={recommendations} 
-        companies={companies} 
+      <DashboardClient
+        initialRecommendations={recommendations}
+        companies={companies}
       />
     </div>
   );

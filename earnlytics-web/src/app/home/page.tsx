@@ -16,6 +16,7 @@ import CalendarTimeline from "@/components/home/CalendarTimeline";
 
 interface EarningsWithCompany {
   id: number;
+  company_id: number;
   fiscal_year: number;
   fiscal_quarter: number;
   report_date: string;
@@ -52,6 +53,7 @@ function formatCurrency(value: number | null): string {
 export default function HomePage() {
   const [latestEarnings, setLatestEarnings] = useState<EarningsWithCompany[]>([]);
   const [upcomingEarnings, setUpcomingEarnings] = useState<CalendarEvent[]>([]);
+  const [revenueHistoryMap, setRevenueHistoryMap] = useState<Record<number, number[]>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -70,6 +72,7 @@ export default function HomePage() {
           .from('earnings')
           .select(`
             id,
+            company_id,
             fiscal_year,
             fiscal_quarter,
             report_date,
@@ -87,7 +90,7 @@ export default function HomePage() {
           `)
           .not('revenue', 'is', null)
           .order('report_date', { ascending: false })
-          .limit(6); // Increased limit for grid
+          .limit(6);
 
         if (latestError) throw latestError;
 
@@ -117,6 +120,7 @@ export default function HomePage() {
           ?.filter((item) => item.companies !== null && item.revenue > 0)
           .map((item) => ({
             id: item.id,
+            company_id: item.company_id,
             fiscal_year: item.fiscal_year,
             fiscal_quarter: item.fiscal_quarter,
             report_date: item.report_date,
@@ -127,6 +131,27 @@ export default function HomePage() {
             companies: Array.isArray(item.companies) ? item.companies[0] : item.companies,
             ai_analyses: Array.isArray(item.ai_analyses) ? item.ai_analyses[0] : item.ai_analyses,
           })) || [];
+
+        // Fetch revenue history for sparklines
+        const companyIds = [...new Set(mappedLatest.map(e => e.company_id))];
+        const historyMap: Record<number, number[]> = {};
+        if (companyIds.length > 0) {
+          const { data: historyData } = await supabase
+            .from('earnings')
+            .select('company_id, revenue, fiscal_year, fiscal_quarter')
+            .in('company_id', companyIds)
+            .not('revenue', 'is', null)
+            .order('fiscal_year', { ascending: true })
+            .order('fiscal_quarter', { ascending: true });
+
+          if (historyData) {
+            for (const row of historyData) {
+              if (!historyMap[row.company_id]) historyMap[row.company_id] = [];
+              historyMap[row.company_id].push(row.revenue);
+            }
+          }
+        }
+        setRevenueHistoryMap(historyMap);
 
         const mappedUpcoming = upcomingData
           ?.filter((e) => e.companies !== null)
@@ -222,7 +247,8 @@ export default function HomePage() {
                     revenueGrowth={item.revenue_yoy_growth}
                     eps={item.eps ? `$${item.eps}` : "N/A"}
                     epsSurprise={item.eps_surprise}
-                    logo={<AppleIcon className="h-6 w-6" />} // Placeholder logo
+                    revenueHistory={revenueHistoryMap[item.company_id]}
+                    logo={<AppleIcon className="h-6 w-6" />}
                   />
                 ))}
               </div>

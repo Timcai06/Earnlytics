@@ -32,33 +32,33 @@ interface DashboardClientProps {
 
 function getRatingConfig(rating: string) {
   const configs: Record<string, { label: string; color: string; bgColor: string; borderColor: string }> = {
-    strong_buy: { 
-      label: "强烈买入", 
-      color: "text-emerald-400", 
+    strong_buy: {
+      label: "强烈买入",
+      color: "text-emerald-400",
       bgColor: "bg-emerald-500/10",
       borderColor: "border-emerald-500/30"
     },
-    buy: { 
-      label: "买入", 
-      color: "text-green-400", 
+    buy: {
+      label: "买入",
+      color: "text-green-400",
       bgColor: "bg-green-500/10",
       borderColor: "border-green-500/30"
     },
-    hold: { 
-      label: "持有", 
-      color: "text-amber-400", 
+    hold: {
+      label: "持有",
+      color: "text-amber-400",
       bgColor: "bg-amber-500/10",
       borderColor: "border-amber-500/30"
     },
-    sell: { 
-      label: "卖出", 
-      color: "text-orange-400", 
+    sell: {
+      label: "卖出",
+      color: "text-orange-400",
       bgColor: "bg-orange-500/10",
       borderColor: "border-orange-500/30"
     },
-    strong_sell: { 
-      label: "强烈卖出", 
-      color: "text-red-400", 
+    strong_sell: {
+      label: "强烈卖出",
+      color: "text-red-400",
       bgColor: "bg-red-500/10",
       borderColor: "border-red-500/30"
     },
@@ -75,15 +75,15 @@ function getConfidenceLabel(confidence: string): string {
   return labels[confidence] || "中等置信度";
 }
 
-function StatCard({ 
-  title, 
-  value, 
-  subtitle, 
+function StatCard({
+  title,
+  value,
+  subtitle,
   trend,
-  icon: Icon 
-}: { 
-  title: string; 
-  value: string | number; 
+  icon: Icon
+}: {
+  title: string;
+  value: string | number;
   subtitle: string;
   trend?: "up" | "down" | "neutral";
   icon: typeof Building2;
@@ -115,7 +115,7 @@ function StatCard({
   );
 }
 
-function OverviewTab({ recommendations }: { recommendations: InvestmentRecommendation[] }) {
+function OverviewTab({ recommendations, companiesCount }: { recommendations: InvestmentRecommendation[]; companiesCount: number }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -145,7 +145,7 @@ function OverviewTab({ recommendations }: { recommendations: InvestmentRecommend
 
   if (recommendations.length === 0) {
     return (
-      <NoDataState 
+      <NoDataState
         title="暂无投资建议"
         description="请先运行分析脚本生成投资建议数据"
       />
@@ -157,7 +157,7 @@ function OverviewTab({ recommendations }: { recommendations: InvestmentRecommend
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <StatCard
           title="分析覆盖"
-          value="30"
+          value={companiesCount}
           subtitle="家科技公司"
           icon={Building2}
           trend="up"
@@ -190,7 +190,7 @@ function OverviewTab({ recommendations }: { recommendations: InvestmentRecommend
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
           {recommendations.slice(0, 6).map((rec) => {
             const config = getRatingConfig(rec.rating);
-            const upside = rec.currentPrice > 0 
+            const upside = rec.currentPrice > 0
               ? ((rec.targetPriceHigh - rec.currentPrice) / rec.currentPrice * 100)
               : 0;
 
@@ -213,28 +213,41 @@ function OverviewTab({ recommendations }: { recommendations: InvestmentRecommend
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="text-lg font-semibold text-white">${rec.currentPrice.toFixed(2)}</div>
-                      <div className="text-xs text-text-tertiary">当前价格</div>
+                      {rec.currentPrice > 0 ? (
+                        <>
+                          <div className="text-lg font-semibold text-white">${rec.currentPrice.toFixed(2)}</div>
+                          <div className="text-xs text-text-tertiary">当前价格</div>
+                        </>
+                      ) : (
+                        <>
+                          <div className="text-lg font-semibold text-text-tertiary">--</div>
+                          <div className="text-xs text-text-tertiary">价格暂不可用</div>
+                        </>
+                      )}
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-4 mb-4 p-3 bg-surface-secondary rounded-lg">
-                    <div className="p-2 bg-primary/10 rounded-lg">
-                      <Target className="h-4 w-4 text-primary" />
-                    </div>
-                    <div className="flex-1">
-                      <div className="text-xs text-text-tertiary">目标价区间</div>
-                      <div className="font-semibold text-white">
-                        ${rec.targetPriceLow.toFixed(2)} - ${rec.targetPriceHigh.toFixed(2)}
+                  {rec.targetPriceHigh > 0 && rec.targetPriceLow > 0 ? (
+                    <div className="flex items-center gap-4 mb-4 p-3 bg-surface-secondary rounded-lg">
+                      <div className="p-2 bg-primary/10 rounded-lg">
+                        <Target className="h-4 w-4 text-primary" />
                       </div>
-                    </div>
-                    <div className="text-right">
-                      <div className={`text-sm font-medium ${upside >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                        {upside >= 0 ? '+' : ''}{upside.toFixed(1)}%
+                      <div className="flex-1">
+                        <div className="text-xs text-text-tertiary">目标价区间</div>
+                        <div className="font-semibold text-white">
+                          ${rec.targetPriceLow.toFixed(2)} - ${rec.targetPriceHigh.toFixed(2)}
+                        </div>
                       </div>
-                      <div className="text-xs text-text-tertiary">预期涨幅</div>
+                      {rec.currentPrice > 0 && (
+                        <div className="text-right">
+                          <div className={`text-sm font-medium ${upside >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                            {upside >= 0 ? '+' : ''}{upside.toFixed(1)}%
+                          </div>
+                          <div className="text-xs text-text-tertiary">预期涨幅</div>
+                        </div>
+                      )}
                     </div>
-                  </div>
+                  ) : null}
 
                   {rec.keyPoints.length > 0 && (
                     <div className="space-y-2 mb-4">
@@ -299,7 +312,7 @@ export default function DashboardClient({ initialRecommendations, companies }: D
       </TabsList>
 
       <TabsContent value="overview">
-        <OverviewTab recommendations={initialRecommendations} />
+        <OverviewTab recommendations={initialRecommendations} companiesCount={companies.length} />
       </TabsContent>
 
       <TabsContent value="companies">

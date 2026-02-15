@@ -1,55 +1,156 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { TrendingUp, TrendingDown } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
 
-const MOCK_MARKET_DATA = [
-    { symbol: "NASDAQ", value: "16,274.94", change: "+0.90%", isPositive: true },
-    { symbol: "S&P 500", value: "5,117.09", change: "+0.74%", isPositive: true },
-    { symbol: "DOW", value: "38,790.43", change: "+0.20%", isPositive: true },
-    { symbol: "AAPL", value: "172.62", change: "+1.36%", isPositive: true },
-    { symbol: "NVDA", value: "884.55", change: "+3.12%", isPositive: true },
-    { symbol: "MSFT", value: "417.32", change: "+1.05%", isPositive: true },
-    { symbol: "TSLA", value: "163.57", change: "-1.15%", isPositive: false },
-    { symbol: "GOOGL", value: "148.48", change: "-0.50%", isPositive: false },
-    { symbol: "META", value: "496.24", change: "+2.66%", isPositive: true },
-    { symbol: "AMZN", value: "174.42", change: "+0.80%", isPositive: true },
+interface TickerItem {
+    symbol: string;
+    price: number;
+    change: number;
+    changePercent: number;
+    isPositive: boolean;
+}
+
+function SkeletonItem() {
+    return (
+        <div className="flex shrink-0 items-center gap-2 px-6">
+            <div className="h-4 w-12 animate-pulse rounded bg-surface-secondary" />
+            <div className="h-4 w-16 animate-pulse rounded bg-surface-secondary" />
+            <div className="h-4 w-14 animate-pulse rounded bg-surface-secondary" />
+        </div>
+    );
+}
+
+function TickerItemDisplay({ item }: { item: TickerItem }) {
+    return (
+        <div className="flex shrink-0 items-center gap-2 px-6">
+            <span className="font-semibold text-text-secondary">{item.symbol}</span>
+            <span className="font-mono text-white">${(item.price ?? 0).toFixed(2)}</span>
+            <div className={`flex items-center gap-1 text-xs font-medium ${item.isPositive ? "text-emerald-400" : "text-rose-400"}`}>
+                {item.isPositive ? (
+                    <TrendingUp className="h-3 w-3" />
+                ) : (
+                    <TrendingDown className="h-3 w-3" />
+                )}
+                {item.isPositive ? "+" : ""}{(item.changePercent ?? 0).toFixed(2)}%
+            </div>
+        </div>
+    );
+}
+
+const FALLBACK_TICKER: TickerItem[] = [
+    { symbol: "AAPL", price: 245.50, change: 1.25, changePercent: 0.51, isPositive: true },
+    { symbol: "NVDA", price: 180.20, change: -0.45, changePercent: -0.25, isPositive: false },
+    { symbol: "MSFT", price: 410.15, change: 2.10, changePercent: 0.51, isPositive: true },
+    { symbol: "TSLA", price: 420.00, change: 5.50, changePercent: 1.33, isPositive: true },
+    { symbol: "GOOGL", price: 175.30, change: -1.20, changePercent: -0.68, isPositive: false },
+    { symbol: "AMZN", price: 195.80, change: 0.90, changePercent: 0.46, isPositive: true },
+    { symbol: "AMD", price: 210.45, change: 3.10, changePercent: 1.50, isPositive: true },
+    { symbol: "META", price: 580.60, change: -2.30, changePercent: -0.39, isPositive: false },
+    { symbol: "INTC", price: 45.20, change: 0.15, changePercent: 0.33, isPositive: true },
+    { symbol: "NFLX", price: 685.90, change: 8.40, changePercent: 1.24, isPositive: true },
 ];
 
-// Duplicate data to create seamless loop
-const TICKER_DATA = [...MOCK_MARKET_DATA, ...MOCK_MARKET_DATA];
-
 export default function MarketTicker() {
+    const [tickerData, setTickerData] = useState<TickerItem[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [setWidth, setSetWidth] = useState(0);
+    const measureRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        async function fetchTickerData() {
+            try {
+                const res = await fetch("/api/market-ticker");
+                if (!res.ok) {
+                    setIsLoading(false);
+                    return;
+                }
+                const data: TickerItem[] = await res.json();
+                if (data && data.length > 0) {
+                    setTickerData(data);
+                }
+            } catch (e) {
+                console.error("Failed to fetch ticker data:", e);
+            } finally {
+                setIsLoading(false);
+            }
+        }
+        fetchTickerData();
+    }, []);
+
+    useEffect(() => {
+        if (!measureRef.current) return;
+
+        const measureContent = () => {
+            if (measureRef.current) {
+                setSetWidth(measureRef.current.scrollWidth);
+            }
+        };
+
+        measureContent();
+
+        const observer = new ResizeObserver(measureContent);
+        observer.observe(measureRef.current);
+
+        return () => observer.disconnect();
+    }, [tickerData, isLoading]);
+
+    const mergedData = FALLBACK_TICKER.map(fallbackItem => {
+        const apiItem = tickerData.find(item => item.symbol === fallbackItem.symbol);
+        // Use API item if it exists and has valid-looking data (non-zero price and change)
+        // Note: Change can technically be 0, but it's rare for these major stocks. 
+        // We prioritize the fallback if change is 0 to avoid "stale/broken" look, 
+        // assuming fallback data is a better "demo" experience than 0.00 change.
+        if (apiItem && apiItem.price > 0 && (apiItem.change !== 0 || apiItem.changePercent !== 0)) {
+            return apiItem;
+        }
+        return fallbackItem;
+    });
+
+    // Repeat data enough times to ensure it covers reasonably wide screens without gaps
+    // 3 repetitions of the base list (10 items) should be plenty (~30 items)
+    const displayData = [...mergedData, ...mergedData, ...mergedData];
+
+    const speed = 50; // pixels per second
+    const duration = setWidth > 0 ? setWidth / speed : 60;
+
     return (
         <div className="w-full overflow-hidden border-b border-white/5 bg-background/50 backdrop-blur-sm">
-            <div className="flex whitespace-nowrap py-3">
-                <motion.div
-                    animate={{ x: [0, -1000] }}
-                    transition={{
-                        x: {
-                            repeat: Infinity,
-                            repeatType: "loop",
-                            duration: 30,
-                            ease: "linear",
-                        },
+            <div className="relative flex py-3">
+                <div
+                    className="flex animate-marquee"
+                    style={{
+                        animationDuration: `${duration}s`,
+                        animationPlayState: setWidth > 0 ? "running" : "paused",
                     }}
-                    className="flex gap-12 px-4"
                 >
-                    {TICKER_DATA.map((item, index) => (
-                        <div key={`${item.symbol}-${index}`} className="flex items-center gap-2">
-                            <span className="font-semibold text-text-secondary">{item.symbol}</span>
-                            <span className="font-mono text-white">{item.value}</span>
-                            <div className={`flex items-center gap-1 text-xs font-medium ${item.isPositive ? "text-emerald-400" : "text-rose-400"}`}>
-                                {item.isPositive ? (
-                                    <TrendingUp className="h-3 w-3" />
-                                ) : (
-                                    <TrendingDown className="h-3 w-3" />
-                                )}
-                                {item.change}
-                            </div>
-                        </div>
-                    ))}
-                </motion.div>
+                    <div ref={measureRef} className="flex shrink-0">
+                        {isLoading && tickerData.length === 0 ? (
+                            <>
+                                {Array.from({ length: 15 }).map((_, i) => (
+                                    <SkeletonItem key={i} />
+                                ))}
+                            </>
+                        ) : (
+                            displayData.map((item, index) => (
+                                <TickerItemDisplay key={`${item.symbol}-${index}`} item={item} />
+                            ))
+                        )}
+                    </div>
+                    <div className="flex shrink-0" aria-hidden="true">
+                        {isLoading && tickerData.length === 0 ? (
+                            <>
+                                {Array.from({ length: 15 }).map((_, i) => (
+                                    <SkeletonItem key={`dup-${i}`} />
+                                ))}
+                            </>
+                        ) : (
+                            displayData.map((item, index) => (
+                                <TickerItemDisplay key={`${item.symbol}-dup-${index}`} item={item} />
+                            ))
+                        )}
+                    </div>
+                </div>
             </div>
         </div>
     );

@@ -237,4 +237,31 @@
       transition-duration: 0.01ms !important;
     }
   }
+
+  @keyframes glow-core {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 0.5; }
+  }
+
+  @keyframes glow-outer {
+    0%, 100% { opacity: 0.2; }
+    50% { opacity: 0.4; }
+  }
+
+  .animate-glow-core {
+    animation: glow-core 4s ease-in-out infinite;
+  }
+
+  .animate-glow-outer {
+    animation: glow-outer 6s ease-in-out infinite;
+  }
+
+  @keyframes marquee {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
+  .animate-marquee {
+    animation: marquee linear infinite;
+  }
 }

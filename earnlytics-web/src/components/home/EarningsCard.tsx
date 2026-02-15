@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowUpRight, ArrowDownRight, Apple } from "lucide-react";
+import { ArrowUpRight, ArrowDownRight } from "lucide-react";
 
 interface EarningsCardProps {
     companyName: string;
@@ -14,6 +14,32 @@ interface EarningsCardProps {
     eps: string;
     epsSurprise: number | null;
     logo: React.ReactNode;
+    revenueHistory?: number[];
+}
+
+function generateSparklinePath(data: number[], width: number, height: number): string {
+    if (!data || data.length < 2) return "";
+
+    const min = Math.min(...data);
+    const max = Math.max(...data);
+    const range = max - min || 1; // Avoid division by zero
+
+    const points = data.map((value, index) => ({
+        x: (index / (data.length - 1)) * width,
+        y: height - ((value - min) / range) * (height * 0.8) - height * 0.1,
+    }));
+
+    // Build a smooth curve through the points
+    let path = `M${points[0].x} ${points[0].y}`;
+
+    for (let i = 1; i < points.length; i++) {
+        const prev = points[i - 1];
+        const curr = points[i];
+        const cpx = (prev.x + curr.x) / 2;
+        path += ` C${cpx} ${prev.y}, ${cpx} ${curr.y}, ${curr.x} ${curr.y}`;
+    }
+
+    return path;
 }
 
 export default function EarningsCard({
@@ -27,9 +53,14 @@ export default function EarningsCard({
     eps,
     epsSurprise,
     logo,
+    revenueHistory,
 }: EarningsCardProps) {
     const isPositiveGrowth = (revenueGrowth || 0) > 0;
     const isPositiveSurprise = (epsSurprise || 0) > 0;
+
+    const sparklinePath = revenueHistory && revenueHistory.length >= 2
+        ? generateSparklinePath(revenueHistory, 60, 20)
+        : "";
 
     return (
         <Link
@@ -57,16 +88,17 @@ export default function EarningsCard({
                     </div>
                     <div className="flex flex-col items-end">
                         <span className="text-xs font-medium text-text-tertiary">{reportDate}</span>
-                        {/* Mock Sparkline - Simple SVG Path */}
-                        <svg width="60" height="20" viewBox="0 0 60 20" className="mt-2 opacity-50 group-hover:opacity-100 transition-opacity">
-                            <path
-                                d="M0 15 C10 15, 15 5, 25 8 S 35 18, 45 10 T 60 5"
-                                fill="none"
-                                stroke={isPositiveGrowth ? "#34d399" : "#fb7185"}
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                            />
-                        </svg>
+                        {sparklinePath ? (
+                            <svg width="60" height="20" viewBox="0 0 60 20" className="mt-2 opacity-50 group-hover:opacity-100 transition-opacity">
+                                <path
+                                    d={sparklinePath}
+                                    fill="none"
+                                    stroke={isPositiveGrowth ? "#34d399" : "#fb7185"}
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                />
+                            </svg>
+                        ) : null}
                     </div>
                 </div>
 
@@ -90,8 +122,8 @@ export default function EarningsCard({
                             <span className="text-lg font-bold text-white tabular-nums">{eps}</span>
                             {epsSurprise !== null && (
                                 <span className={`text-xs font-medium px-1.5 py-0.5 rounded ${isPositiveSurprise
-                                        ? "bg-emerald-500/10 text-emerald-400"
-                                        : "bg-rose-500/10 text-rose-400"
+                                    ? "bg-emerald-500/10 text-emerald-400"
+                                    : "bg-rose-500/10 text-rose-400"
                                     }`}>
                                     {isPositiveSurprise ? "+" : ""}{epsSurprise}% 惊喜
                                 </span>

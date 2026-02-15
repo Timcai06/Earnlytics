@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { BarChart3, Menu, X } from "lucide-react";
+import { BarChart3, Menu, X, LogIn } from "lucide-react";
 import { useEffect, useState } from "react";
 
 interface HeaderProps {
@@ -40,19 +40,25 @@ export default function Header({ onMenuToggle, isMenuOpen }: HeaderProps) {
           <span className="text-2xl font-bold text-white">Earnlytics</span>
         </Link>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           {user ? (
             <Link
               href="/profile"
-              className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-hover"
+              className="group flex items-center gap-2.5 rounded-full border border-border bg-surface py-1.5 pl-1.5 pr-4 transition-all duration-200 hover:border-primary/40 hover:bg-surface-secondary"
             >
-              {user.name || "个人主页"}
+              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-semibold text-white">
+                {(user.name || "U").charAt(0).toUpperCase()}
+              </span>
+              <span className="text-sm font-medium text-text-secondary transition-colors group-hover:text-white">
+                {user.name || "个人主页"}
+              </span>
             </Link>
           ) : (
             <Link
               href="/login"
-              className="text-sm font-medium text-text-secondary hover:text-white transition-colors"
+              className="group flex items-center gap-2 rounded-full border border-border bg-surface px-4 py-2 text-sm font-medium text-text-secondary transition-all duration-200 hover:border-primary/40 hover:bg-surface-secondary hover:text-white"
             >
+              <LogIn className="h-4 w-4 transition-transform duration-200 group-hover:-translate-x-0.5" />
               登录
             </Link>
           )}
