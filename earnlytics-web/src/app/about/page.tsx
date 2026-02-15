@@ -1,5 +1,24 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
+
+export const metadata: Metadata = {
+  title: "关于我们 - Earnlytics | AI财报分析平台",
+  description: "了解Earnlytics - AI驱动的美国科技公司财报分析平台。我们致力于为中国投资者提供快速、准确、易懂的财报解读服务。",
+  keywords: ["关于Earnlytics", "关于我们", "AI财报分析", "公司介绍", "联系方式"],
+  openGraph: {
+    title: "关于我们 - Earnlytics",
+    description: "AI驱动的美国科技公司财报分析平台",
+    url: "https://earnlytics-ebon.vercel.app/about",
+    siteName: "Earnlytics",
+    locale: "zh_CN",
+    type: "website",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+};
 
 export default function AboutPage() {
   const missions = [

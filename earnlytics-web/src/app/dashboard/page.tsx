@@ -1,7 +1,17 @@
+import type { Metadata } from "next";
 import { supabase } from "@/lib/supabase";
 import { Sparkles } from "lucide-react";
 import DashboardClient from "./DashboardClient";
 import type { Company } from "@/types/database";
+
+export const metadata: Metadata = {
+  title: "投资仪表盘 - Earnlytics",
+  description: "AI驱动的投资决策辅助系统，基于五维度分析框架提供投资建议。",
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 interface InvestmentRecommendation {
   symbol: string;
