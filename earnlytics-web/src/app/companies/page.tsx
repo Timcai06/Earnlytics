@@ -43,7 +43,9 @@ async function getCompaniesWithEarnings(): Promise<CompanyWithEarnings[]> {
       .single();
 
     if (earningsError && earningsError.code !== "PGRST116") {
-      console.error(`Error fetching earnings for ${company.symbol}:`, earningsError);
+      if (process.env.NODE_ENV === "development") {
+        console.error(`Error fetching earnings for ${company.symbol}:`, earningsError);
+      }
     }
 
     companiesWithEarnings.push({

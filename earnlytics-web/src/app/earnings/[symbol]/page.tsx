@@ -347,13 +347,13 @@ export default function EarningsPage({ params }: Props) {
 
           <div className="mb-8 rounded-xl border border-border bg-surface-secondary p-5 sm:p-6">
             <h3 className="mb-4 text-lg font-bold text-white sm:mb-6 sm:text-xl">历史财报</h3>
-              {validEarningsHistory.length > 1 ? (
+            {validEarningsHistory.length > 1 ? (
               <div className="space-y-3">
-              {validEarningsHistory.map((e) => {
+                {validEarningsHistory.map((e) => {
                   const eAnalysis = e.ai_analyses;
                   const eSentiment = eAnalysis?.sentiment || null;
                   const sentimentClass = eSentiment === 'positive' ? 'text-success' :
-                                          eSentiment === 'negative' ? 'text-error' : 'text-text-secondary';
+                    eSentiment === 'negative' ? 'text-error' : 'text-text-secondary';
                   const isSelected = e.id === earnings?.id;
                   const isLatest = e.id === validEarningsHistory[0].id;
 
@@ -362,9 +362,8 @@ export default function EarningsPage({ params }: Props) {
                       key={e.id}
                       onClick={() => handleEarningClick(e.id)}
                       disabled={loading}
-                      className={`flex w-full items-center justify-between rounded-lg p-3 text-left transition-colors ${
-                        isSelected ? 'bg-primary-light border border-primary/50' : 'bg-background hover:bg-surface-secondary'
-                      }`}
+                      className={`flex w-full items-center justify-between rounded-lg p-3 text-left transition-colors ${isSelected ? 'bg-primary-light border border-primary/50' : 'bg-background hover:bg-surface-secondary'
+                        }`}
                     >
                       <div className="flex items-center gap-3">
                         <span className="text-sm font-medium text-white">

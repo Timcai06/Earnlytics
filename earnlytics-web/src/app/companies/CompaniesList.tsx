@@ -1,13 +1,15 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useState, useMemo, useEffect } from "react";
 import type { CompanyWithEarnings } from "./page";
-import { SearchIcon, LayoutGridIcon, ListIcon, ArrowUpDownIcon } from "@/components/icons";
+import { LayoutGridIcon, ListIcon, ArrowUpDownIcon } from "@/components/icons";
 import { CompanyCardSkeleton } from "@/components/ui/skeleton";
 import { SearchEmptyState, NoDataState } from "@/components/ui/empty-state";
-import { Input } from "@/components/ui/input";
 import HorizontalGlow from "@/components/ui/horizontal-glow";
+import HeroSearch from "@/components/home/HeroSearch";
+import CompanyListStats from "@/components/companies/CompanyListStats";
 
 interface CompaniesListProps {
   companies: CompanyWithEarnings[];
@@ -55,8 +57,9 @@ function formatEarningDate(dateStr: string | null): string {
 }
 
 export default function CompaniesList({ companies }: CompaniesListProps) {
+  const searchParams = useSearchParams();
   const [activeFilter, setActiveFilter] = useState("全部");
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
   const [sortBy, setSortBy] = useState<SortOption>("symbol-asc");
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [isLoading, setIsLoading] = useState(true);
@@ -111,23 +114,28 @@ export default function CompaniesList({ companies }: CompaniesListProps) {
   };
 
   if (companies.length === 0) {
-  return (
-    <div className="flex flex-col">
-      <section className="relative px-4 py-20 sm:px-6 lg:px-20 overflow-hidden">
-        <HorizontalGlow />
-        <div className="relative z-10 mx-auto flex flex-col items-center text-center">
-          <h1 className="mb-4 text-3xl font-bold text-white sm:text-4xl tracking-tight">
-            科技公司目录
-          </h1>
-          <p className="text-lg text-text-secondary">
-            探索我们覆盖的{companies.length}家美国科技巨头
-          </p>
-        </div>
-      </section>
-        <section className="bg-background px-4 pb-24 sm:px-6 lg:px-20">
-          <div className="mx-auto max-w-6xl">
-            <NoDataState 
-              title="暂无公司数据" 
+    return (
+      <div className="flex flex-col">
+        <section className="relative px-4 py-12 sm:px-6 lg:px-8 overflow-hidden">
+          <div className="mx-auto max-w-7xl flex flex-col items-center text-center">
+            <HorizontalGlow />
+            <div className="relative z-10 w-full flex flex-col items-center gap-6">
+              <h1 className="text-3xl font-bold text-white sm:text-4xl lg:text-5xl tracking-tight">
+                科技公司目录
+              </h1>
+              <p className="max-w-xl text-lg text-text-secondary">
+                探索 0 家美国科技公司财报数据
+              </p>
+              <div className="w-full mt-4">
+                <HeroSearch />
+              </div>
+            </div>
+          </div>
+        </section>
+        <section className="px-4 pb-24 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-7xl">
+            <NoDataState
+              title="暂无公司数据"
               description="数据库中还没有公司信息，请先运行数据导入脚本"
             />
           </div>
@@ -138,101 +146,101 @@ export default function CompaniesList({ companies }: CompaniesListProps) {
 
   return (
     <div className="flex flex-col">
-      <section className="bg-background px-4 py-20 sm:px-6 lg:px-20">
-        <div className="flex flex-col items-center text-center">
-          <h1 className="mb-4 text-3xl font-bold text-white sm:text-4xl">
-            科技公司目录
-          </h1>
-          <p className="text-lg text-text-secondary">
-            探索我们覆盖的{companies.length}家美国科技巨头
-          </p>
+      <section className="relative px-4 py-12 sm:px-6 lg:px-8 overflow-hidden">
+        <div className="mx-auto max-w-7xl flex flex-col items-center text-center">
+          <HorizontalGlow />
+          <div className="relative z-10 w-full flex flex-col items-center gap-6">
+            <h1 className="text-3xl font-bold text-white sm:text-4xl lg:text-5xl tracking-tight">
+              科技公司目录
+            </h1>
+            <p className="max-w-xl text-lg text-text-secondary">
+              探索 {companies.length} 家美国科技公司财报数据
+            </p>
+            <div className="w-full mt-4">
+              <HeroSearch />
+            </div>
+          </div>
         </div>
       </section>
 
-      <section className="bg-background px-4 pb-6 sm:px-6 lg:px-20">
-        <div className="mx-auto max-w-6xl space-y-4">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="relative flex-1 max-w-md">
-              <SearchIcon className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-text-tertiary" />
-              <Input
-                type="text"
-                placeholder="搜索公司名称或股票代码..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="h-11 w-full rounded-lg border border-border bg-surface pl-10 pr-4 text-sm text-white placeholder:text-text-tertiary"
-              />
-            </div>
+      <section className="relative px-4 pb-6 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl space-y-4">
+          <CompanyListStats
+            totalCompanies={companies.length}
+            analyzedCount={companies.filter(c => c.latestEarning?.is_analyzed).length}
+            sectorCount={[...new Set(companies.map(c => c.sector))].filter(Boolean).length}
+          />
 
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 rounded-lg border border-border bg-surface p-1">
-                <button
-                  onClick={() => setViewMode("grid")}
-                  className={`rounded-md p-2 transition-colors ${
-                    viewMode === "grid"
+          <div className="rounded-2xl border border-white/5 bg-surface/50 backdrop-blur-md p-4">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 rounded-lg border border-border bg-surface p-1">
+                  <button
+                    onClick={() => setViewMode("grid")}
+                    className={`rounded-md p-2 transition-colors ${viewMode === "grid"
                       ? "bg-primary text-white"
                       : "text-text-tertiary hover:text-white"
-                  }`}
-                  title="网格视图"
-                >
-                  <LayoutGridIcon className="h-4 w-4" />
-                </button>
-                <button
-                  onClick={() => setViewMode("list")}
-                  className={`rounded-md p-2 transition-colors ${
-                    viewMode === "list"
+                      }`}
+                    title="网格视图"
+                  >
+                    <LayoutGridIcon className="h-4 w-4" />
+                  </button>
+                  <button
+                    onClick={() => setViewMode("list")}
+                    className={`rounded-md p-2 transition-colors ${viewMode === "list"
                       ? "bg-primary text-white"
                       : "text-text-tertiary hover:text-white"
-                  }`}
-                  title="列表视图"
-                >
-                  <ListIcon className="h-4 w-4" />
-                </button>
-              </div>
+                      }`}
+                    title="列表视图"
+                  >
+                    <ListIcon className="h-4 w-4" />
+                  </button>
+                </div>
 
-              <div className="relative">
-                <ArrowUpDownIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-tertiary" />
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value as SortOption)}
-                  className="h-10 appearance-none rounded-lg border border-border bg-surface pl-9 pr-8 text-sm text-white focus:border-primary focus:outline-none"
-                >
-                  {sortOptions.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
+                <div className="relative">
+                  <ArrowUpDownIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-tertiary" />
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value as SortOption)}
+                    className="h-10 appearance-none rounded-lg border border-border bg-surface pl-9 pr-8 text-sm text-white focus:border-primary focus:outline-none"
+                  >
+                    {sortOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div className="flex flex-wrap items-center gap-4">
-            <span className="text-sm font-medium text-text-secondary">行业筛选：</span>
-            <div className="flex flex-wrap gap-2">
-              {filters.map((filter) => (
-                <button
-                  key={filter.value}
-                  onClick={() => setActiveFilter(filter.value)}
-                  className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-all ${
-                    activeFilter === filter.value
+            <div className="flex flex-wrap items-center gap-4 mt-4">
+              <span className="text-sm font-medium text-text-secondary">行业筛选：</span>
+              <div className="flex flex-wrap gap-2">
+                {filters.map((filter) => (
+                  <button
+                    key={filter.value}
+                    onClick={() => setActiveFilter(filter.value)}
+                    className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-all ${activeFilter === filter.value
                       ? "bg-primary text-white"
                       : "border border-primary bg-primary/10 text-primary-foreground hover:bg-primary/20"
-                  }`}
-                >
-                  {filter.label}
-                </button>
-              ))}
+                      }`}
+                  >
+                    {filter.label}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
 
-          <p className="text-sm text-text-tertiary">
-            显示 {filteredAndSortedCompanies.length} / {companies.length} 家公司
-          </p>
+            <p className="text-sm text-text-tertiary">
+              显示 {filteredAndSortedCompanies.length} / {companies.length} 家公司
+            </p>
+          </div>
         </div>
       </section>
 
-      <section className="bg-background px-4 pb-24 sm:px-6 lg:px-20">
-        <div className="mx-auto max-w-6xl">
+      <section className="px-4 pb-24 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl">
           {isLoading ? (
             viewMode === "grid" ? (
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -248,7 +256,7 @@ export default function CompaniesList({ companies }: CompaniesListProps) {
               </div>
             )
           ) : filteredAndSortedCompanies.length === 0 ? (
-            <SearchEmptyState 
+            <SearchEmptyState
               query={searchQuery}
               onClearAction={clearFilters}
             />
@@ -266,7 +274,7 @@ export default function CompaniesList({ companies }: CompaniesListProps) {
                   >
                     <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-primary/10 blur-3xl transition-opacity duration-500 group-hover:opacity-100" />
                     <div className="mb-4 flex items-start gap-4">
-                      <div 
+                      <div
                         className={`flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-2xl text-2xl font-bold sm:h-20 sm:w-20 sm:text-3xl ${style.bgColor} ${style.color}`}
                       >
                         {company.symbol[0]}
@@ -286,7 +294,7 @@ export default function CompaniesList({ companies }: CompaniesListProps) {
                         <p className="text-sm text-text-tertiary">
                           NASDAQ: {company.symbol}
                         </p>
-                        <span 
+                        <span
                           className={`inline-block mt-1 rounded-full px-2 py-0.5 text-xs ${style.bgColor}`}
                           style={{ color: style.color }}
                         >
@@ -318,9 +326,8 @@ export default function CompaniesList({ companies }: CompaniesListProps) {
                         </p>
                         {epsSurprise !== null && epsSurprise !== undefined && (
                           <p
-                            className={`text-xs ${
-                              epsSurprise > 0 ? "text-emerald-400" : "text-red-400"
-                            }`}
+                            className={`text-xs ${epsSurprise > 0 ? "text-emerald-400" : "text-red-400"
+                              }`}
                           >
                             {epsSurprise > 0 ? "+" : ""}
                             {epsSurprise}
@@ -352,7 +359,7 @@ export default function CompaniesList({ companies }: CompaniesListProps) {
                     className={`group relative overflow-hidden flex items-center gap-4 rounded-xl border-2 bg-surface p-4 transition-colors hover:bg-surface-secondary hover:-translate-y-1 ${style.borderColor}`}
                   >
                     <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-primary/10 blur-2xl transition-opacity duration-500 group-hover:opacity-100" />
-                    <div 
+                    <div
                       className={`flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl text-xl font-bold ${style.bgColor} ${style.color}`}
                     >
                       {company.symbol[0]}
@@ -390,9 +397,8 @@ export default function CompaniesList({ companies }: CompaniesListProps) {
                       </p>
                       {epsSurprise !== null && epsSurprise !== undefined && (
                         <p
-                          className={`text-xs ${
-                            epsSurprise > 0 ? "text-emerald-400" : "text-red-400"
-                          }`}
+                          className={`text-xs ${epsSurprise > 0 ? "text-emerald-400" : "text-red-400"
+                            }`}
                         >
                           {epsSurprise > 0 ? "+" : ""}
                           {epsSurprise}
