@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { cn } from "@/lib/utils";
+import { cn, formatCurrency } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
@@ -29,7 +29,11 @@ import {
   AreaChart as AreaChartIcon,
   Layers,
   Calendar,
+  AlertCircle,
+  Loader2,
+  RefreshCw,
 } from "lucide-react";
+import { ChartSkeleton } from "@/components/ui/skeleton";
 
 type ChartType = "bar" | "line" | "area" | "dual";
 type TimeRange = "1Y" | "3Y" | "5Y" | "ALL";
@@ -49,14 +53,11 @@ interface EarningsTrendChartProps {
   defaultType?: DataType;
   title?: string;
   className?: string;
-}
-
-function formatCurrency(value: number | null): string {
-  if (value === null || value === undefined) return "N/A";
-  if (value >= 1e12) return `$${(value / 1e12).toFixed(1)}T`;
-  if (value >= 1e9) return `$${(value / 1e9).toFixed(1)}B`;
-  if (value >= 1e6) return `$${(value / 1e6).toFixed(1)}M`;
-  return `$${value.toLocaleString()}`;
+  isLoading?: boolean;
+  error?: string | null;
+  onRefresh?: () => void;
+  autoRefresh?: boolean;
+  autoRefreshInterval?: number;
 }
 
 function filterDataByTimeRange(data: TrendData[], range: TimeRange): TrendData[] {
@@ -206,6 +207,11 @@ export function EarningsTrendChart({
   defaultType = "revenue",
   title = "财报趋势",
   className,
+  isLoading = false,
+  error = null,
+  onRefresh,
+  autoRefresh = false,
+  autoRefreshInterval = 300000,
 }: EarningsTrendChartProps) {
   // FIX #9: Persist chart configuration to localStorage
   const [chartType, setChartType] = useState<ChartType>(() => {
@@ -296,6 +302,17 @@ export function EarningsTrendChart({
     }));
   }, [chartType, timeRange]);
 
+  // FIX #13: Auto refresh mechanism
+  useEffect(() => {
+    if (!autoRefresh || !onRefresh) return;
+
+    const intervalId = setInterval(() => {
+      onRefresh();
+    }, autoRefreshInterval);
+
+    return () => clearInterval(intervalId);
+  }, [autoRefresh, autoRefreshInterval, onRefresh]);
+
   const dataTypeConfig = {
     revenue: {
       label: "营收",
@@ -349,6 +366,37 @@ export function EarningsTrendChart({
     if (growth === null || growth === undefined) return "#6366F1";
     return growth >= 0 ? "#22C55E" : "#EF4444";
   };
+
+  // FIX #12: Loading state
+  if (isLoading) {
+    return <ChartSkeleton className={className} />;
+  }
+
+  // FIX #12: Error state
+  if (error) {
+    return (
+      <Card className={cn("overflow-hidden bg-surface border-border", className)}>
+        <CardContent className="flex flex-col items-center justify-center py-12 px-4">
+          <div className="p-3 bg-error/10 rounded-full mb-4">
+            <AlertCircle className="h-8 w-8 text-error" />
+          </div>
+          <h3 className="text-lg font-semibold text-white mb-2">加载失败</h3>
+          <p className="text-sm text-text-secondary text-center max-w-sm mb-4">
+            {error}
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => window.location.reload()}
+            className="border-border/50 text-text-secondary hover:text-white hover:bg-surface-secondary"
+          >
+            <Loader2 className="h-4 w-4 mr-2" />
+            重试
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
 
   const renderChart = () => {
     const commonProps = {
@@ -656,6 +704,19 @@ export function EarningsTrendChart({
                 })}
               </div>
               
+              {/* FIX #13: Manual refresh button */}
+              {onRefresh && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onRefresh}
+                  disabled={isLoading}
+                  className="h-7 px-2.5 border-border/50 text-text-secondary hover:text-white hover:bg-surface-secondary text-xs"
+                >
+                  <RefreshCw className={cn("h-3.5 w-3.5 mr-1", isLoading && "animate-spin")} />
+                  刷新
+                </Button>
+              )}
               <Button
                 variant="outline"
                 size="sm"

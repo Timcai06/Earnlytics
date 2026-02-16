@@ -19,24 +19,26 @@ export interface StockData {
 }
 
 /**
- * Fetch real stock price from Yahoo Finance
+ * Fetch real stock price from Yahoo Finance with improved headers
  */
 export async function fetchStockPriceFromYahoo(symbol: string): Promise<StockData | null> {
     try {
-        // Use quote endpoint which is more reliable for current price snapshots
-        const url = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${symbol}`
+        // Use quote endpoint with proper headers to avoid 401
+        const url = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1d&range=1d`
 
-        // Random user agent to avoid blocking
-        const userAgents = [
-            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
-        ]
-        const userAgent = userAgents[Math.floor(Math.random() * userAgents.length)]
+        // More complete headers to mimic browser request
+        const headers = {
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept': 'application/json',
+            'Accept-Language': 'en-US,en;q=0.9',
+            'Accept-Encoding': 'gzip, deflate, br',
+            'Referer': 'https://finance.yahoo.com',
+            'Origin': 'https://finance.yahoo.com',
+            'Connection': 'keep-alive',
+        }
 
         const response = await fetch(url, {
-            headers: {
-                'User-Agent': userAgent
-            },
+            headers,
             next: { revalidate: 60 }
         })
 
@@ -46,20 +48,36 @@ export async function fetchStockPriceFromYahoo(symbol: string): Promise<StockDat
         }
 
         const data = await response.json()
-        const result = data.quoteResponse?.result?.[0]
+        const result = data.chart?.result?.[0]
 
-        if (!result) return null
+        if (!result || !result.meta || !result.timestamp || result.timestamp.length === 0) {
+            console.warn(`No data found for ${symbol}`)
+            return null
+        }
+
+        const meta = result.meta
+        const timestamps = result.timestamp
+        const quote = result.indicators?.quote?.[0]
+
+        // Get the last valid close price
+        const closes = quote?.close || []
+        const lastClose = closes[closes.length - 1] || meta.previousClose || 0
+        const previousClose = meta.previousClose || meta.chartPreviousClose || 0
+
+        // Calculate change
+        const change = lastClose - previousClose
+        const changePercent = previousClose !== 0 ? (change / previousClose) * 100 : 0
 
         return {
             symbol: symbol.toUpperCase(),
-            price: result.regularMarketPrice || 0,
-            change: result.regularMarketChange || 0,
-            changePercent: result.regularMarketChangePercent || 0,
-            volume: result.regularMarketVolume || 0,
-            marketCap: result.marketCap || null,
-            peRatio: result.trailingPE || null,
-            high52w: result.fiftyTwoWeekHigh || null,
-            low52w: result.fiftyTwoWeekLow || null,
+            price: lastClose,
+            change: change,
+            changePercent: changePercent,
+            volume: meta.regularMarketVolume || 0,
+            marketCap: null, // Not available in chart endpoint
+            peRatio: null, // Not available in chart endpoint
+            high52w: null, // Not available in chart endpoint
+            low52w: null, // Not available in chart endpoint
             timestamp: new Date().toISOString()
         }
     } catch (error) {

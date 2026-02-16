@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
@@ -7,6 +8,14 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { InvestmentRatingCard, FinancialHealthScorecard, DocumentViewer } from "@/components/investment";
 import { ArrowLeft, TrendingUp, Shield, Target, AlertTriangle, Sparkles } from "lucide-react";
+
+export async function generateMetadata({ params }: { params: Promise<{ symbol: string }> }): Promise<Metadata> {
+  const { symbol } = await params;
+  return {
+    title: `${symbol.toUpperCase()} 深度投资分析 - Earnlytics`,
+    description: `${symbol.toUpperCase()} 全面投资分析报告，包含财务质量、成长性、护城河和估值分析。`,
+  };
+}
 
 interface AnalysisData {
   symbol: string;

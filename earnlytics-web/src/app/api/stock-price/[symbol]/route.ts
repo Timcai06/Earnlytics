@@ -8,6 +8,56 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
 const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
 /**
+ * Fallback: Get mock/demo data for demonstration
+ */
+function getMockStockData(symbol: string) {
+  // Demo data for common stocks
+  const mockData: Record<string, any> = {
+    'PLTR': {
+      symbol: 'PLTR',
+      price: 79.50,
+      change: 1.20,
+      changePercent: 1.53,
+      volume: 45000000,
+      marketCap: 175000000000,
+      peRatio: 185.50,
+      high52w: 84.80,
+      low52w: 16.50
+    },
+    'AAPL': {
+      symbol: 'AAPL',
+      price: 229.87,
+      change: 1.45,
+      changePercent: 0.63,
+      volume: 52000000,
+      marketCap: 3480000000000,
+      peRatio: 35.20,
+      high52w: 237.49,
+      low52w: 164.08
+    },
+    'MSFT': {
+      symbol: 'MSFT',
+      price: 437.56,
+      change: -2.34,
+      changePercent: -0.53,
+      volume: 22000000,
+      marketCap: 3250000000000,
+      peRatio: 36.80,
+      high52w: 468.35,
+      low52w: 362.90
+    }
+  }
+  
+  const data = mockData[symbol.toUpperCase()]
+  if (!data) return null
+  
+  return {
+    ...data,
+    timestamp: new Date().toISOString()
+  }
+}
+
+/**
  * 从数据库获取缓存的股价
  */
 async function getCachedStockPrice(symbol: string) {
@@ -82,7 +132,28 @@ export async function GET(
       })
     }
 
-    // 3. 如果都没有数据，返回 404
+    // 3. 如果都没有数据，尝试使用备用数据（演示用）
+    const mockData = getMockStockData(normalizedSymbol)
+    
+    if (mockData) {
+      console.log(`Using mock data for ${normalizedSymbol}`)
+      return NextResponse.json({
+        symbol: mockData.symbol,
+        price: mockData.price,
+        change: mockData.change,
+        changePercent: mockData.changePercent,
+        volume: mockData.volume,
+        marketCap: mockData.marketCap,
+        peRatio: mockData.peRatio,
+        high52w: mockData.high52w,
+        low52w: mockData.low52w,
+        timestamp: mockData.timestamp,
+        source: 'mock_data',
+        cached: false
+      })
+    }
+
+    // 4. 如果都没有数据，返回 404
     return NextResponse.json(
       { error: 'Stock price data not found' },
       { status: 404 }
