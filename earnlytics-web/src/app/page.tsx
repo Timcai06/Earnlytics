@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import { ArrowRight } from "lucide-react";
 import { ZapIcon, BotIcon, DiamondIcon, AppleIcon, WindowIcon, SearchIcon, CpuIcon, MetaIcon } from "@/components/icons";
 import MysticalGlow from "@/components/ui/mystical-glow";
+import DataStreamBackground from "@/components/ui/data-stream-background";
+import FlipCard from "@/components/ui/flip-card";
 
 export const metadata: Metadata = {
   title: "Earnlytics - AI财报分析平台 | 1小时内获取投资洞察",
@@ -84,18 +86,44 @@ export default function LandingPage() {
   ];
 
   const companies = [
-    { icon: <AppleIcon className="h-8 w-8" />, name: "Apple", border: "border-border" },
-    { icon: <WindowIcon className="h-8 w-8" />, name: "Microsoft", border: "border-info" },
-    { icon: <SearchIcon className="h-8 w-8" />, name: "Google", border: "border-success" },
-    { icon: <CpuIcon className="h-8 w-8 text-success" />, name: "NVIDIA", border: "border-success" },
-    { icon: <MetaIcon className="h-8 w-8" />, name: "Meta", border: "border-primary" },
+    {
+      icon: <AppleIcon className="h-12 w-12" />,
+      name: "Apple",
+      border: "border-border",
+      data: { price: "$182.50", change: "+1.2%", sentiment: "🟢 积极", eps: "$2.18", rev: "$120B" }
+    },
+    {
+      icon: <WindowIcon className="h-12 w-12" />,
+      name: "Microsoft",
+      border: "border-info",
+      data: { price: "$405.00", change: "+0.8%", sentiment: "🟢 积极", eps: "$2.93", rev: "$62B" }
+    },
+    {
+      icon: <SearchIcon className="h-12 w-12" />,
+      name: "Google",
+      border: "border-success",
+      data: { price: "$145.00", change: "-0.5%", sentiment: "🟡 中性", eps: "$1.64", rev: "$86B" }
+    },
+    {
+      icon: <CpuIcon className="h-12 w-12 text-success" />,
+      name: "NVIDIA",
+      border: "border-success",
+      data: { price: "$720.00", change: "+3.5%", sentiment: "🟢 强推", eps: "$5.16", rev: "$22B" }
+    },
+    {
+      icon: <MetaIcon className="h-12 w-12" />,
+      name: "Meta",
+      border: "border-primary",
+      data: { price: "$460.00", change: "+2.1%", sentiment: "🟢 积极", eps: "$5.33", rev: "$40B" }
+    },
   ];
 
   return (
     <div className="flex flex-col">
       {/* Hero Section */}
-      <section className="bg-background px-4 py-16 sm:px-6 sm:py-20 lg:px-20 lg:py-28">
-        <div className="flex flex-col items-center text-center">
+      <section className="relative overflow-hidden bg-background px-4 py-16 sm:px-6 sm:py-20 lg:px-20 lg:py-28">
+        <DataStreamBackground className="opacity-30" />
+        <div className="relative z-10 flex flex-col items-center text-center">
           {/* Badge */}
           <div className="mb-8 inline-flex items-center gap-2 rounded-2xl bg-primary-light px-4 py-2">
             <BotIcon className="h-4 w-4 text-primary-hover" />
@@ -203,14 +231,33 @@ export default function LandingPage() {
           </p>
 
           {/* Company Logos */}
-          <div className="mb-10 flex items-center gap-8">
+          {/* Company Logos with 3D Flip */}
+          <div className="mb-12 grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-5">
             {companies.map((company) => (
-              <div
+              <FlipCard
                 key={company.name}
-                className={`flex h-20 w-20 items-center justify-center rounded-2xl border ${company.border} bg-surface-secondary text-white`}
-              >
-                {company.icon}
-              </div>
+                width="140px"
+                height="140px"
+                className="mx-auto"
+                front={
+                  <div className={`flex h-full w-full flex-col items-center justify-center gap-3 rounded-2xl border ${company.border} bg-surface-secondary shadow-lg`}>
+                    {company.icon}
+                    <span className="font-semibold text-white">{company.name}</span>
+                  </div>
+                }
+                back={
+                  <div className={`flex h-full w-full flex-col items-center justify-between rounded-2xl border ${company.border} bg-surface-elevated p-4 shadow-xl`}>
+                    <div className="text-center">
+                      <div className="text-xs text-text-secondary">EPS / Revenue</div>
+                      <div className="font-mono text-sm font-bold text-white">{company.data.eps} / {company.data.rev}</div>
+                    </div>
+                    <div className="flex flex-col items-center gap-1">
+                      <span className="text-xs font-medium text-text-secondary">AI 情绪</span>
+                      <span className="text-sm font-bold text-white">{company.data.sentiment}</span>
+                    </div>
+                  </div>
+                }
+              />
             ))}
           </div>
 
