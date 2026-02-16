@@ -5,6 +5,9 @@ import { ZapIcon, BotIcon, DiamondIcon, AppleIcon, WindowIcon, SearchIcon, CpuIc
 import MysticalGlow from "@/components/ui/mystical-glow";
 import DataStreamBackground from "@/components/ui/data-stream-background";
 import FlipCard from "@/components/ui/flip-card";
+import ScrollIndicator from "@/components/ui/scroll-indicator";
+import FeatureCard from "@/components/ui/feature-card";
+import StepCard from "@/components/ui/step-card";
 
 export const metadata: Metadata = {
   title: "Earnlytics - AI财报分析平台 | 1小时内获取投资洞察",
@@ -119,9 +122,9 @@ export default function LandingPage() {
   ];
 
   return (
-    <div className="flex flex-col">
+    <div className="h-screen overflow-y-auto snap-y snap-mandatory scroll-smooth">
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-background px-4 py-16 sm:px-6 sm:py-20 lg:px-20 lg:py-28">
+      <section id="hero" className="relative flex h-screen snap-start flex-col items-center justify-center overflow-hidden bg-background px-4">
         <DataStreamBackground className="opacity-30" />
         <div className="relative z-10 flex flex-col items-center text-center">
           {/* Badge */}
@@ -175,53 +178,68 @@ export default function LandingPage() {
             ))}
           </div>
         </div>
+        <ScrollIndicator targetId="features" />
       </section>
 
       {/* Features Section */}
-      <section className="bg-surface px-4 py-12 sm:px-6 sm:py-16 lg:px-20 lg:py-20">
-        <div className="mx-auto max-w-6xl">
-          <h2 className="mb-8 text-center text-2xl font-bold text-white sm:mb-12 sm:text-3xl lg:text-4xl">
-            为什么选择 Earnlytics
-          </h2>
+      <section id="features" className="relative flex h-screen snap-start flex-col items-center justify-center overflow-hidden bg-surface px-4 py-12">
+        {/* Background Decorations */}
+        <div className="absolute top-1/4 -left-20 h-96 w-96 rounded-full bg-primary/20 blur-[120px]" />
+        <div className="absolute bottom-1/4 -right-20 h-96 w-96 rounded-full bg-success/10 blur-[120px]" />
+        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 brightness-100 contrast-150" />
 
-          <div className="grid grid-cols-3 gap-8">
+        <div className="relative z-10 mx-auto max-w-6xl">
+          <div className="mb-16 flex flex-col items-center text-center">
+            <h2 className="mb-4 bg-gradient-to-b from-white to-white/60 bg-clip-text text-3xl font-bold tracking-tight text-transparent sm:text-4xl lg:text-5xl">
+              为什么选择 Earnlytics
+            </h2>
+            <div className="h-1.5 w-20 rounded-full bg-primary" />
+          </div>
+
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
             {features.map((feature) => (
-              <div
+              <FeatureCard
                 key={feature.title}
-                className={`flex flex-col gap-4 rounded-xl border ${feature.borderColor} bg-surface-secondary p-6 sm:p-8 ${feature.shadowColor}`}
-              >
-                {feature.icon}
-                <h3 className="text-xl font-semibold text-white">
-                  {feature.title}
-                </h3>
-                <p className="text-base text-text-secondary leading-relaxed">{feature.description}</p>
-              </div>
+                icon={feature.icon}
+                title={feature.title}
+                description={feature.description}
+                borderColor={feature.borderColor}
+              />
             ))}
           </div>
         </div>
+        <ScrollIndicator targetId="steps" />
       </section>
 
-      <section className="bg-background px-4 py-12 sm:px-6 sm:py-16 lg:px-20 lg:py-20">
-        <div className="mx-auto max-w-6xl">
-          <h2 className="mb-12 text-center text-2xl font-bold text-white sm:text-3xl lg:text-4xl">
-            3步开始智能财报分析
-          </h2>
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
+      <section id="steps" className="relative flex h-screen snap-start flex-col items-center justify-center overflow-hidden bg-background px-4 py-12">
+        {/* Background Decorations */}
+        <div className="absolute top-1/2 left-1/2 h-[500px] w-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/5 blur-[140px]" />
+        <div className="absolute -bottom-20 -left-20 h-80 w-80 rounded-full bg-info/10 blur-[100px]" />
+
+        <div className="relative z-10 mx-auto max-w-6xl">
+          <div className="mb-20 flex flex-col items-center text-center">
+            <h2 className="mb-4 bg-gradient-to-b from-white to-white/60 bg-clip-text text-3xl font-bold tracking-tight text-transparent sm:text-4xl lg:text-5xl">
+              3步开始智能财报分析
+            </h2>
+            <div className="h-1.5 w-20 rounded-full bg-primary" />
+          </div>
+
+          <div className="grid grid-cols-1 gap-12 md:grid-cols-3">
             {steps.map((item) => (
-              <div key={item.step} className="flex flex-col items-center text-center">
-                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary text-xl font-bold text-white">
-                  {item.step}
-                </div>
-                <h3 className="mb-2 text-xl font-semibold text-white">{item.title}</h3>
-                <p className="text-text-secondary">{item.desc}</p>
-              </div>
+              <StepCard
+                key={item.step}
+                step={item.step}
+                title={item.title}
+                description={item.desc}
+              />
             ))}
           </div>
         </div>
+        <ScrollIndicator targetId="companies" />
       </section>
 
       {/* Companies Showcase */}
-      <section className="bg-background px-4 py-12 sm:px-6 sm:py-16 lg:px-20 lg:py-20">
+      <section id="companies" className="relative flex h-screen snap-start flex-col items-center justify-center bg-background px-4 py-12">
         <div className="flex flex-col items-center text-center">
           <h2 className="mb-6 text-2xl font-bold text-white sm:text-3xl lg:text-4xl">
             覆盖热门科技公司
@@ -271,20 +289,11 @@ export default function LandingPage() {
               <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
             </span>
           </Link>
-
         </div>
-
+        <ScrollIndicator targetId="faq" />
       </section>
 
-
-
-
-
-
-
-
-
-      <section className="bg-surface px-4 py-12 sm:px-6 sm:py-16 lg:px-20 lg:py-20">
+      <section id="faq" className="relative flex h-screen snap-start flex-col items-center justify-center bg-surface px-4 py-12">
         <div className="mx-auto max-w-3xl">
           <h2 className="mb-12 text-center text-2xl font-bold text-white sm:text-3xl lg:text-4xl">
             常见问题
