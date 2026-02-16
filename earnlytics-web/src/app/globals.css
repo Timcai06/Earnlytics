@@ -100,18 +100,18 @@
   * {
     @apply border-border outline-ring/50;
   }
-  
+
   body {
     @apply bg-background text-text-primary;
     font-family: var(--font-family-sans);
     line-height: var(--line-height-normal);
   }
-  
+
   :focus-visible {
     outline: 2px solid var(--color-primary-500);
     outline-offset: 2px;
   }
-  
+
   ::selection {
     background-color: var(--color-primary-500);
     color: white;
@@ -122,11 +122,14 @@
   .animate-skeleton {
     animation: skeleton-pulse 2s ease-in-out infinite;
   }
-  
+
   @keyframes skeleton-pulse {
-    0%, 100% {
+
+    0%,
+    100% {
       opacity: 1;
     }
+
     50% {
       opacity: 0.5;
     }
@@ -136,6 +139,7 @@
     from {
       background-position: 0 0;
     }
+
     to {
       background-position: -200% 0;
     }
@@ -144,58 +148,58 @@
   .animate-shimmer {
     animation: shimmer 2s linear infinite;
   }
-  
+
   .glow-primary {
     box-shadow: var(--shadow-glow-sm);
   }
-  
+
   .glow-primary-md {
     box-shadow: var(--shadow-glow-md);
   }
-  
+
   .glow-primary-lg {
     box-shadow: var(--shadow-glow-lg);
   }
-  
+
   .text-glow {
     text-shadow: 0 0 20px var(--color-primary-glow-subtle);
   }
-  
+
   .transition-fast {
     transition: var(--transition-fast);
   }
-  
+
   .transition-normal {
     transition: var(--transition-normal);
   }
-  
+
   .transition-slow {
     transition: var(--transition-slow);
   }
-  
+
   .scrollbar-thin {
     scrollbar-width: thin;
     scrollbar-color: var(--color-neutral-700) transparent;
   }
-  
+
   .scrollbar-thin::-webkit-scrollbar {
     width: 6px;
     height: 6px;
   }
-  
+
   .scrollbar-thin::-webkit-scrollbar-track {
     background: transparent;
   }
-  
+
   .scrollbar-thin::-webkit-scrollbar-thumb {
     background-color: var(--color-neutral-700);
     border-radius: var(--radius-full);
   }
-  
+
   .scrollbar-thin::-webkit-scrollbar-thumb:hover {
     background-color: var(--color-neutral-600);
   }
-  
+
   .sr-only {
     position: absolute;
     width: 1px;
@@ -207,7 +211,7 @@
     white-space: nowrap;
     border-width: 0;
   }
-  
+
   .sr-only:focus {
     position: static;
     width: auto;
@@ -218,7 +222,7 @@
     clip: auto;
     white-space: normal;
   }
-  
+
   .focus-visible:focus-visible {
     outline: 2px solid var(--color-primary-500);
     outline-offset: 2px;
@@ -227,8 +231,9 @@
   .bg-primary-gradient {
     background-image: linear-gradient(to bottom right, var(--color-primary-500), var(--color-primary-700));
   }
-  
+
   @media (prefers-reduced-motion: reduce) {
+
     *,
     *::before,
     *::after {
@@ -239,13 +244,27 @@
   }
 
   @keyframes glow-core {
-    0%, 100% { opacity: 0.3; }
-    50% { opacity: 0.5; }
+
+    0%,
+    100% {
+      opacity: 0.3;
+    }
+
+    50% {
+      opacity: 0.5;
+    }
   }
 
   @keyframes glow-outer {
-    0%, 100% { opacity: 0.2; }
-    50% { opacity: 0.4; }
+
+    0%,
+    100% {
+      opacity: 0.2;
+    }
+
+    50% {
+      opacity: 0.4;
+    }
   }
 
   .animate-glow-core {
@@ -257,8 +276,13 @@
   }
 
   @keyframes marquee {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-50%); }
+    0% {
+      transform: translateX(0);
+    }
+
+    100% {
+      transform: translateX(-50%);
+    }
   }
 
   .animate-marquee {
@@ -268,16 +292,30 @@
   .perspective-1000 {
     perspective: 1000px;
   }
-  
+
   .transform-style-3d {
     transform-style: preserve-3d;
   }
-  
+
   .backface-hidden {
     backface-visibility: hidden;
   }
-  
+
   .rotate-y-180 {
     transform: rotateY(180deg);
+  }
+
+  @keyframes spin-slow {
+    from {
+      transform: rotate(0deg);
+    }
+
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .animate-spin-slow {
+    animation: spin-slow 8s linear infinite;
   }
 }

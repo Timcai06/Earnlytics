@@ -16,15 +16,15 @@ export function ClientLayout({
   return (
     <>
       <PerformanceMonitor />
-      <Header 
-        onMenuToggle={() => setIsSidebarOpen(!isSidebarOpen)} 
+      <Header
+        onMenuToggle={() => setIsSidebarOpen(!isSidebarOpen)}
         isMenuOpen={isSidebarOpen}
       />
-      <RightSidebar 
-        isOpen={isSidebarOpen} 
-        onClose={() => setIsSidebarOpen(false)} 
+      <RightSidebar
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
       />
-      <main className="flex-1">{children}</main>
+      <main className="flex-1 pt-[87px]">{children}</main>
       <Footer />
     </>
   );

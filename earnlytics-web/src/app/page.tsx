@@ -8,6 +8,10 @@ import FlipCard from "@/components/ui/flip-card";
 import ScrollIndicator from "@/components/ui/scroll-indicator";
 import FeatureCard from "@/components/ui/feature-card";
 import StepCard from "@/components/ui/step-card";
+import AccordionFAQ from "@/components/ui/accordion-faq";
+import GlowingButton from "@/components/ui/glowing-button";
+import SciFiStatCard from "@/components/ui/stat-card";
+import HeroTitle from "@/components/ui/hero-title";
 
 export const metadata: Metadata = {
   title: "Earnlytics - AI财报分析平台 | 1小时内获取投资洞察",
@@ -122,9 +126,9 @@ export default function LandingPage() {
   ];
 
   return (
-    <div className="h-screen overflow-y-auto snap-y snap-mandatory scroll-smooth">
+    <div className="h-[calc(100vh-87px)] overflow-y-auto snap-y snap-mandatory scroll-smooth">
       {/* Hero Section */}
-      <section id="hero" className="relative flex h-screen snap-start flex-col items-center justify-center overflow-hidden bg-background px-4">
+      <section id="hero" className="relative flex h-[calc(100vh-87px)] snap-start flex-col items-center justify-center overflow-hidden bg-background px-4">
         <DataStreamBackground className="opacity-30" />
         <div className="relative z-10 flex flex-col items-center text-center">
           {/* Badge */}
@@ -136,29 +140,19 @@ export default function LandingPage() {
           </div>
 
           {/* Title */}
-          <div className="relative mb-6">
-            <MysticalGlow />
-            <h1 className="relative z-10 text-4xl font-bold leading-tight text-white sm:text-5xl lg:text-6xl">
-              让财报分析变得简单
-            </h1>
-          </div>
+          <HeroTitle className="mb-4" />
 
           {/* Subtitle */}
-          <p className="mb-10 max-w-2xl text-xl text-text-secondary">
+          <p className="mb-10 max-w-2xl text-lg text-text-secondary">
             通过 AI 自动分析美国科技公司财报，1小时内获取深度洞察
           </p>
 
           <div className="mb-16 flex flex-col items-center gap-4">
-            <Link
-              href="/home"
-              className="group relative inline-flex cursor-pointer items-center gap-2 overflow-hidden rounded-full bg-gradient-to-r from-primary via-[#818cf8] to-primary bg-[length:200%_auto] px-8 py-4 text-base font-semibold text-white shadow-[0_0_20px_rgba(99,102,241,0.5)] transition-all duration-300 hover:bg-[center_right] hover:scale-105 hover:shadow-[0_0_30px_rgba(99,102,241,0.7)] active:scale-[0.98]"
-            >
-              <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-shimmer" />
-              <span className="relative flex items-center gap-2">
-                免费开始分析
-                <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
-              </span>
-            </Link>            <span className="flex items-center gap-2 text-sm text-text-secondary">
+            <GlowingButton href="/home">
+              免费开始分析
+              <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+            </GlowingButton>
+            <span className="flex items-center gap-2 text-sm text-text-secondary">
               <svg className="h-4 w-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
               </svg>
@@ -167,14 +161,13 @@ export default function LandingPage() {
           </div>
 
           {/* Stats */}
-          <div className="flex items-center gap-8 sm:gap-12 lg:gap-20">
+          <div className="flex flex-wrap justify-center items-center gap-8 sm:gap-12 lg:gap-24">
             {stats.map((stat) => (
-              <div key={stat.label} className="flex flex-col items-center gap-2">
-                <span className="text-3xl font-bold text-primary-hover sm:text-4xl lg:text-5xl">
-                  {stat.value}
-                </span>
-                <span className="text-base text-text-secondary">{stat.label}</span>
-              </div>
+              <SciFiStatCard
+                key={stat.label}
+                label={stat.label}
+                value={stat.value}
+              />
             ))}
           </div>
         </div>
@@ -182,7 +175,7 @@ export default function LandingPage() {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="relative flex h-screen snap-start flex-col items-center justify-center overflow-hidden bg-surface px-4 py-12">
+      <section id="features" className="relative flex h-[calc(100vh-87px)] snap-start flex-col items-center justify-center overflow-hidden bg-surface px-4 py-12">
         {/* Background Decorations */}
         <div className="absolute top-1/4 -left-20 h-96 w-96 rounded-full bg-primary/20 blur-[120px]" />
         <div className="absolute bottom-1/4 -right-20 h-96 w-96 rounded-full bg-success/10 blur-[120px]" />
@@ -211,7 +204,7 @@ export default function LandingPage() {
         <ScrollIndicator targetId="steps" />
       </section>
 
-      <section id="steps" className="relative flex h-screen snap-start flex-col items-center justify-center overflow-hidden bg-background px-4 py-12">
+      <section id="steps" className="relative flex h-[calc(100vh-87px)] snap-start flex-col items-center justify-center overflow-hidden bg-background px-4 py-12">
         {/* Background Decorations */}
         <div className="absolute top-1/2 left-1/2 h-[500px] w-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/5 blur-[140px]" />
         <div className="absolute -bottom-20 -left-20 h-80 w-80 rounded-full bg-info/10 blur-[100px]" />
@@ -239,11 +232,18 @@ export default function LandingPage() {
       </section>
 
       {/* Companies Showcase */}
-      <section id="companies" className="relative flex h-screen snap-start flex-col items-center justify-center bg-background px-4 py-12">
-        <div className="flex flex-col items-center text-center">
-          <h2 className="mb-6 text-2xl font-bold text-white sm:text-3xl lg:text-4xl">
-            覆盖热门科技公司
-          </h2>
+      <section id="companies" className="relative flex h-[calc(100vh-87px)] snap-start flex-col items-center justify-center overflow-hidden bg-background px-4 py-12">
+        {/* Background Decorations */}
+        <div className="absolute top-1/2 left-1/2 h-[500px] w-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/5 blur-[140px]" />
+        <div className="absolute -bottom-20 -right-20 h-80 w-80 rounded-full bg-success/10 blur-[100px]" />
+
+        <div className="relative z-10 flex flex-col items-center text-center">
+          <div className="mb-12 flex flex-col items-center text-center">
+            <h2 className="mb-4 bg-gradient-to-b from-white to-white/60 bg-clip-text text-3xl font-bold tracking-tight text-transparent sm:text-4xl lg:text-5xl">
+              覆盖热门科技公司
+            </h2>
+            <div className="h-1.5 w-20 rounded-full bg-primary" />
+          </div>
           <p className="mb-12 max-w-2xl text-xl text-text-secondary">
             追踪 Apple、Microsoft、NVIDIA 等 30+ 家科技巨头的财报动态
           </p>
@@ -279,32 +279,40 @@ export default function LandingPage() {
             ))}
           </div>
 
-          <Link
-            href="/companies"
-            className="group relative inline-flex cursor-pointer items-center gap-2 overflow-hidden rounded-full bg-gradient-to-r from-primary via-[#818cf8] to-primary bg-[length:200%_auto] px-8 py-4 text-base font-semibold text-white shadow-[0_0_20px_rgba(99,102,241,0.5)] transition-all duration-300 hover:bg-[center_right] hover:scale-105 hover:shadow-[0_0_30px_rgba(99,102,241,0.7)] active:scale-[0.98]"
-          >
-            <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-shimmer" />
-            <span className="relative flex items-center gap-2">
-              查看全部 30+ 家公司
-              <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
-            </span>
-          </Link>
+          <GlowingButton href="/companies">
+            查看全部 30+ 家公司
+            <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+          </GlowingButton>
         </div>
         <ScrollIndicator targetId="faq" />
       </section>
 
-      <section id="faq" className="relative flex h-screen snap-start flex-col items-center justify-center bg-surface px-4 py-12">
-        <div className="mx-auto max-w-3xl">
-          <h2 className="mb-12 text-center text-2xl font-bold text-white sm:text-3xl lg:text-4xl">
-            常见问题
-          </h2>
-          <div className="space-y-4">
-            {faqs.map((faq, index) => (
-              <div key={index} className="rounded-xl border border-border bg-surface-secondary p-6">
-                <h3 className="mb-2 text-lg font-semibold text-white">{faq.q}</h3>
-                <p className="text-text-secondary">{faq.a}</p>
-              </div>
-            ))}
+      <section id="faq" className="relative flex h-[calc(100vh-87px)] snap-start flex-col items-center justify-center overflow-hidden bg-background px-4 py-12">
+        {/* Background Decorations */}
+        <div className="absolute top-1/2 left-1/2 h-[500px] w-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/5 blur-[140px]" />
+        <div className="absolute -bottom-20 -left-20 h-80 w-80 rounded-full bg-info/10 blur-[100px]" />
+
+        <div className="relative z-10 mx-auto grid max-w-7xl grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-24">
+          {/* Left Side: Title & Info */}
+          <div className="lg:col-span-5 flex flex-col justify-center">
+            <h2 className="mb-6 bg-gradient-to-b from-white to-white/60 bg-clip-text text-3xl font-bold tracking-tight text-transparent sm:text-4xl lg:text-5xl">
+              常见问题
+            </h2>
+            <p className="mb-8 text-xl text-text-secondary leading-relaxed">
+              关于 Earnlytics，您可能想了解这些。如果没有找到您需要的答案，欢迎随时联系我们的支持团队。
+            </p>
+
+            <div className="flex items-center gap-4 text-primary font-medium group cursor-pointer">
+              <span className="border-b border-primary/20 pb-1 group-hover:border-primary transition-all">
+                联系技术支持
+              </span>
+              <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+            </div>
+          </div>
+
+          {/* Right Side: Accordion */}
+          <div className="lg:col-span-7 flex items-center">
+            <AccordionFAQ items={faqs} />
           </div>
         </div>
       </section>
