@@ -173,9 +173,12 @@ export default function CompaniesList({ companies }: CompaniesListProps) {
         <div className="mx-auto max-w-7xl flex flex-col items-center text-center">
           <HorizontalGlow />
           <div className="relative z-10 w-full flex flex-col items-center gap-6">
-            <h1 className="text-3xl font-bold text-white sm:text-4xl lg:text-5xl tracking-tight">
-              科技公司目录
-            </h1>
+            <div className="flex flex-col items-center text-center">
+              <h1 className="mb-4 bg-gradient-to-b from-white to-white/60 bg-clip-text text-3xl font-bold tracking-tight text-transparent sm:text-4xl lg:text-5xl">
+                科技公司目录
+              </h1>
+              <div className="h-1.5 w-20 rounded-full bg-primary" />
+            </div>
             <p className="max-w-xl text-lg text-text-secondary">
               探索 {companies.length} 家美国科技公司财报数据
             </p>
