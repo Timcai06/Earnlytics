@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { useState, useRef } from "react";
+import { motion, useScroll, useTransform, useSpring } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { ZapIcon, BotIcon, DiamondIcon, AppleIcon, WindowIcon, SearchIcon, CpuIcon, MetaIcon } from "@/components/icons";
 import MysticalGlow from "@/components/ui/mystical-glow";
@@ -14,6 +15,7 @@ import AccordionFAQ from "@/components/ui/accordion-faq";
 import GlowingButton from "@/components/ui/glowing-button";
 import SciFiStatCard from "@/components/ui/stat-card";
 import HeroTitle from "@/components/ui/hero-title";
+import AnalysisPreview from "@/components/ui/analysis-preview";
 
 const steps = [
     { step: 1, title: "选择公司", desc: "从30+科技公司中选择感兴趣的目标" },
@@ -41,6 +43,20 @@ const faqs = [
 ];
 
 export default function LandingPageUI() {
+    const heroRef = useRef<HTMLDivElement>(null);
+    const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+
+    const handleMouseMove = (e: React.MouseEvent) => {
+        if (!heroRef.current) return;
+        const rect = heroRef.current.getBoundingClientRect();
+        const x = (e.clientX - rect.left) / rect.width - 0.5;
+        const y = (e.clientY - rect.top) / rect.height - 0.5;
+        setMousePos({ x, y });
+    };
+
+    const handleMouseLeave = () => {
+        setMousePos({ x: 0, y: 0 });
+    };
     const features = [
         {
             icon: <ZapIcon className="h-10 w-10 text-primary" />,
@@ -107,8 +123,15 @@ export default function LandingPageUI() {
     return (
         <div className="h-[calc(100vh-87px)] overflow-y-auto snap-y snap-mandatory scroll-smooth">
             {/* Hero Section */}
-            <section id="hero" className="relative flex h-[calc(100vh-87px)] snap-start flex-col items-center justify-center overflow-hidden bg-background px-4">
-                <DataStreamBackground className="opacity-30" />
+            <section
+                id="hero"
+                ref={heroRef}
+                onMouseMove={handleMouseMove}
+                onMouseLeave={handleMouseLeave}
+                className="relative flex h-[calc(100vh-87px)] snap-start flex-col items-center justify-center overflow-hidden bg-background px-4"
+            >
+                <MysticalGlow mousePosition={mousePos} />
+                <DataStreamBackground className="opacity-20" />
                 <div className="relative z-10 flex flex-col items-center text-center w-full max-w-7xl">
                     {/* Badge */}
                     <motion.div
@@ -144,43 +167,64 @@ export default function LandingPageUI() {
                     </div>
 
                     {/* Floating HUD Orbital Stats (Desktop Only) */}
-                    <div className="hidden lg:block">
+                    <div className="hidden lg:block pointer-events-none">
                         {/* Stat 1: Left-Top */}
                         <motion.div
-                            animate={{ y: [0, -15, 0], x: [0, 5, 0] }}
-                            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-                            className="absolute left-[2%] top-[18%] z-20"
+                            style={{
+                                x: mousePos.x * -40,
+                                y: mousePos.y * -40
+                            }}
+                            animate={{
+                                rotate: [0, 2, 0, -2, 0],
+                                scale: [1.1, 1.12, 1.1]
+                            }}
+                            transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+                            className="absolute left-[5%] top-[20%] z-20"
                         >
                             <SciFiStatCard
                                 label={stats[0].label}
                                 value={stats[0].value}
-                                className="scale-110 opacity-70 hover:opacity-100 transition-opacity"
+                                className="opacity-70 hover:opacity-100 transition-opacity"
                             />
                         </motion.div>
 
                         {/* Stat 2: Right-Top/Middle */}
                         <motion.div
-                            animate={{ y: [0, 20, 0], x: [0, -8, 0] }}
-                            transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-                            className="absolute right-[4%] top-[25%] z-20"
+                            style={{
+                                x: mousePos.x * 50,
+                                y: mousePos.y * 50
+                            }}
+                            animate={{
+                                rotate: [0, -3, 0, 3, 0],
+                                scale: [1.1, 1.08, 1.1]
+                            }}
+                            transition={{ duration: 12, repeat: Infinity, ease: "linear", delay: 1 }}
+                            className="absolute right-[8%] top-[30%] z-20"
                         >
                             <SciFiStatCard
                                 label={stats[1].label}
                                 value={stats[1].value}
-                                className="scale-110 opacity-70 hover:opacity-100 transition-opacity"
+                                className="opacity-70 hover:opacity-100 transition-opacity"
                             />
                         </motion.div>
 
                         {/* Stat 3: Bottom-Left Area */}
                         <motion.div
-                            animate={{ y: [0, -12, 0], x: [0, 10, 0] }}
-                            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
-                            className="absolute left-[8%] bottom-[15%] z-20"
+                            style={{
+                                x: mousePos.x * -30,
+                                y: mousePos.y * 60
+                            }}
+                            animate={{
+                                rotate: [0, 1, 0, -1, 0],
+                                scale: [1.05, 1.07, 1.05]
+                            }}
+                            transition={{ duration: 15, repeat: Infinity, ease: "linear", delay: 0.5 }}
+                            className="absolute left-[12%] bottom-[18%] z-20"
                         >
                             <SciFiStatCard
                                 label={stats[2].label}
                                 value={stats[2].value}
-                                className="scale-105 opacity-70 hover:opacity-100 transition-opacity"
+                                className="opacity-70 hover:opacity-100 transition-opacity"
                             />
                         </motion.div>
                     </div>
@@ -253,6 +297,12 @@ export default function LandingPageUI() {
                         ))}
                     </div>
                 </div>
+                <ScrollIndicator targetId="preview" />
+            </section>
+
+            {/* Product Preview Section */}
+            <section id="preview" className="relative h-[calc(100vh-87px)] snap-start flex flex-col items-center justify-center overflow-hidden bg-background">
+                <AnalysisPreview />
                 <ScrollIndicator targetId="companies" />
             </section>
 

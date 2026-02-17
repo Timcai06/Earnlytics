@@ -5,6 +5,8 @@ import Header from "@/components/layout/Header";
 import RightSidebar from "@/components/layout/RightSidebar";
 import Footer from "@/components/layout/Footer";
 import { PerformanceMonitor } from "@/components/performance/performance-monitor";
+import TopLoadingBar from "@/components/ui/top-loading-bar";
+import { Suspense } from "react";
 
 export function ClientLayout({
   children,
@@ -16,6 +18,9 @@ export function ClientLayout({
   return (
     <>
       <PerformanceMonitor />
+      <Suspense fallback={null}>
+        <TopLoadingBar />
+      </Suspense>
       <Header
         onMenuToggle={() => setIsSidebarOpen(!isSidebarOpen)}
         isMenuOpen={isSidebarOpen}

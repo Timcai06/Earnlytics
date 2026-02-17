@@ -1,5 +1,9 @@
+"use client";
+
 import { cn } from "@/lib/utils";
 import { cva, type VariantProps } from "class-variance-authority";
+import { motion } from "framer-motion";
+import { TrendingUpIcon } from "@/components/icons";
 
 const spinnerVariants = cva(
   "animate-spin rounded-full border-t-transparent",
@@ -27,7 +31,7 @@ const spinnerVariants = cva(
 
 export interface SpinnerProps
   extends React.HTMLAttributes<HTMLDivElement>,
-    VariantProps<typeof spinnerVariants> {}
+  VariantProps<typeof spinnerVariants> { }
 
 export function Spinner({
   className,
@@ -65,15 +69,54 @@ export function LoadingState({
 }
 
 export function PageLoading({
-  message = "加载中...",
+  message = "正在准备您的投资洞察...",
 }: {
   message?: string;
 }) {
   return (
-    <div className="flex min-h-[50vh] items-center justify-center">
-      <LoadingState size="lg" variant="primary">
-        {message}
-      </LoadingState>
+    <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-background/80 backdrop-blur-xl">
+      <div className="relative flex flex-col items-center">
+        {/* Glow Background */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-40 w-40 bg-primary/20 blur-[60px] rounded-full animate-pulse" />
+
+        {/* Logo Animation */}
+        <motion.div
+          animate={{
+            scale: [1, 1.1, 1],
+            rotate: [0, 5, -5, 0]
+          }}
+          transition={{
+            duration: 3,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+          className="relative z-10 mb-8 flex items-center justify-center h-20 w-20 rounded-2xl bg-surface-secondary border border-primary/30 shadow-[0_0_20px_rgba(99,102,241,0.2)]"
+        >
+          <TrendingUpIcon className="h-10 w-10 text-primary" />
+        </motion.div>
+
+        {/* Loading Bar */}
+        <div className="relative h-1 w-48 overflow-hidden rounded-full bg-white/5 mb-4">
+          <motion.div
+            initial={{ left: "-100%" }}
+            animate={{ left: "100%" }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+            className="absolute top-0 h-full w-full bg-gradient-to-r from-transparent via-primary to-transparent"
+          />
+        </div>
+
+        <motion.p
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-sm font-medium tracking-widest text-text-tertiary uppercase"
+        >
+          {message}
+        </motion.p>
+      </div>
     </div>
   );
 }
@@ -85,7 +128,10 @@ export function SectionLoading({
 }) {
   return (
     <div className={cn("flex items-center justify-center py-12", className)}>
-      <Spinner size="md" variant="primary" />
+      <div className="relative flex items-center justify-center">
+        <div className="absolute h-10 w-10 bg-primary/10 blur-xl rounded-full" />
+        <Spinner size="md" variant="primary" />
+      </div>
     </div>
   );
 }
