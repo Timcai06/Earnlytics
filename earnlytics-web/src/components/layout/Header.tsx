@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { BarChart3, Menu, X, LogIn, User as UserIcon, LayoutDashboard, LogOut } from "lucide-react";
+import { BarChart3, Menu, X, LogIn, User as UserIcon, LayoutDashboard, LogOut, Wallet } from "lucide-react";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 
@@ -48,7 +48,17 @@ export default function Header({ onMenuToggle, isMenuOpen }: HeaderProps) {
 
         <div className="flex items-center gap-3">
           {user ? (
-            <Link
+            <div className="flex items-center gap-2">
+              <Link
+                href="/portfolio"
+                className="relative group flex items-center gap-2 rounded-xl border border-white/5 bg-white/5 px-3 py-2 transition-all duration-500 hover:border-primary/30 hover:bg-white/[0.08] hover:shadow-[0_0_20px_rgba(99,102,241,0.15)]"
+              >
+                <Wallet className="h-4 w-4 text-text-secondary group-hover:text-primary transition-colors" />
+                <span className="text-sm font-medium text-text-secondary group-hover:text-white">
+                  持仓
+                </span>
+              </Link>
+              <Link
               href="/profile"
               className="relative group flex items-center gap-3 rounded-2xl border border-white/5 bg-white/5 p-1 transition-all duration-500 hover:border-primary/30 hover:bg-white/[0.08] hover:shadow-[0_0_20px_rgba(99,102,241,0.15)]"
             >
@@ -70,7 +80,8 @@ export default function Header({ onMenuToggle, isMenuOpen }: HeaderProps) {
                   {user.name || "User"}
                 </span>
               </div>
-            </Link>
+              </Link>
+            </div>
           ) : (
             <Link
               href="/login"

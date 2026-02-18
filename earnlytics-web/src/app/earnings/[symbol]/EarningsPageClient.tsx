@@ -5,6 +5,8 @@ import { use, useEffect, useState } from "react";
 import { BotIcon, XCircleIcon, SparklesIcon, AlertTriangleIcon, ThumbsUpIcon, ThumbsDownIcon, ClockIcon, DatabaseIcon, TrendingUpIcon } from "@/components/icons";
 import { PageLoading } from "@/components/ui/spinner";
 import { EarningsTrendChart } from "@/components/sections/EarningsTrendChart";
+import { SentimentTimeline } from "@/components/sections/SentimentTimeline";
+import { SurpriseRadar } from "@/components/sections/SurpriseRadar";
 
 interface EarningWithAnalysis {
   id: number;
@@ -96,10 +98,30 @@ export default function EarningsPageClient({ params }: Props) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [retries, setRetries] = useState(0);
+  const [sentimentHistory, setSentimentHistory] = useState<{
+    quarters: Array<{
+      quarter: string;
+      fiscal_year: number;
+      fiscal_quarter: number;
+      sentiment: 'positive' | 'neutral' | 'negative' | null;
+      revenue: number | null;
+      eps: number | null;
+      revenue_yoy_growth: number | null;
+      eps_surprise: number | null;
+      ai_summary_preview: string;
+      earning_id: number;
+      report_date: string;
+    }>;
+    trend_analysis: {
+      positive_streak: number;
+      negative_streak: number;
+      sentiment_changes: number;
+      overall_trend: 'improving' | 'declining' | 'stable';
+    };
+  } | null>(null);
 
   const maxRetries = 3;
 
-  // 过滤掉没有数据的财报记录（防御性编程）
   const validEarningsHistory = earningsHistory.filter(e => e.revenue !== null);
 
   const isLatestEarning = earnings && validEarningsHistory.length > 0 && earnings.id === validEarningsHistory[0].id;
@@ -113,7 +135,12 @@ export default function EarningsPageClient({ params }: Props) {
 
     async function fetchData() {
       try {
-        const latestResponse = await fetch(`/api/earnings?symbol=${symbol}&latest=true`);
+        const [latestResponse, historyResponse, sentimentResponse] = await Promise.all([
+          fetch(`/api/earnings?symbol=${symbol}&latest=true`),
+          fetch(`/api/earnings?symbol=${symbol}`),
+          fetch(`/api/sentiment-history/${symbol}`),
+        ]);
+
         if (!latestResponse.ok) throw new Error(`Failed to fetch latest earnings: ${latestResponse.status}`);
         const latestData = await latestResponse.json();
 
@@ -123,12 +150,16 @@ export default function EarningsPageClient({ params }: Props) {
           setError('未找到这支股票的财报数据');
         }
 
-        const historyResponse = await fetch(`/api/earnings?symbol=${symbol}`);
-        if (!historyResponse.ok) throw new Error(`Failed to fetch earnings history: ${historyResponse.status}`);
-        const historyData = await historyResponse.json();
+        if (historyResponse.ok) {
+          const historyData = await historyResponse.json();
+          if (historyData.earnings) {
+            setEarningsHistory(Array.isArray(historyData.earnings) ? historyData.earnings : [historyData.earnings]);
+          }
+        }
 
-        if (historyData.earnings) {
-          setEarningsHistory(Array.isArray(historyData.earnings) ? historyData.earnings : [historyData.earnings]);
+        if (sentimentResponse.ok) {
+          const sentimentData = await sentimentResponse.json();
+          setSentimentHistory(sentimentData);
         }
       } catch (e) {
         if (retries < maxRetries) {
@@ -169,6 +200,19 @@ export default function EarningsPageClient({ params }: Props) {
     eps: e.eps ?? 0,
     revenueGrowth: e.revenue_yoy_growth ?? 0,
   }));
+
+  const surpriseRadarData = earnings ? {
+    eps: {
+      actual: earnings.eps,
+      expected: earnings.eps_estimate,
+      surprise_pct: earnings.eps_surprise ? (earnings.eps_surprise / (earnings.eps_estimate || earnings.eps || 1)) * 100 : null,
+    },
+    revenue: {
+      actual: earnings.revenue,
+      expected: null,
+      surprise_pct: null,
+    },
+  } : null;
 
   if (loading && !earnings) {
     return <PageLoading message="加载中..." />;
@@ -285,6 +329,22 @@ export default function EarningsPageClient({ params }: Props) {
               </div>
 
               <EarningsTrendChart data={trendData} />
+            </div>
+          )}
+
+          {sentimentHistory && sentimentHistory.quarters.length > 1 && (
+            <div className="mb-8">
+              <SentimentTimeline
+                data={sentimentHistory.quarters}
+                trendAnalysis={sentimentHistory.trend_analysis}
+                onQuarterClick={handleEarningClick}
+              />
+            </div>
+          )}
+
+          {surpriseRadarData && (surpriseRadarData.eps.actual || surpriseRadarData.revenue.actual) && (
+            <div className="mb-8">
+              <SurpriseRadar data={surpriseRadarData} />
             </div>
           )}
 

@@ -1,5 +1,26 @@
 import '@testing-library/jest-dom'
 
+// Polyfill Web APIs for Next.js API route tests using native Node.js fetch (Node 18+)
+// This ensures NextRequest/NextResponse work correctly in tests
+if (!global.Request) {
+  const nodeFetch = require('node-fetch')
+  global.Request = nodeFetch.Request
+  global.Response = nodeFetch.Response
+  global.Headers = nodeFetch.Headers
+
+  // Add static json method that NextResponse.json() expects
+  global.Response.json = (data: any, init?: ResponseInit) => {
+    const body = JSON.stringify(data)
+    return new nodeFetch.Response(body, {
+      ...init,
+      headers: {
+        'content-type': 'application/json',
+        ...init?.headers,
+      },
+    })
+  }
+}
+
 // Mock next/navigation
 jest.mock('next/navigation', () => ({
   useRouter() {

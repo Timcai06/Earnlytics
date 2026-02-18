@@ -44,19 +44,7 @@ const faqs = [
 
 export default function LandingPageUI() {
     const heroRef = useRef<HTMLDivElement>(null);
-    const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
-    const handleMouseMove = (e: React.MouseEvent) => {
-        if (!heroRef.current) return;
-        const rect = heroRef.current.getBoundingClientRect();
-        const x = (e.clientX - rect.left) / rect.width - 0.5;
-        const y = (e.clientY - rect.top) / rect.height - 0.5;
-        setMousePos({ x, y });
-    };
-
-    const handleMouseLeave = () => {
-        setMousePos({ x: 0, y: 0 });
-    };
     const features = [
         {
             icon: <ZapIcon className="h-10 w-10 text-primary" />,
@@ -126,11 +114,9 @@ export default function LandingPageUI() {
             <section
                 id="hero"
                 ref={heroRef}
-                onMouseMove={handleMouseMove}
-                onMouseLeave={handleMouseLeave}
                 className="relative flex h-[calc(100vh-87px)] snap-start flex-col items-center justify-center overflow-hidden bg-background px-4"
             >
-                <MysticalGlow mousePosition={mousePos} />
+                <MysticalGlow />
                 <DataStreamBackground className="opacity-20" />
                 <div className="relative z-10 flex flex-col items-center text-center w-full max-w-7xl">
                     {/* Badge */}
@@ -169,64 +155,31 @@ export default function LandingPageUI() {
                     {/* Floating HUD Orbital Stats (Desktop Only) */}
                     <div className="hidden lg:block pointer-events-none">
                         {/* Stat 1: Left-Top */}
-                        <motion.div
-                            style={{
-                                x: mousePos.x * -40,
-                                y: mousePos.y * -40
-                            }}
-                            animate={{
-                                rotate: [0, 2, 0, -2, 0],
-                                scale: [1.1, 1.12, 1.1]
-                            }}
-                            transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-                            className="absolute left-[5%] top-[20%] z-20"
-                        >
+                        <div className="absolute left-[5%] top-[20%] z-20">
                             <SciFiStatCard
                                 label={stats[0].label}
                                 value={stats[0].value}
                                 className="opacity-70 hover:opacity-100 transition-opacity"
                             />
-                        </motion.div>
+                        </div>
 
                         {/* Stat 2: Right-Top/Middle */}
-                        <motion.div
-                            style={{
-                                x: mousePos.x * 50,
-                                y: mousePos.y * 50
-                            }}
-                            animate={{
-                                rotate: [0, -3, 0, 3, 0],
-                                scale: [1.1, 1.08, 1.1]
-                            }}
-                            transition={{ duration: 12, repeat: Infinity, ease: "linear", delay: 1 }}
-                            className="absolute right-[8%] top-[30%] z-20"
-                        >
+                        <div className="absolute right-[8%] top-[30%] z-20">
                             <SciFiStatCard
                                 label={stats[1].label}
                                 value={stats[1].value}
                                 className="opacity-70 hover:opacity-100 transition-opacity"
                             />
-                        </motion.div>
+                        </div>
 
                         {/* Stat 3: Bottom-Left Area */}
-                        <motion.div
-                            style={{
-                                x: mousePos.x * -30,
-                                y: mousePos.y * 60
-                            }}
-                            animate={{
-                                rotate: [0, 1, 0, -1, 0],
-                                scale: [1.05, 1.07, 1.05]
-                            }}
-                            transition={{ duration: 15, repeat: Infinity, ease: "linear", delay: 0.5 }}
-                            className="absolute left-[12%] bottom-[18%] z-20"
-                        >
+                        <div className="absolute left-[12%] bottom-[18%] z-20">
                             <SciFiStatCard
                                 label={stats[2].label}
                                 value={stats[2].value}
                                 className="opacity-70 hover:opacity-100 transition-opacity"
                             />
-                        </motion.div>
+                        </div>
                     </div>
 
                     {/* Standard Stats (Mobile Only) */}

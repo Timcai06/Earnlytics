@@ -76,3 +76,43 @@ export type EarningWithAnalysis = Earning & {
   companies: Company
   ai_analyses: AIAnalysis | null
 }
+
+export type User = {
+  id: number
+  email: string
+  name: string | null
+}
+
+export type UserPortfolio = {
+  id: number
+  user_id: number
+  symbol: string
+  shares: number
+  avg_cost_basis: number
+  created_at: string
+  updated_at: string
+}
+
+export type PortfolioPosition = {
+  id: number
+  symbol: string
+  company_name: string
+  logo_url: string | null
+  shares: number
+  avg_cost_basis: number
+  current_price: number
+  current_value: number
+  total_cost: number
+  gain: number
+  gain_pct: number
+  price_change: number
+  price_change_pct: number
+}
+
+export type PortfolioSummary = {
+  total_value: number
+  total_cost: number
+  total_gain: number
+  total_gain_pct: number
+  position_count: number
+}
