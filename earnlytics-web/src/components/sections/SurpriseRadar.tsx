@@ -298,14 +298,14 @@ export function SurpriseRadar({
                 fillOpacity={0.3}
                 dot={({ cx, cy, payload }) => {
                   const status = (payload as MetricData).status;
-                  const statusCfg = statusConfig[status];
+                  const statusCfg = statusConfig[status as keyof typeof statusConfig];
                   return (
                     <circle
                       cx={cx}
                       cy={cy}
-                      r={4}
-                      fill={statusCfg.color}
-                      stroke={statusCfg.color}
+                      r={statusCfg ? 4 : 0}
+                      fill={statusCfg?.color || 'transparent'}
+                      stroke={statusCfg?.color || 'transparent'}
                       strokeWidth={2}
                     />
                   );
@@ -327,7 +327,8 @@ export function SurpriseRadar({
         <div className="mt-4 grid grid-cols-2 sm:grid-cols-5 gap-2">
           {radarData.map((item) => {
             const config = metricConfig[item.metric as keyof typeof metricConfig];
-            const statusCfg = statusConfig[item.status];
+            const statusCfg = statusConfig[item.status as keyof typeof statusConfig];
+            if (!statusCfg) return null;
             
             return (
               <div 

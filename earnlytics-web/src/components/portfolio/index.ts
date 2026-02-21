@@ -1,3 +1,8 @@
 export { PortfolioSummary } from './PortfolioSummary'
 export { PositionList } from './PositionList'
 export { AddPositionDialog } from './AddPositionDialog'
+export { Sparkline, MiniTrendIndicator } from './Sparkline'
+export { Drawer, PositionDrawerContent } from './Drawer'
+export { EarningsBadge, EarningsPill } from './EarningsBadge'
+export { PortfolioHistoryChart } from './PortfolioHistoryChart'
+export { PortfolioBriefing } from './PortfolioBriefing'

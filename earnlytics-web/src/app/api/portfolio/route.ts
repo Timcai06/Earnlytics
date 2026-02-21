@@ -6,10 +6,36 @@ const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
 
 const supabase = createClient(supabaseUrl, supabaseKey)
 
+const PRICE_EXPIRY_MINUTES = 15
+
+async function fetchAndUpdateStockPrice(symbol: string) {
+  try {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/stock-price/${symbol}`)
+    if (response.ok) {
+      const data = await response.json()
+      return data
+    }
+  } catch (error) {
+    console.error(`Error fetching price for ${symbol}:`, error)
+  }
+  return null
+}
+
+function isPriceStale(timestamp: string | null): boolean {
+  if (!timestamp) return true
+  const priceTime = new Date(timestamp)
+  const now = new Date()
+  const diffMs = now.getTime() - priceTime.getTime()
+  const diffMinutes = diffMs / (1000 * 60)
+  return diffMinutes > PRICE_EXPIRY_MINUTES
+}
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
     const userId = searchParams.get('user_id')
+
+    console.log('Portfolio GET received for user_id:', userId)
 
     if (!userId) {
       return NextResponse.json(
@@ -19,6 +45,7 @@ export async function GET(request: Request) {
     }
 
     const userIdNum = parseInt(userId)
+    console.log('Fetching portfolio for userIdNum:', userIdNum)
 
     const { data: positions, error } = await supabase
       .from('user_portfolios')
@@ -51,18 +78,40 @@ export async function GET(request: Request) {
 
     const { data: prices } = await supabase
       .from('stock_prices')
-      .select('symbol, price, change, change_percent')
+      .select('symbol, price, change, change_percent, timestamp')
       .in('symbol', symbols)
       .order('timestamp', { ascending: false })
       .limit(symbols.length)
 
     const priceMap = new Map()
+    const staleSymbols: string[] = []
+    
     if (prices) {
       prices.forEach(p => {
         if (!priceMap.has(p.symbol)) {
           priceMap.set(p.symbol, p)
+          if (isPriceStale(p.timestamp)) {
+            staleSymbols.push(p.symbol)
+          }
         }
       })
+    }
+
+    if (staleSymbols.length > 0) {
+      console.log(`Refreshing ${staleSymbols.length} stale prices:`, staleSymbols)
+      
+      await Promise.all(staleSymbols.map(async (symbol) => {
+        const freshData = await fetchAndUpdateStockPrice(symbol)
+        if (freshData) {
+          const priceEntry = priceMap.get(symbol)
+          if (priceEntry) {
+            priceEntry.price = freshData.price
+            priceEntry.change = freshData.change
+            priceEntry.change_percent = freshData.changePercent
+            priceEntry.timestamp = freshData.timestamp
+          }
+        }
+      }))
     }
 
     const { data: companies } = await supabase
@@ -97,7 +146,9 @@ export async function GET(request: Request) {
         gain: gain,
         gain_pct: gainPct,
         price_change: priceData?.change || 0,
-        price_change_pct: priceData?.change_percent || 0
+        price_change_pct: priceData?.change_percent || 0,
+        price_timestamp: priceData?.timestamp || null,
+        is_stale: isPriceStale(priceData?.timestamp)
       }
     })
 
@@ -106,8 +157,15 @@ export async function GET(request: Request) {
     const totalGain = totalValue - totalCost
     const totalGainPct = totalCost > 0 ? (totalGain / totalCost) * 100 : 0
 
+    console.log('Returning portfolio data:', { positionCount: positionsWithData.length, totalValue })
+
     return NextResponse.json({
       positions: positionsWithData,
+      metadata: {
+        last_updated: new Date().toISOString(),
+        price_expiry_minutes: PRICE_EXPIRY_MINUTES,
+        stale_positions: positionsWithData.filter(p => p.is_stale).length
+      },
       summary: {
         total_value: totalValue,
         total_cost: totalCost,
@@ -130,6 +188,8 @@ export async function POST(request: Request) {
   try {
     const body = await request.json()
     const { user_id, symbol, shares, cost_basis } = body
+
+    console.log('Portfolio POST received:', { user_id, symbol, shares, cost_basis })
 
     if (!user_id || !symbol || !shares || !cost_basis) {
       return NextResponse.json(

@@ -107,6 +107,14 @@ export type PortfolioPosition = {
   gain_pct: number
   price_change: number
   price_change_pct: number
+  price_timestamp: string | null
+  is_stale: boolean
+}
+
+export type PortfolioMetadata = {
+  last_updated: string
+  price_expiry_minutes: number
+  stale_positions: number
 }
 
 export type PortfolioSummary = {
