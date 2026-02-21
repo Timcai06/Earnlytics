@@ -29,12 +29,15 @@ export async function processChatMessage(
   const startTime = Date.now()
 
   try {
+    console.log('[Assistant] Processing message:', message)
+
     // Search for relevant context
     const { context, sources } = await searchWithContext(message, {
       symbol,
       matchCount: 5,
       matchThreshold: 0.7,
     })
+    console.log('[Assistant] Found sources:', sources.length)
 
     // Build system prompt with context
     const hasResults = sources.length > 0
@@ -52,6 +55,8 @@ export async function processChatMessage(
       { role: 'user', content: message },
     ]
 
+    console.log('[Assistant] Calling DeepSeek API...')
+
     // Call AI API
     const response = await openai.chat.completions.create({
       model: CHAT_MODEL,
@@ -59,6 +64,8 @@ export async function processChatMessage(
       temperature: 0.7,
       max_tokens: 2000,
     })
+
+    console.log('[Assistant] DeepSeek response received')
 
     const content = response.choices[0]?.message?.content || '抱歉，我无法回答这个问题。'
     const tokensUsed = response.usage?.total_tokens || 0
@@ -79,11 +86,14 @@ export async function processChatMessage(
       processingTimeMs: Date.now() - startTime,
     }
   } catch (error) {
-    console.error('Chat processing error:', error)
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    const errorStack = error instanceof Error ? error.stack : ''
+    console.error('Chat processing error:', errorMessage)
+    console.error('Error stack:', errorStack)
 
     // Return fallback response
     return {
-      content: '抱歉，我暂时无法处理您的请求。请稍后再试。',
+      content: `抱歉，我暂时无法处理您的请求。错误: ${errorMessage}`,
       sources: [],
       tokensUsed: 0,
       processingTimeMs: Date.now() - startTime,

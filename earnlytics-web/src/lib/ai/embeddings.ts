@@ -1,7 +1,9 @@
 import { openai } from './openai-client'
 
-const EMBEDDING_MODEL = 'text-embedding-3-small'
-const EMBEDDING_DIMENSIONS = 1536
+const COHERE_API_KEY = process.env.COHERE_API_KEY
+const COHERE_API_URL = 'https://api.cohere.ai/v1/embed'
+const COHERE_MODEL = 'embed-english-v3.0'
+const EMBEDDING_DIMENSIONS = 1024
 const CHUNK_SIZE = 1000
 const CHUNK_OVERLAP = 200
 
@@ -17,18 +19,31 @@ export interface TextChunk {
 }
 
 /**
- * Generate embeddings for a text string using OpenAI API
+ * Generate embeddings for a text string using Cohere API
  */
 export async function generateEmbedding(text: string): Promise<EmbeddingResult> {
-  const response = await openai.embeddings.create({
-    model: EMBEDDING_MODEL,
-    input: text,
-    dimensions: EMBEDDING_DIMENSIONS,
+  const response = await fetch(COHERE_API_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${COHERE_API_KEY}`,
+    },
+    body: JSON.stringify({
+      model: COHERE_MODEL,
+      input_type: 'search_query',
+      texts: [text],
+    }),
   })
 
+  if (!response.ok) {
+    const error = await response.text()
+    throw new Error(`Cohere API error: ${response.status} - ${error}`)
+  }
+
+  const data = await response.json()
   return {
-    embedding: response.data[0].embedding,
-    tokensUsed: response.usage.total_tokens,
+    embedding: data.embeddings[0],
+    tokensUsed: Math.ceil(text.length / 4),
   }
 }
 
@@ -36,15 +51,28 @@ export async function generateEmbedding(text: string): Promise<EmbeddingResult> 
  * Generate embeddings for multiple texts in batch
  */
 export async function generateEmbeddingsBatch(texts: string[]): Promise<EmbeddingResult[]> {
-  const response = await openai.embeddings.create({
-    model: EMBEDDING_MODEL,
-    input: texts,
-    dimensions: EMBEDDING_DIMENSIONS,
+  const response = await fetch(COHERE_API_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${COHERE_API_KEY}`,
+    },
+    body: JSON.stringify({
+      model: COHERE_MODEL,
+      input_type: 'search_document',
+      texts: texts,
+    }),
   })
 
-  return response.data.map((item, index) => ({
-    embedding: item.embedding,
-    tokensUsed: Math.ceil(response.usage.total_tokens / texts.length),
+  if (!response.ok) {
+    const error = await response.text()
+    throw new Error(`Cohere API error: ${response.status} - ${error}`)
+  }
+
+  const data = await response.json()
+  return data.embeddings.map((embedding: number[]) => ({
+    embedding,
+    tokensUsed: Math.ceil(texts.join('').length / 4),
   }))
 }
 

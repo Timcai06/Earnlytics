@@ -23,7 +23,8 @@
     "sync:benchmarks": "tsx scripts/build-industry-benchmarks.ts",
     "alerts:process": "tsx scripts/process-alerts.ts",
     "alerts:send-emails": "tsx scripts/send-pending-emails.ts",
-    "alerts:send-digests": "tsx scripts/send-digests.ts"
+    "alerts:send-digests": "tsx scripts/send-digests.ts",
+    "generate:embeddings": "tsx scripts/generate-embeddings.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.95.3",

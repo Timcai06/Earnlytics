@@ -20,7 +20,7 @@ export async function searchDocuments(
 ): Promise<SearchResult[]> {
   if (!supabase) return [];
 
-  const { symbol, matchThreshold = DEFAULT_MATCH_THRESHOLD, matchCount = DEFAULT_MATCH_COUNT } = options
+  const { symbol, matchCount = DEFAULT_MATCH_COUNT } = options
 
   // Generate embedding for the query
   const { embedding } = await generateEmbedding(query)
@@ -29,8 +29,7 @@ export async function searchDocuments(
   
   const { data, error } = await supabase.rpc('search_documents', {
     query_embedding: embedding,
-    target_symbol: symbol ?? null,
-    match_threshold: matchThreshold,
+    filter_symbol: symbol ?? null,
     match_count: matchCount,
   })
 

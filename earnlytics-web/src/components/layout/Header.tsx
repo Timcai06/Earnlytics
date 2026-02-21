@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { BarChart3, Menu, X, LogIn, User as UserIcon, LayoutDashboard, LogOut, Wallet } from "lucide-react";
+import { BarChart3, Menu, X, LogIn, User as UserIcon, LayoutDashboard, LogOut, Wallet, Sparkles } from "lucide-react";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 
@@ -91,6 +91,17 @@ export default function Header({ onMenuToggle, isMenuOpen }: HeaderProps) {
               登录
             </Link>
           )}
+
+          <Link
+            href="/assistant"
+            className="relative group flex items-center gap-2 rounded-xl border border-white/5 bg-white/5 px-3 py-2 transition-all duration-500 hover:border-primary/30 hover:bg-white/[0.08] hover:shadow-[0_0_20px_rgba(99,102,241,0.15)]"
+          >
+            <div className="absolute -inset-1 rounded-xl bg-gradient-to-tr from-primary via-info to-primary opacity-0 blur-sm transition-opacity duration-500 group-hover:opacity-40" />
+            <Sparkles className="h-4 w-4 text-text-secondary group-hover:text-primary transition-colors relative z-10" />
+            <span className="text-sm font-medium text-text-secondary group-hover:text-white relative z-10">
+              AI 助手
+            </span>
+          </Link>
 
           <button
             onClick={onMenuToggle}
