@@ -1,6 +1,6 @@
 # 后端架构规范
 
-**更新日期:** 2026-02-18  
+**更新日期:** 2026-02-21  
 **适用范围:** earnlytics-web 后端系统
 
 ---
@@ -124,6 +124,69 @@ CREATE TABLE alert_rules (
 );
 ```
 
+#### 6. user_portfolios (用户持仓表)
+```sql
+CREATE TABLE user_portfolios (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  symbol VARCHAR(20) NOT NULL REFERENCES companies(symbol),
+  shares DECIMAL(12,4) NOT NULL DEFAULT 0,
+  avg_cost_basis DECIMAL(10,2) NOT NULL DEFAULT 0,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(user_id, symbol)
+);
+```
+
+#### 7. user_transactions (用户交易记录表)
+```sql
+CREATE TABLE user_transactions (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  symbol VARCHAR(20) NOT NULL REFERENCES companies(symbol),
+  transaction_type VARCHAR(10) NOT NULL CHECK (transaction_type IN ('buy', 'sell')),
+  shares DECIMAL(12,4) NOT NULL,
+  price_per_share DECIMAL(10,2) NOT NULL,
+  transaction_date DATE NOT NULL DEFAULT CURRENT_DATE,
+  notes TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+```
+
+#### 8. portfolio_history (持仓历史净值表)
+```sql
+CREATE TABLE portfolio_history (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  record_date DATE NOT NULL DEFAULT CURRENT_DATE,
+  total_value DECIMAL(14,2) NOT NULL DEFAULT 0,
+  total_cost DECIMAL(14,2) NOT NULL DEFAULT 0,
+  total_gain DECIMAL(14,2) NOT NULL DEFAULT 0,
+  total_gain_pct DECIMAL(8,4) NOT NULL DEFAULT 0,
+  position_count INTEGER NOT NULL DEFAULT 0,
+  positions_snapshot JSONB DEFAULT '[]'::jsonb,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(user_id, record_date)
+);
+```
+
+#### 9. portfolio_briefings (AI简报表)
+```sql
+CREATE TABLE portfolio_briefings (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  record_date DATE NOT NULL DEFAULT CURRENT_DATE,
+  content TEXT NOT NULL,
+  sentiment VARCHAR(20) NOT NULL DEFAULT 'neutral',
+  highlights JSONB DEFAULT '[]'::jsonb,
+  concerns JSONB DEFAULT '[]'::jsonb,
+  total_value DECIMAL(14,2) NOT NULL DEFAULT 0,
+  total_change_pct DECIMAL(8,4) NOT NULL DEFAULT 0,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(user_id, record_date)
+);
+```
+
 ### 数据库索引
 
 ```sql
@@ -173,6 +236,18 @@ CREATE INDEX idx_companies_sector ON companies(sector);
 | `/api/subscribe` | POST | 邮件订阅 |
 | `/api/alerts` | GET/POST | 获取/创建预警规则 |
 | `/api/feedback` | POST | 提交反馈 |
+
+#### 持仓相关
+| 路由 | 方法 | 描述 |
+|------|------|------|
+| `/api/portfolio` | GET | 获取用户持仓列表 |
+| `/api/portfolio` | POST | 添加持仓 |
+| `/api/portfolio` | DELETE | 删除持仓 |
+| `/api/portfolio/history` | GET | 获取历史净值 |
+| `/api/portfolio/history` | POST | 记录当日净值 |
+| `/api/portfolio/earnings` | GET | 获取持仓公司财报日历 |
+| `/api/portfolio/briefing` | GET | 获取AI简报 |
+| `/api/portfolio/briefing` | POST | 生成AI简报 |
 
 #### 其他
 | 路由 | 方法 | 描述 |
