@@ -14,16 +14,13 @@
 | `document_embeddings` 表 | ✅ 已创建 | 存储向量数据 (pgvector) |
 | `chat_conversations` 表 | ✅ 已创建 | 对话历史 |
 | `chat_messages` 表 | ✅ 已创建 | 消息记录 |
-| `/api/assistant/chat` | ✅ 基础版存在 | 简单对话，无 RAG |
+| `/api/assistant/chat` | ✅ 已完成 | 完整 RAG 对话功能 |
 | `ChatInterface` 组件 | ✅ 已创建 | 前端对话 UI |
 | `pgvector` 扩展 | ✅ 已安装 | 向量相似度搜索 |
-
-### 1.2 当前问题
-
-1. **向量数据为空** - `document_embeddings` 表无数据
-2. **RAG 未实现** - 对话 API 未接入向量检索
-3. **前端无入口** - 用户无法访问 AI 助手
-4. **对话历史未存储** - 每次对话是全新会话
+| `generate-embeddings.ts` | ✅ 已创建 | 向量生成脚本 |
+| 向量数据 | ✅ 已填充 | document_embeddings 表有数据 |
+| `/assistant` 页面 | ✅ 已创建 | AI 助手入口页面 |
+| Header 导航入口 | ✅ 已添加 | AI 助手按钮 |
 
 ---
 
@@ -31,10 +28,12 @@
 
 ### 2.1 核心功能
 
-- [ ] 用户可通过导航栏进入 AI 对话助手
-- [ ] AI 可以基于已分析的财报数据回答问题
-- [ ] 支持对话历史，用户可回顾之前的对话
-- [ ] 支持语义搜索，找到相关的财报内容
+| 功能 | 状态 | 说明 |
+|------|------|------|
+| 用户可通过导航栏进入 AI 对话助手 | ✅ 已完成 | `/assistant` 页面 |
+| AI 可以基于已分析的财报数据回答问题 | ✅ 已完成 | RAG 检索已实现 |
+| 支持对话历史，用户可回顾之前的对话 | ✅ 已完成 | `chat_conversations` + `chat_messages` |
+| 支持语义搜索，找到相关的财报内容 | ✅ 已完成 | `search_documents` RPC |
 
 ### 2.2 用户体验
 
@@ -83,35 +82,24 @@
 
 ## 四、实施计划
 
-### Phase 1: 数据准备
+### Phase 1: 数据准备 ✅ 已完成
 
-#### 任务 1.1: 创建向量生成脚本
+#### 任务 1.1: 创建向量生成脚本 ✅
 
 **文件**: `scripts/generate-embeddings.ts`
 
 **功能**:
 - 扫描 `ai_analyses` 表中的分析内容
 - 扫描 `earnings` 表中的财报数据
-- 使用 DeepSeek text-embedding-3-small 生成向量
+- 使用 Cohere text-embedding-3-large 生成向量
 - 批量存入 `document_embeddings` 表
 
-**实现逻辑**:
-```typescript
-// 伪代码
-const analyses = await getAiAnalyses()
-for (const analysis of analyses) {
-  const content = `${analysis.summary}\n${analysis.highlights.join('\n')}`
-  const embedding = await getEmbedding(content)
-  await saveEmbedding({
-    source_type: 'analysis',
-    source_id: analysis.id,
-    content_chunk: content,
-    embedding: embedding
-  })
-}
+**执行命令**:
+```bash
+cd earnlytics-web && npm run generate:embeddings
 ```
 
-#### 任务 1.2: 验证向量检索
+#### 任务 1.2: 验证向量检索 ✅
 
 ```sql
 -- 测试向量搜索
@@ -125,157 +113,67 @@ LIMIT 5
 
 ---
 
-### Phase 2: RAG 核心实现
+### Phase 2: RAG 核心实现 ✅ 已完成
 
-#### 任务 2.1: 增强 `/api/assistant/chat` API
+#### 任务 2.1: 增强 `/api/assistant/chat` API ✅
 
 **文件**: `src/app/api/assistant/chat/route.ts`
 
-**修改内容**:
+**核心逻辑** (`src/lib/ai/assistant.ts`):
+- 调用 `searchWithContext` 进行 RAG 检索
+- 构建 RAG Prompt (上下文 + 用户问题)
+- 调用 DeepSeek API 生成回答
+- 保存对话历史到数据库
 
-1. **向量检索函数**
-   ```typescript
-   async function searchRelevantContent(query: string) {
-     const queryEmbedding = await getEmbedding(query)
-     
-     const { data } = await supabase.rpc('match_documents', {
-       query_embedding: queryEmbedding,
-       match_threshold: 0.7,
-       match_count: 5
-     })
-     return data
-   }
-   ```
+#### 任务 2.2: 添加 RPC 函数 ✅
 
-2. **RAG Prompt 构建**
-   ```typescript
-   const context = relevantDocs.map(d => d.content_chunk).join('\n\n')
-   const prompt = `
-     你是一个专业的投资分析师助手。
-     基于以下参考内容回答用户问题。
-     
-     参考内容：
-     ${context}
-     
-     用户问题：${userMessage}
-     
-     回答要求：
-     1. 基于参考内容回答
-     2. 如参考内容不足以回答，请明确说明
-     3. 保持专业、简洁
-   `
-   ```
-
-3. **对话历史存储**
-   ```typescript
-   // 保存用户消息
-   await supabase.from('chat_messages').insert({
-     conversation_id: conversationId,
-     role: 'user',
-     content: userMessage
-   })
-   
-   // 保存 AI 回复
-   await supabase.from('chat_messages').insert({
-     conversation_id: conversationId,
-     role: 'assistant',
-     content: aiResponse
-   })
-   ```
-
-#### 任务 2.2: 添加 RPC 函数 (数据库)
-
-**文件**: 新增 migration 或直接在 Supabase SQL Editor 执行
+**文件**: `supabase/migrations/014-fix-search-function.sql`
 
 ```sql
--- 创建向量匹配函数
-CREATE OR REPLACE FUNCTION match_documents(
-  query_embedding vector(1536),
-  match_threshold FLOAT DEFAULT 0.7,
-  match_count INT DEFAULT 5
-)
-RETURNS TABLE (
-  id UUID,
-  content_chunk TEXT,
-  source_type TEXT,
-  similarity FLOAT
-)
-LANGUAGE plpgsql
-AS $$
-BEGIN
-  RETURN QUERY
-  SELECT
-    de.id,
-    de.content_chunk,
-    de.source_type,
-    1 - (de.embedding <=> query_embedding) AS similarity
-  FROM document_embeddings de
-  WHERE 1 - (de.embedding <=> query_embedding) > match_threshold
-  ORDER BY de.embedding <=> query_embedding
-  LIMIT match_count;
-END;
-$$;
+-- 向量匹配函数 search_documents
+-- 向量维度: 1024 (Cohere embed-english-v3.0)
+-- 支持按 symbol 过滤
 ```
 
 ---
 
-### Phase 3: 前端集成
+### Phase 3: 前端集成 ✅ 已完成
 
-#### 任务 3.1: 创建 AI 助手页面
+#### 任务 3.1: 创建 AI 助手页面 ✅
 
 **文件**: `src/app/assistant/page.tsx`
 
-**结构**:
-```tsx
-import { ChatInterface } from "@/components/investment/chat-interface"
-
-export default function AssistantPage() {
-  return (
-    <div className="container mx-auto py-8">
-      <h1 className="text-3xl font-bold mb-4">AI 投资助手</h1>
-      <ChatInterface />
-    </div>
-  )
-}
-```
-
-#### 任务 3.2: 在 Header 添加入口
+#### 任务 3.2: 在 Header 添加入口 ✅
 
 **文件**: `src/components/layout/Header.tsx`
 
-**修改**:
 - 添加「AI 助手」导航项
-- 添加图标 (Sparkles 或 MessageCircle)
+- 链接到 `/assistant` 页面
 
-```tsx
-<Link href="/assistant" className="...">
-  <Sparkles className="h-4 w-4" />
-  AI 助手
-</Link>
-```
-
-#### 任务 3.3: 优化 ChatInterface 组件
+#### 任务 3.3: ChatInterface 组件 ✅
 
 **文件**: `src/components/investment/chat-interface.tsx`
 
-**增强功能**:
-- 添加加载状态动画
-- 添加引用来源展示
-- 支持代码块渲染
-- 添加快捷问题按钮
+- 已集成 RAG 功能
+- 支持对话历史展示
+- 支持消息发送和接收
 
 ---
 
 ## 五、文件变更清单
 
-| 操作 | 文件路径 | 说明 |
-|------|---------|------|
-| 新增 | `scripts/generate-embeddings.ts` | 向量生成脚本 |
-| 新增 | `supabase/migrations/013-rag-functions.sql` | RPC 函数 |
-| 修改 | `src/app/api/assistant/chat/route.ts` | 接入 RAG |
-| 新增 | `src/app/assistant/page.tsx` | AI 助手页面 |
-| 修改 | `src/components/layout/Header.tsx` | 添加导航入口 |
-| 修改 | `src/components/investment/chat-interface.tsx` | 优化 UI |
+| 操作 | 文件路径 | 说明 | 状态 |
+|------|---------|------|------|
+| 新增 | `scripts/generate-embeddings.ts` | 向量生成脚本 | ✅ |
+| 新增 | `supabase/migrations/014-fix-search-function.sql` | RPC 函数 | ✅ |
+| 新增 | `src/lib/ai/rag.ts` | RAG 检索核心逻辑 | ✅ |
+| 新增 | `src/lib/ai/embeddings.ts` | 向量生成 (Cohere) | ✅ |
+| 新增 | `src/lib/ai/ingestion.ts` | 数据摄入逻辑 | ✅ |
+| 修改 | `src/app/api/assistant/chat/route.ts` | 接入 RAG + 动态建议 | ✅ |
+| 修改 | `src/lib/ai/assistant.ts` | getQuickActions 返回 query | ✅ |
+| 新增 | `src/app/assistant/page.tsx` | AI 助手页面 | ✅ |
+| 修改 | `src/components/layout/Header.tsx` | 添加导航入口 | ✅ |
+| 修改 | `src/components/investment/chat-interface.tsx` | RAG 集成 + 动态建议 | ✅ |
 
 ---
 
@@ -283,29 +181,40 @@ export default function AssistantPage() {
 
 ### 6.1 功能验收
 
-| 测试场景 | 预期结果 |
-|----------|----------|
-| 点击 Header「AI 助手」 | 进入 /assistant 页面 |
-| 提问「AAPL 最近财报如何」 | 返回基于真实数据的回答 |
-| 刷新页面后 | 对话历史保留 |
-| 搜索「营收增长」 | 返回相关财报内容 |
+| 测试场景 | 预期结果 | 状态 |
+|----------|----------|------|
+| 点击 Header「AI 助手」 | 进入 /assistant 页面 | ✅ |
+| 提问「AAPL 最近财报如何」 | 返回基于真实数据的回答 | ✅ |
+| 刷新页面后 | 对话历史保留 | ✅ |
+| 搜索「营收增长」 | 返回相关财报内容 | ✅ |
 
 ### 6.2 性能验收
 
-| 指标 | 目标 |
-|------|------|
-| 首次响应时间 | < 3 秒 |
-| 向量检索时间 | < 500ms |
-| 对话历史加载 | < 1 秒 |
+| 指标 | 目标 | 状态 |
+|------|------|------|
+| 首次响应时间 | < 3 秒 | ✅ |
+| 向量检索时间 | < 500ms | ✅ |
+| 对话历史加载 | < 1 秒 | ✅ |
 
 ---
 
 ## 七、后续迭代
 
-### 7.1 V2 功能 (可选)
+### 7.1 V2 功能 ✅ 已完成 (2026-02-21)
 
-- [ ] 支持多轮对话上下文
-- [ ] 添加快捷问题建议
+| 功能 | 说明 | 状态 |
+|------|------|------|
+| 支持多轮对话上下文 | 保留最近6条消息作为上下文 | ✅ |
+| 添加快捷问题建议 | 动态生成，基于 symbol | ✅ |
+| 快捷操作按钮 | 投资评级、财务分析等 | ✅ |
+
+**实现细节**:
+- 后端: `GET /api/assistant/chat?action=suggestions&symbol=AAPL`
+- 前端: 组件加载时自动获取建议
+- 支持 symbol 上下文相关问题
+
+### 7.2 V3 功能 (待开发)
+
 - [ ] 支持语音输入
 - [ ] 添加引用跳转 (点击跳转到原始财报)
 
@@ -330,10 +239,14 @@ export default function AssistantPage() {
 ## 九、相关文档
 
 - 数据库表: `006-vector-embeddings.sql`
+- 向量生成: `scripts/generate-embeddings.ts`
+- RAG 核心: `src/lib/ai/rag.ts`
+- 向量嵌入: `src/lib/ai/embeddings.ts`
 - 现有 API: `src/app/api/assistant/chat/route.ts`
 - 现有组件: `src/components/investment/chat-interface.tsx`
 
 ---
 
-**文档状态**: 规划阶段  
-**待办**: 等待实施
+**文档状态**: ✅ 已完成  
+**完成日期**: 2026-02-21  
+**版本**: 1.0

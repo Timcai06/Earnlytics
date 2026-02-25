@@ -3,7 +3,7 @@
 > AI-driven US tech company earnings analysis platform with Chinese summaries.
 
 **Production**: https://earnlytics-ebon.vercel.app  
-**Last Updated**: 2026-02-15
+**Last Updated**: 2026-02-25
 
 ## 🎯 Current Progress
 
@@ -11,13 +11,16 @@
 |-------|--------|------------|------------------|
 | **Plan 1: MVP** | ✅ Complete | 100% | 10 pages, Vercel deployed |
 | **Plan 2: AI Automation** | ✅ Complete | 100% | DeepSeek AI, 23 earnings analyzed, GitHub Actions |
-| **Plan 3: Scale** | 🚀 Week 7 Done | 87.5% | 30 companies, 109 earnings, 100% AI coverage, email subscription |
-| **Plan 3: Week 8** | ✅ Complete | 100% | AdSense application prep, privacy, terms, contact pages |
+| **Plan 3: Scale** | ✅ Complete | 100% | 30 companies, 109 earnings, 100% AI coverage, email subscription |
+| **RAG AI Assistant** | ✅ Complete | 100% | Vector search, multi-turn dialogue, dynamic suggestions |
+| **Portfolio Optimization** | ✅ Complete | 100% | Real-time prices, glassmorphism design, auto-refresh |
 
-### Database Status (Based on Code Analysis)
+### Database Status
 - **Companies**: 30 (Tier 1/2/3) - scripts support tier2/tier3 insertion
 - **Earnings**: 109 records - scripts for backfilling and seeding
 - **AI Analyses**: 100% coverage - analyze-batch.ts script available
+- **Document Embeddings**: Vector data populated - 1024-dim Cohere embeddings
+- **Chat Conversations**: Ready for AI assistant - multi-turn dialogue support
 - **Subscribers**: Ready (API + UI complete) - send-digests.ts script exists
 
 ## 📂 Project Structure
@@ -38,17 +41,20 @@ earnlytics/
 │   │   │   ├── earnings/[symbol]/ # Dynamic route for earnings
 │   │   │   ├── companies/   # Company list page
 │   │   │   ├── calendar/    # Earnings calendar
-│   │   │   ├── privacy/     # Privacy policy (Week 8 task)
-│   │   │   ├── terms/       # Terms of service (Week 8 task)
+│   │   │   ├── assistant/   # AI assistant (RAG chat) ✨
+│   │   │   ├── portfolio/   # Portfolio management
+│   │   │   ├── privacy/     # Privacy policy
+│   │   │   ├── terms/       # Terms of service
 │   │   │   └── api/         # API routes
 │   │   ├── components/
 │   │   │   ├── ui/          # shadcn/ui primitives
 │   │   │   ├── icons/       # SVG icon library (replaced all emoji)
 │   │   │   └── layout/      # Header, Footer
 │   │   └── lib/             # Utilities (ai.ts, supabase.ts)
-│   ├── scripts/             # 23 data scripts
+│   ├── scripts/             # 24 data scripts
 │   │   ├── fetch-earnings.ts
 │   │   ├── analyze-batch.ts
+│   │   ├── generate-embeddings.ts  # Vector generation ✨
 │   │   ├── backfill-tier2.ts
 │   │   └── send-digests.ts
 │   └── supabase/migrations/ # Database schema
@@ -64,6 +70,7 @@ cd earnlytics-web && npm run dev          # Start dev server (localhost:3000)
 # Data Operations
 npm run fetch:earnings                    # Fetch latest earnings from FMP
 npm run analyze:batch                     # Generate AI analysis (batch of 5)
+npm run generate:embeddings               # Generate vector embeddings for RAG
 
 # Build & Deploy
 npm run build                             # Production build
@@ -84,8 +91,9 @@ npm run lint                              # Lint check
 
 ### Backend & Infrastructure
 - **Hosting**: Vercel Serverless
-- **Database**: Supabase PostgreSQL
+- **Database**: Supabase PostgreSQL + pgvector
 - **AI Service**: DeepSeek API (¥0.002/1K tokens)
+- **Embedding**: Cohere Embedding API (1024-dim, free tier)
 - **Data Source**: Financial Modeling Prep (FMP) API + SEC EDGAR
 - **Automation**: GitHub Actions (every 4 hours)
 
@@ -95,8 +103,9 @@ npm run lint                              # Lint check
 |-------|----------|------|--------|------------------|
 | **Plan 1: MVP** | Week 1-2 | 10 pages, 10 companies | ✅ Complete | 10+ pages in app/, shadcn/ui components |
 | **Plan 2: AI Automation** | Week 3-4 | AI analysis, automation | ✅ Complete | ai.ts, analyze-batch.ts, GitHub Actions |
-| **Plan 3: Scale** | Month 2 | 30 companies, 109 earnings | 🚀 87.5% | tier2/tier3 scripts, backfill scripts |
-| **Plan 3: Week 8** | Current | AdSense application, privacy, terms, contact pages | ✅ Complete | privacy/, terms/, contact/ directories exist |
+| **Plan 3: Scale** | Month 2 | 30 companies, 109 earnings | ✅ Complete | tier2/tier3 scripts, backfill scripts |
+| **RAG AI Assistant** | Week 5-6 | Vector search, AI chat | ✅ Complete | /assistant page, Cohere embeddings, RAG pipeline |
+| **Portfolio Optimization** | Week 6-7 | Real-time prices, UI upgrade | ✅ Complete | 15-min refresh, glassmorphism design |
 | **Plan 4: Growth** | Month 3 | SEO, traffic growth | 📋 Planned | - |
 | **Plan 5: Commercialization** | Month 4-6 | Monetization | 📋 Planned | - |
 
@@ -174,19 +183,21 @@ npm run lint                              # Lint check
 - Dynamic routes use `[symbol]` format, accessed via `React.use(params)` in Next.js 15
 - 23 data scripts available for various operations
 
-## 🎉 Key Achievements (Based on Code Evidence)
+## 🎉 Key Achievements
 
 1. **✅ Complete Frontend**: 10+ pages with dynamic routing
 2. **✅ AI Integration**: DeepSeek API with batch processing
-3. **✅ Data Pipeline**: 23 scripts for data fetching and analysis
-4. **✅ Database Schema**: Supabase migrations with proper structure
-5. **✅ UI System**: shadcn/ui + custom SVG icons
-6. **✅ Automation**: GitHub Actions for scheduled tasks
-7. **✅ Scalability**: Support for 30 companies across 3 tiers
+3. **✅ RAG AI Assistant**: Vector search with Cohere embeddings, multi-turn dialogue
+4. **✅ Data Pipeline**: 24 scripts for data fetching, analysis, and embeddings
+5. **✅ Database Schema**: Supabase migrations with pgvector support
+6. **✅ UI System**: shadcn/ui + custom SVG icons + glassmorphism design
+7. **✅ Automation**: GitHub Actions for scheduled tasks
+8. **✅ Scalability**: Support for 30 companies across 3 tiers
+9. **✅ Real-time Portfolio**: 15-min price refresh with auto-update
 
 ---
 
 **Production**: https://earnlytics-ebon.vercel.app  
 **GitHub**: https://github.com/Timcai06/Earnlytics  
 **Branch**: main  
-**Last Updated**: 2026-02-15
+**Last Updated**: 2026-02-25

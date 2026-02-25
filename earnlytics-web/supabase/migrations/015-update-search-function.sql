@@ -1,9 +1,7 @@
-DROP FUNCTION IF EXISTS search_documents(vector, text, int);
-
-CREATE FUNCTION search_documents(
+CREATE OR REPLACE FUNCTION search_documents(
   query_embedding vector(1024),
   filter_symbol text DEFAULT NULL,
-  match_count int DEFAULT 5,
+  match_count int DEFAULT 10,
   match_threshold float DEFAULT 0.0
 )
 RETURNS TABLE (
@@ -35,3 +33,10 @@ BEGIN
   LIMIT match_count;
 END;
 $$;
+
+SELECT title, symbol FROM search_documents(
+  (SELECT embedding FROM document_embeddings LIMIT 1),
+  NULL,
+  10,
+  0.0
+) LIMIT 5;

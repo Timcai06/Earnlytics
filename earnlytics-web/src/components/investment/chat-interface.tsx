@@ -16,6 +16,11 @@ interface Message {
   isLoading?: boolean
 }
 
+interface QuickAction {
+  label: string
+  query: string
+}
+
 interface ChatInterfaceProps {
   symbol?: string
   userId?: string
@@ -23,21 +28,6 @@ interface ChatInterfaceProps {
   initialMessages?: Message[]
   className?: string
 }
-
-const suggestedQuestions = [
-  '这家公司值得投资吗？',
-  '最新财报有哪些亮点？',
-  '与同行业相比表现如何？',
-  '分析师的目标价是多少？',
-  '投资这家公司有什么风险？',
-]
-
-const quickActions = [
-  { label: '投资评级', query: '的投资评级是什么？' },
-  { label: '财务分析', query: '的财务状况如何？' },
-  { label: '估值分析', query: '现在估值贵吗？' },
-  { label: '竞争优势', query: '的护城河是什么？' },
-]
 
 export function ChatInterface({
   symbol,
@@ -50,9 +40,35 @@ export function ChatInterface({
   const [input, setInput] = React.useState('')
   const [isLoading, setIsLoading] = React.useState(false)
   const [conversationId, setConversationId] = React.useState<string | undefined>()
+  const [suggestedQuestions, setSuggestedQuestions] = React.useState<string[]>([])
+  const [quickActions, setQuickActions] = React.useState<QuickAction[]>([])
   const scrollRef = React.useRef<HTMLDivElement>(null)
 
-  // Auto-scroll to bottom
+  // Fetch suggestions based on symbol
+  React.useEffect(() => {
+    async function fetchSuggestions() {
+      try {
+        const url = new URL('/api/assistant/chat', window.location.origin)
+        url.searchParams.set('action', 'suggestions')
+        if (symbol) {
+          url.searchParams.set('symbol', symbol)
+        }
+
+        const response = await fetch(url.toString())
+        const data = await response.json()
+
+        if (data.success) {
+          setSuggestedQuestions(data.suggestedQuestions || [])
+          setQuickActions(data.quickActions || [])
+        }
+      } catch (error) {
+        console.error('Failed to fetch suggestions:', error)
+      }
+    }
+
+    fetchSuggestions()
+  }, [symbol])
+
   React.useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight
@@ -62,24 +78,27 @@ export function ChatInterface({
   const sendMessage = async (content: string) => {
     if (!content.trim() || isLoading) return
 
+    const userMessageId = `user-${Date.now()}`
+    const loadingMessageId = `loading-${Date.now()}`
+
     const userMessage: Message = {
-      id: Date.now().toString(),
+      id: userMessageId,
       role: 'user',
       content,
     }
 
-    setMessages(prev => [...prev, userMessage])
-    setInput('')
-    setIsLoading(true)
-
-    // Add loading message
     const loadingMessage: Message = {
-      id: 'loading',
+      id: loadingMessageId,
       role: 'assistant',
       content: '',
       isLoading: true,
     }
-    setMessages(prev => [...prev, loadingMessage])
+
+    setMessages(prev => [...prev, userMessage, loadingMessage])
+    setInput('')
+    setIsLoading(true)
+
+    let conversationCreated = false
 
     try {
       const response = await fetch('/api/assistant/chat', {
@@ -91,35 +110,90 @@ export function ChatInterface({
           symbol,
           userId,
           sessionId,
+          stream: true,
         }),
       })
 
-      const data = await response.json()
-
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to get response')
+        throw new Error(`HTTP ${response.status}`)
       }
 
-      // Update conversation ID if new
-      if (data.isNewConversation) {
-        setConversationId(data.conversationId)
+      if (!response.body) {
+        throw new Error('No response body')
       }
 
-      // Replace loading message with actual response
-      const assistantMessage: Message = {
-        id: Date.now().toString(),
-        role: 'assistant',
-        content: data.response.content,
-        sources: data.response.sources,
+      const reader = response.body.getReader()
+      const decoder = new TextDecoder()
+      let accumulatedContent = ''
+      let currentSources: RAGSource[] = []
+
+      while (true) {
+        const { done, value } = await reader.read()
+
+        if (done) break
+
+        const chunk = decoder.decode(value, { stream: true })
+        const lines = chunk.split('\n')
+
+        for (const line of lines) {
+          if (!line.trim() || !line.startsWith('data: ')) continue
+
+          try {
+            const data = JSON.parse(line.slice(6))
+
+            if (data.type === 'conversation') {
+              conversationCreated = true
+              setConversationId(data.id)
+            } else if (data.type === 'sources') {
+              currentSources = data.sources || []
+            } else if (data.type === 'content') {
+              if (data.content) {
+                accumulatedContent += data.content
+              }
+
+              setMessages(prev =>
+                prev.map(m =>
+                  m.id === loadingMessageId
+                    ? { 
+                        ...m, 
+                        content: accumulatedContent || '...', 
+                        sources: currentSources,
+                        isLoading: !data.isFinal 
+                      }
+                    : m
+                )
+              )
+            } else if (data.type === 'done') {
+              setMessages(prev =>
+                prev.map(m =>
+                  m.id === loadingMessageId
+                    ? { ...m, content: accumulatedContent || '...', isLoading: false }
+                    : m
+                )
+              )
+              setIsLoading(false)
+            } else if (data.type === 'error') {
+              throw new Error(data.error)
+            }
+          } catch {
+            // Skip invalid JSON
+          }
+        }
       }
 
-      setMessages(prev =>
-        prev.filter(m => m.id !== 'loading').concat(assistantMessage)
-      )
+      if (accumulatedContent) {
+        setMessages(prev =>
+          prev.map(m =>
+            m.id === loadingMessageId
+              ? { ...m, content: accumulatedContent, isLoading: false }
+              : m
+          )
+        )
+      }
+      setIsLoading(false)
     } catch (error) {
       console.error('Chat error:', error)
 
-      // Replace loading with error message
       const errorMessage: Message = {
         id: Date.now().toString(),
         role: 'assistant',
@@ -127,9 +201,8 @@ export function ChatInterface({
       }
 
       setMessages(prev =>
-        prev.filter(m => m.id !== 'loading').concat(errorMessage)
+        prev.filter(m => m.id !== loadingMessageId).concat(errorMessage)
       )
-    } finally {
       setIsLoading(false)
     }
   }
@@ -139,7 +212,7 @@ export function ChatInterface({
     sendMessage(input)
   }
 
-  const handleQuickAction = (action: { label: string; query: string }) => {
+  const handleQuickAction = (action: QuickAction) => {
     const prefix = symbol || ''
     sendMessage(prefix + action.query)
   }
@@ -244,9 +317,11 @@ export function ChatInterface({
                   )}
                 >
                   {message.isLoading ? (
-                    <div className="flex items-center gap-2 py-1">
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      <span className="text-sm">思考中...</span>
+                    <div className="flex items-center gap-1 py-1">
+                      <span className="w-1.5 h-1.5 bg-primary/60 rounded-full animate-pulse" style={{ animationDelay: '0ms' }} />
+                      <span className="w-1.5 h-1.5 bg-primary/60 rounded-full animate-pulse" style={{ animationDelay: '150ms' }} />
+                      <span className="w-1.5 h-1.5 bg-primary/60 rounded-full animate-pulse" style={{ animationDelay: '300ms' }} />
+                      <span className="text-xs text-muted-foreground ml-2">正在输入</span>
                     </div>
                   ) : (
                     <>

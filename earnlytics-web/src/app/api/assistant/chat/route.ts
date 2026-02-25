@@ -1,17 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
 import {
   processChatMessage,
+  processChatMessageStream,
   createConversation,
   saveMessage,
   getConversationHistory,
   extractSymbols,
   generateConversationTitle,
+  getSuggestedQuestions,
+  getQuickActions,
 } from '@/lib/ai/assistant'
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { message, conversationId, symbol, userId, sessionId } = body
+    const { message, conversationId, symbol, userId, sessionId, stream } = body
 
     if (!message || typeof message !== 'string') {
       return NextResponse.json(
@@ -20,13 +23,88 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Streaming response
+    if (stream) {
+      const encoder = new TextEncoder()
+      const stream = new ReadableStream({
+        async start(controller) {
+          let currentConversationId = conversationId
+
+          try {
+            if (!currentConversationId) {
+              const title = generateConversationTitle(message)
+              const mentionedSymbols = extractSymbols(message)
+              const conversationSymbol = symbol || mentionedSymbols[0]
+
+              currentConversationId = await createConversation(
+                userId,
+                sessionId,
+                conversationSymbol,
+                title
+              )
+
+              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'conversation', id: currentConversationId })}\n\n`))
+            }
+
+            const history = await getConversationHistory(currentConversationId, 20)
+            const conversationHistory = history.map(msg => ({
+              role: msg.role,
+              content: msg.content,
+            }))
+
+            await saveMessage(currentConversationId, 'user', message)
+
+            await processChatMessageStream(
+              message,
+              symbol,
+              conversationHistory,
+              {
+                onSources: (sources) => {
+                  controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'sources', sources })}\n\n`))
+                },
+                onContent: (content: string, isFinal: boolean) => {
+                  controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'content', content, isFinal })}\n\n`))
+                },
+                onDone: async (fullContent: string, tokensUsed: number, processingTimeMs: number) => {
+                  await saveMessage(currentConversationId!, 'assistant', fullContent, {
+                    model: 'deepseek-chat',
+                    tokensUsed,
+                    sources: [],
+                    processingTimeMs,
+                  })
+
+                  controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'done', tokensUsed, processingTimeMs })}\n\n`))
+                  controller.close()
+                },
+                onError: (error: string) => {
+                  controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'error', error })}\n\n`))
+                  controller.close()
+                },
+              }
+            )
+          } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'error', error: errorMessage })}\n\n`))
+            controller.close()
+          }
+        },
+      })
+
+      return new NextResponse(stream, {
+        headers: {
+          'Content-Type': 'text/event-stream',
+          'Cache-Control': 'no-cache',
+          'Connection': 'keep-alive',
+        },
+      })
+    }
+
+    // Non-streaming response (original)
     let currentConversationId = conversationId
     let isNewConversation = false
 
-    // Create new conversation if needed
     if (!currentConversationId) {
       const title = generateConversationTitle(message)
-      // Extract symbol from message if not provided
       const mentionedSymbols = extractSymbols(message)
       const conversationSymbol = symbol || mentionedSymbols[0]
 
@@ -39,24 +117,20 @@ export async function POST(request: NextRequest) {
       isNewConversation = true
     }
 
-    // Get conversation history
     const history = await getConversationHistory(currentConversationId, 20)
     const conversationHistory = history.map(msg => ({
       role: msg.role,
       content: msg.content,
     }))
 
-    // Save user message
     await saveMessage(currentConversationId, 'user', message)
 
-    // Process message with AI
     const response = await processChatMessage(
       message,
       symbol,
       conversationHistory
     )
 
-    // Save AI response
     await saveMessage(currentConversationId, 'assistant', response.content, {
       model: 'deepseek-chat',
       tokensUsed: response.tokensUsed,
@@ -90,7 +164,22 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const conversationId = searchParams.get('conversationId')
+    const symbol = searchParams.get('symbol')
+    const action = searchParams.get('action')
 
+    // Get suggestions based on symbol
+    if (action === 'suggestions') {
+      const suggestedQuestions = symbol ? getSuggestedQuestions(symbol) : getSuggestedQuestions('')
+      const quickActions = getQuickActions(symbol || undefined)
+
+      return NextResponse.json({
+        success: true,
+        suggestedQuestions,
+        quickActions,
+      })
+    }
+
+    // Get conversation history
     if (!conversationId) {
       return NextResponse.json(
         { error: 'Conversation ID is required' },

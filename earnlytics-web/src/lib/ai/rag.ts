@@ -20,10 +20,12 @@ export async function searchDocuments(
 ): Promise<SearchResult[]> {
   if (!supabase) return [];
 
-  const { symbol, matchCount = DEFAULT_MATCH_COUNT } = options
+  const { symbol, matchCount = 10, matchThreshold = 0.3 } = options
 
   // Generate embedding for the query
   const { embedding } = await generateEmbedding(query)
+  console.log('[RAG] Generated embedding, length:', embedding?.length)
+  console.log('[RAG] Query:', query)
 
   // Search using Supabase RPC function
   
@@ -31,12 +33,15 @@ export async function searchDocuments(
     query_embedding: embedding,
     filter_symbol: symbol ?? null,
     match_count: matchCount,
+    match_threshold: matchThreshold,
   })
 
   if (error) {
     console.error('RAG search error:', error)
     throw new Error(`Failed to search documents: ${error.message}`)
   }
+
+  console.log('[RAG] RPC returned:', data?.length || 0, 'documents')
 
   interface SearchDocument {
     id: string;
@@ -73,6 +78,11 @@ export async function searchWithContext(
   sources: { title: string; sourceType: string; symbol: string }[]
 }> {
   const results = await searchDocuments(query, options)
+
+  console.log('[RAG] searchWithContext results:', results.length)
+  if (results.length > 0) {
+    console.log('[RAG] Result symbols:', results.map(r => r.symbol).join(', '))
+  }
 
   // Build context string from results
   const contextParts: string[] = []

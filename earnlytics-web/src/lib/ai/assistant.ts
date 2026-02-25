@@ -2,6 +2,7 @@ import { openai } from './openai-client'
 import { searchWithContext, buildRAGSystemPrompt } from './rag'
 import { supabase } from '@/lib/supabase'
 import { ChatMessage, RAGSource } from '@/types/investment'
+import { Readable } from 'stream'
 
 const CHAT_MODEL = 'deepseek-chat'
 const MAX_CONTEXT_LENGTH = 4000
@@ -16,6 +17,14 @@ export interface ChatResponse {
 export interface ConversationMessage {
   role: 'user' | 'assistant' | 'system'
   content: string
+}
+
+export interface StreamCallbacks {
+  onThinking?: (thinking: string) => void
+  onContent?: (content: string, isFinal: boolean) => void
+  onSources?: (sources: Array<{ title: string; sourceType: string; symbol: string }>) => void
+  onDone?: (fullContent: string, tokensUsed: number, processingTimeMs: number) => void
+  onError?: (error: string) => void
 }
 
 /**
@@ -34,8 +43,8 @@ export async function processChatMessage(
     // Search for relevant context
     const { context, sources } = await searchWithContext(message, {
       symbol,
-      matchCount: 5,
-      matchThreshold: 0.7,
+      matchCount: 10,
+      matchThreshold: 0.3,
     })
     console.log('[Assistant] Found sources:', sources.length)
 
@@ -97,6 +106,105 @@ export async function processChatMessage(
       sources: [],
       tokensUsed: 0,
       processingTimeMs: Date.now() - startTime,
+    }
+  }
+}
+
+/**
+ * Process a user message with streaming output
+ */
+export async function processChatMessageStream(
+  message: string,
+  symbol: string | undefined,
+  conversationHistory: ConversationMessage[],
+  callbacks: StreamCallbacks
+): Promise<void> {
+  const startTime = Date.now()
+
+  try {
+    console.log('[Assistant Stream] Processing message:', message)
+
+    // Search for relevant context
+    const { context, sources } = await searchWithContext(message, {
+      symbol,
+      matchCount: 10,
+      matchThreshold: 0.3,
+    })
+    console.log('[Assistant Stream] Found sources:', sources.length)
+    if (sources.length > 0) {
+      console.log('[Assistant Stream] Source symbols:', sources.map(s => s.symbol).join(', '))
+    }
+
+    // Send sources early
+    if (callbacks.onSources) {
+      callbacks.onSources(sources)
+    }
+
+    // Build system prompt with context
+    const hasResults = sources.length > 0
+    const systemPrompt = buildRAGSystemPrompt(context, hasResults)
+
+    // Truncate context if too long
+    const truncatedContext = context.length > MAX_CONTEXT_LENGTH
+      ? context.slice(0, MAX_CONTEXT_LENGTH) + '\n... (内容已截断)'
+      : context
+
+    // Build messages array
+    const messages: ConversationMessage[] = [
+      { role: 'system', content: systemPrompt },
+      ...conversationHistory.slice(-6),
+      { role: 'user', content: message },
+    ]
+
+    console.log('[Assistant Stream] Calling DeepSeek API with streaming...')
+
+    // Call AI API with streaming
+    const stream = await openai.chat.completions.create({
+      model: CHAT_MODEL,
+      messages,
+      temperature: 0.7,
+      max_tokens: 2000,
+      stream: true,
+    })
+
+    let fullContent = ''
+    let tokensUsed = 0
+
+    // Process stream chunks
+    for await (const chunk of stream) {
+      const delta = chunk.choices[0]?.delta
+      const content = delta?.content || ''
+      
+      if (content) {
+        fullContent += content
+        if (callbacks.onContent) {
+          callbacks.onContent(content, false)
+        }
+      }
+      
+      if (chunk.usage) {
+        tokensUsed = chunk.usage.total_tokens || 0
+      }
+    }
+
+    // Send final content
+    if (callbacks.onContent) {
+      callbacks.onContent('', true)
+    }
+
+    // Done
+    if (callbacks.onDone) {
+      callbacks.onDone(fullContent, tokensUsed, Date.now() - startTime)
+    }
+
+    console.log('[Assistant Stream] Stream completed')
+
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    console.error('Chat streaming error:', errorMessage)
+
+    if (callbacks.onError) {
+      callbacks.onError(errorMessage)
     }
   }
 }
@@ -259,21 +367,21 @@ export function getSuggestedQuestions(symbol: string): string[] {
  */
 export function getQuickActions(symbol?: string): Array<{
   label: string
-  action: string
+  query: string
 }> {
   if (symbol) {
     return [
-      { label: '投资评级', action: `${symbol}的投资评级是什么？` },
-      { label: '财务分析', action: `分析${symbol}的财务状况` },
-      { label: '估值分析', action: `${symbol}现在估值贵吗？` },
-      { label: '风险评估', action: `投资${symbol}有哪些风险？` },
+      { label: '投资评级', query: `${symbol}的投资评级是什么？` },
+      { label: '财务分析', query: `分析${symbol}的财务状况` },
+      { label: '估值分析', query: `${symbol}现在估值贵吗？` },
+      { label: '风险评估', query: `投资${symbol}有哪些风险？` },
     ]
   }
 
   return [
-    { label: '市场概览', action: '今天美股科技板块表现如何？' },
-    { label: '推荐股票', action: '有什么值得关注的科技股？' },
-    { label: '投资策略', action: '现在适合投资科技股吗？' },
-    { label: '财报日历', action: '最近有哪些重要财报发布？' },
+    { label: '市场概览', query: '今天美股科技板块表现如何？' },
+    { label: '推荐股票', query: '有什么值得关注的科技股？' },
+    { label: '投资策略', query: '现在适合投资科技股吗？' },
+    { label: '财报日历', query: '最近有哪些重要财报发布？' },
   ]
 }
