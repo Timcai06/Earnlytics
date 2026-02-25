@@ -8,8 +8,8 @@ n * and creates alerts when conditions are met.
 import { config } from 'dotenv'
 import { resolve } from 'path'
 import { createClient } from '@supabase/supabase-js'
-import { evaluateRulesForSymbol } from '../src/lib/alerts/engine'
-import { sendAlertNotification } from '../src/lib/alerts/notifications'
+import { evaluateRulesForSymbol } from '../../src/lib/alerts/engine'
+import { sendAlertNotification } from '../../src/lib/alerts/notifications'
 
 // Load environment variables
 config({ path: resolve(process.cwd(), '.env.local') })

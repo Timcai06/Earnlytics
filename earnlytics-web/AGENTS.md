@@ -12,7 +12,6 @@ Next.js 16 frontend application with shadcn/ui component library.
 src/
 ├── app/              # App Router pages
 │   ├── (auth)/       # Route group: auth pages
-│   ├── (marketing)/  # Route group: landing pages
 │   ├── about/
 │   ├── calendar/
 │   ├── companies/
@@ -23,6 +22,10 @@ src/
 │   ├── layout/        # Header, Footer
 │   └── sections/      # Page sections
 └── lib/              # Utilities (cn helper)
+
+scripts/
+├── ops/              # Operational scripts invoked by npm scripts
+└── dev/              # One-off checks/debug scripts
 ```
 
 ## WHERE TO LOOK

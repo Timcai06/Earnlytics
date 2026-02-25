@@ -4,7 +4,7 @@ import { resolve } from 'path'
 config({ path: resolve(process.cwd(), '.env.local') })
 
 import { createClient } from '@supabase/supabase-js'
-import type { FMPEarningsCalendar } from '../src/types/database'
+import type { FMPIncomeStatement, FMPEarningsCalendar } from '../../src/types/database'
 
 const fmpApiKey = process.env.FMP_API_KEY
 const fmpApiUrl = process.env.FMP_API_URL || 'https://financialmodelingprep.com/api/v3'
@@ -26,10 +26,19 @@ const SYMBOLS = [
   'AAPL', 'MSFT', 'GOOGL', 'NVDA', 'META',
   'AMZN', 'TSLA', 'AMD', 'NFLX', 'CRM',
   'AVGO', 'ORCL', 'ADBE', 'IBM', 'INTC',
-  'QCOM', 'TXN', 'NOW', 'PANW', 'PLTR',
-  'SNOW', 'CRWD', 'DDOG', 'NET', 'MDB',
-  'ZS', 'OKTA', 'DOCU', 'ROKU', 'UBER'
+  'QCOM', 'TXN', 'NOW', 'PANW', 'PLTR'
 ]
+
+async function fetchIncomeStatements(symbol: string): Promise<FMPIncomeStatement[]> {
+  const url = `${fmpApiUrl}/income-statement/${symbol}?apikey=${fmpApiKey}&limit=4`
+  
+  const response = await fetch(url)
+  if (!response.ok) {
+    throw new Error(`FMP API error: ${response.status}`)
+  }
+  
+  return response.json()
+}
 
 async function fetchEarningsCalendar(from: string, to: string): Promise<FMPEarningsCalendar[]> {
   const url = `${fmpApiUrl}/earning_calendar?from=${from}&to=${to}&apikey=${fmpApiKey}`
@@ -63,7 +72,9 @@ async function upsertEarnings(
     fiscalYear: number
     fiscalQuarter: number
     reportDate: string
-    eps?: number | null
+    revenue: number
+    netIncome: number
+    eps: number
     epsEstimate?: number | null
   }
 ) {
@@ -75,10 +86,11 @@ async function upsertEarnings(
         fiscal_year: data.fiscalYear,
         fiscal_quarter: data.fiscalQuarter,
         report_date: data.reportDate,
+        revenue: data.revenue,
+        net_income: data.netIncome,
         eps: data.eps,
-        eps_estimate: data.epsEstimate,
+        eps_estimate: data.epsEstimate || null,
         is_analyzed: false,
-        data_source: 'fmp',
       },
       {
         onConflict: 'company_id,fiscal_year,fiscal_quarter',
@@ -93,83 +105,67 @@ async function upsertEarnings(
   return true
 }
 
-function parseFiscalPeriod(date: string): { year: number; quarter: number } {
-  const d = new Date(date)
-  const year = d.getFullYear()
-  const month = d.getMonth() + 1
+function parseFiscalPeriod(period: string): { year: number; quarter: number } {
+  const parts = period.split('-')
+  const year = parseInt(parts[0])
+  const month = parseInt(parts[1])
   
   let quarter: number
-  if (month >= 1 && month <= 3) quarter = 1
-  else if (month >= 4 && month <= 6) quarter = 2
-  else if (month >= 7 && month <= 9) quarter = 3
-  else quarter = 4
+  if (month >= 1 && month <= 3) quarter = 2
+  else if (month >= 4 && month <= 6) quarter = 3
+  else if (month >= 7 && month <= 9) quarter = 4
+  else quarter = 1
   
-  return { year, quarter }
+  const fiscalYear = quarter === 1 ? year + 1 : year
+  
+  return { year: fiscalYear, quarter }
 }
 
-async function fetchFutureEarnings() {
-  console.log('=== Fetching Future Earnings Calendar ===\n')
-  
-  const today = new Date()
-  const from = today.toISOString().split('T')[0]
-  
-  const futureDate = new Date(today)
-  futureDate.setMonth(futureDate.getMonth() + 3)
-  const to = futureDate.toISOString().split('T')[0]
-  
-  console.log(`Fetching earnings from ${from} to ${to}...\n`)
+async function fetchAndStoreEarnings() {
+  console.log('Starting earnings fetch...')
   
   let newEarningsCount = 0
   let errors: string[] = []
   
-  try {
-    const calendarData = await fetchEarningsCalendar(from, to)
-    
-    console.log(`Found ${calendarData.length} total earnings events\n`)
-    
-    const filteredData = calendarData.filter(e => 
-      SYMBOLS.includes(e.symbol.toUpperCase())
-    )
-    
-    console.log(`Filtered to ${filteredData.length} events for tracked companies\n`)
-    
-    for (const event of filteredData) {
-      try {
-        const symbol = event.symbol.toUpperCase()
-        const companyId = await getCompanyId(symbol)
-        
-        if (!companyId) {
-          console.log(`  Skipping: Company not found - ${symbol}`)
-          continue
-        }
-        
-        const { year, quarter } = parseFiscalPeriod(event.date)
+  for (const symbol of SYMBOLS) {
+    try {
+      console.log(`Fetching data for ${symbol}...`)
+      
+      const companyId = await getCompanyId(symbol)
+      if (!companyId) {
+        errors.push(`Company not found: ${symbol}`)
+        continue
+      }
+      
+      const incomeStatements = await fetchIncomeStatements(symbol)
+      
+      for (const statement of incomeStatements) {
+        const { year, quarter } = parseFiscalPeriod(statement.period)
         
         const success = await upsertEarnings(companyId, {
           fiscalYear: year,
           fiscalQuarter: quarter,
-          reportDate: event.date,
-          eps: event.eps,
-          epsEstimate: event.epsEstimated,
+          reportDate: statement.fillingDate,
+          revenue: statement.revenue,
+          netIncome: statement.netIncome,
+          eps: statement.eps,
         })
         
         if (success) {
           newEarningsCount++
-          console.log(`  ✓ ${symbol} - ${event.date} Q${quarter} FY${year}`)
+          console.log(`  Stored: ${symbol} FY${year} Q${quarter}`)
         }
-        
-        await new Promise(resolve => setTimeout(resolve, 100))
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : String(error)
-        console.error(`  ✗ Error processing ${event.symbol}:`, errorMessage)
-        errors.push(`${event.symbol}: ${errorMessage}`)
       }
+      
+      await new Promise(resolve => setTimeout(resolve, 200))
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error)
+      console.error(`Error processing ${symbol}:`, errorMessage)
+      errors.push(`${symbol}: ${errorMessage}`)
     }
-  } catch (error) {
-    console.error('Fatal error:', error)
   }
   
-  console.log('\n=== Summary ===')
+  console.log('\n=== Fetch Summary ===')
   console.log(`New/Updated earnings: ${newEarningsCount}`)
   console.log(`Errors: ${errors.length}`)
   
@@ -177,12 +173,14 @@ async function fetchFutureEarnings() {
     console.log('\nErrors:')
     errors.forEach(err => console.log(`  - ${err}`))
   }
+  
+  return { newEarningsCount, errors }
 }
 
-fetchFutureEarnings()
-  .then(() => {
+fetchAndStoreEarnings()
+  .then(result => {
     console.log('\nDone!')
-    process.exit(0)
+    process.exit(result.errors.length > 0 ? 1 : 0)
   })
   .catch(error => {
     console.error('Fatal error:', error)

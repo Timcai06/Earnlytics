@@ -4,8 +4,8 @@ import { resolve } from 'path'
 config({ path: resolve(process.cwd(), '.env.local') })
 
 import { createClient } from '@supabase/supabase-js'
-import { analyzeEarnings } from '../src/lib/ai'
-import type { EarningWithCompany } from '../src/types/database'
+import { analyzeEarnings } from '../../src/lib/ai'
+import type { EarningWithCompany } from '../../src/types/database'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY

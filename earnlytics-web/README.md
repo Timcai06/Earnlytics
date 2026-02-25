@@ -65,9 +65,11 @@ earnlytics-web/
 │   │   ├── icons/             # SVG图标库
 │   │   └── layout/            # Header, Footer
 │   └── lib/                   # 工具函数 (cn, ai.ts, supabase.ts)
-├── scripts/                   # 数据脚本
-│   ├── fetch-earnings.ts      # 获取财报数据
-│   └── analyze-batch.ts       # 批量AI分析
+├── scripts/
+│   ├── ops/                   # 生产/运营脚本（npm scripts）
+│   │   ├── fetch-earnings.ts  # 获取财报数据
+│   │   └── analyze-batch.ts   # 批量AI分析
+│   └── dev/                   # 一次性排查脚本（check/debug）
 └── supabase/migrations/       # 数据库Schema
 ```
 
@@ -167,7 +169,7 @@ earnlytics-web/
 |------|---------|------|
 | useSearchParams返回null | 使用动态路由 `[symbol]` | `earnings/[symbol]/page.tsx` |
 | Next.js 15中params是Promise | 使用 `React.use()` 解包 | `earnings/[symbol]/page.tsx` |
-| 脚本中的环境变量 | 使用dotenv加载 `.env.local` | `scripts/*.ts` |
+| 脚本中的环境变量 | 使用dotenv加载 `.env.local` | `scripts/ops/*.ts` |
 | API密钥泄露到git | 1) 删除文件, 2) 轮换密钥, 3) 添加到 `.gitignore` | 已修复 |
 
 ## 📝 注意事项

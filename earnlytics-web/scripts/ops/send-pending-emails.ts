@@ -6,7 +6,7 @@
 
 import { config } from 'dotenv'
 import { resolve } from 'path'
-import { processEmailQueue } from '../src/lib/alerts/notifications'
+import { processEmailQueue } from '../../src/lib/alerts/notifications'
 
 // Load environment variables
 config({ path: resolve(process.cwd(), '.env.local') })

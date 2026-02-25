@@ -4,7 +4,7 @@ import { resolve } from 'path'
 config({ path: resolve(process.cwd(), '.env.local') })
 
 import { createClient } from '@supabase/supabase-js'
-import { fetchLatestFiling } from '../src/lib/sec-edgar/fetch-document'
+import { fetchLatestFiling } from '../../src/lib/sec-edgar/fetch-document'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,

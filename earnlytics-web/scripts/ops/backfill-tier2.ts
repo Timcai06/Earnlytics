@@ -4,7 +4,7 @@ import { resolve } from 'path'
 config({ path: resolve(process.cwd(), '.env.local') })
 
 import { createClient } from '@supabase/supabase-js'
-import type { FMPIncomeStatement } from '../src/types/database'
+import type { FMPIncomeStatement } from '../../src/types/database'
 
 const fmpApiKey = process.env.FMP_API_KEY
 const fmpApiUrl = process.env.FMP_API_URL || 'https://financialmodelingprep.com/api/v3'

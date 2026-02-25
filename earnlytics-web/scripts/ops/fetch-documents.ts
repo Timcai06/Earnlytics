@@ -4,9 +4,9 @@ import { resolve } from 'path'
 config({ path: resolve(process.cwd(), '.env.local') })
 
 import { createClient } from '@supabase/supabase-js'
-import { fetchLatestFiling, parseFilingDocument } from '../src/lib/sec-edgar/fetch-document'
-import { getRecentFilings, fetchFilingDocument } from '../src/lib/sec-edgar/fetch-document'
-import { COMPANY_CIK_MAP, formatCIK } from '../src/lib/sec-edgar/cik-map'
+import { fetchLatestFiling, parseFilingDocument } from '../../src/lib/sec-edgar/fetch-document'
+import { getRecentFilings, fetchFilingDocument } from '../../src/lib/sec-edgar/fetch-document'
+import { COMPANY_CIK_MAP, formatCIK } from '../../src/lib/sec-edgar/cik-map'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY

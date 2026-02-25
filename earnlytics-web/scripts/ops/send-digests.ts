@@ -7,7 +7,7 @@
 import { config } from 'dotenv'
 import { resolve } from 'path'
 import { createClient } from '@supabase/supabase-js'
-import { sendDigestEmail } from '../src/lib/alerts/notifications'
+import { sendDigestEmail } from '../../src/lib/alerts/notifications'
 
 // Load environment variables
 config({ path: resolve(process.cwd(), '.env.local') })
