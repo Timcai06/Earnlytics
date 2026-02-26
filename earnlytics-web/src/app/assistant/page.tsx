@@ -1,5 +1,5 @@
 import { Metadata } from 'next'
-import { ChatInterface } from '@/components/investment/chat-interface'
+import { ChatInterface } from '@/components/investment/ChatInterface'
 
 export const metadata: Metadata = {
   title: 'AI 投资助手 | Earnlytics',

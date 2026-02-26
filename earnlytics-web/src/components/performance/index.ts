@@ -1,3 +1,3 @@
-export { OptimizedImage } from "./optimized-image";
-export { VirtualList } from "./virtual-list";
-export { PerformanceMonitor } from "./performance-monitor";
+export { OptimizedImage } from "./OptimizedImage";
+export { VirtualList } from "./VirtualList";
+export { PerformanceMonitor } from "./PerformanceMonitor";

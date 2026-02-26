@@ -4,7 +4,7 @@ export {
   StaggerContainer,
   StaggerItem,
   LayoutAnimation,
-} from "./page-transition";
+} from "./PageTransition";
 
 export {
   AnimatedButton,
@@ -15,4 +15,4 @@ export {
   TooltipAnimation,
   FilterChangeAnimation,
   DataUpdateAnimation,
-} from "./micro-interactions";
+} from "./MicroInteractions";

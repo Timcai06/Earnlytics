@@ -29,7 +29,9 @@ npm run dev              # 启动开发服务器 (localhost:3000)
 
 # 数据操作
 npm run fetch:earnings   # 从FMP获取最新财报
+npm run fetch:documents  # 拉取SEC文档
 npm run analyze:batch    # 生成AI分析 (每批5条)
+npm run generate:embeddings  # 生成向量嵌入
 
 # 构建与部署
 npm run build           # 生产构建
@@ -63,12 +65,16 @@ earnlytics-web/
 │   ├── components/
 │   │   ├── ui/                # shadcn/ui基础组件
 │   │   ├── icons/             # SVG图标库
-│   │   └── layout/            # Header, Footer
+│   │   ├── layout/            # Header, Footer, Sidebar
+│   │   ├── home/              # 首页/landing模块
+│   │   ├── portfolio/         # 持仓相关模块
+│   │   └── investment/        # 深度分析模块
 │   └── lib/                   # 工具函数 (cn, ai.ts, supabase.ts)
 ├── scripts/
 │   ├── ops/                   # 生产/运营脚本（npm scripts）
 │   │   ├── fetch-earnings.ts  # 获取财报数据
-│   │   └── analyze-batch.ts   # 批量AI分析
+│   │   ├── analyze-batch.ts   # 批量AI分析
+│   │   └── ...                # 其他运营脚本见 scripts/README.md
 │   └── dev/                   # 一次性排查脚本（check/debug）
 └── supabase/migrations/       # 数据库Schema
 ```
@@ -83,6 +89,20 @@ earnlytics-web/
 - ✅ GitHub Actions自动化 (每4小时)
 - ✅ SVG图标系统 (替换所有emoji)
 - ✅ 动态路由财报页面
+
+## 🧹 项目整理状态 (2026-02-26)
+
+- ✅ 首页默认入口已切换为 Landing（`/`），并支持从任意页面返回 Landing。
+- ✅ `scripts` 目录已按 `ops/` 与 `dev/` 分层，命令入口与文档已对齐。
+- ✅ `components/sections` 已拆分归位至 `home/` 与 `investment/`。
+- ✅ `components` 命名已统一为 `PascalCase`（含 `investment` / `performance` / `feedback` / `animation` / `ui`）。
+- ✅ lint 已清零错误并通过。
+
+### 可选后续整理
+
+- 路由级组件进一步下沉到 `src/app/**` 附近（减少全局组件目录噪音）。
+- `scripts/ops` 再细分为 `ingest/alerts/maintenance` 子目录。
+- README 中阶段进度与真实开发状态持续同步更新。
 
 ## 📋 执行计划概览
 

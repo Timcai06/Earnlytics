@@ -3,10 +3,10 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { AppleIcon } from "@/components/icons";
-import SubscribeForm from "@/components/sections/SubscribeForm";
-import HorizontalGlow from "@/components/ui/horizontal-glow";
+import SubscribeForm from "@/components/home/SubscribeForm";
+import HorizontalGlow from "@/components/ui/HorizontalGlow";
 import { EarningsListSkeleton } from "@/components/ui/skeleton";
-import { NoDataState } from "@/components/ui/empty-state";
+import { NoDataState } from "@/components/ui/EmptyState";
 import HeroSearch from "@/components/home/HeroSearch";
 import HeroStats from "@/components/home/HeroStats";
 import MarketTicker from "@/components/home/MarketTicker";

@@ -1,5 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react'
-import { DocumentViewer } from '@/components/investment/document-viewer'
+import { DocumentViewer } from '@/components/investment/DocumentViewer'
 import { mockSECDocument, mockAISummary } from '@/__tests__/test-utils'
 
 describe('DocumentViewer', () => {

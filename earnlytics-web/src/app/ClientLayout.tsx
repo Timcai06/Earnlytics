@@ -4,8 +4,8 @@ import { useState } from "react";
 import Header from "@/components/layout/Header";
 import RightSidebar from "@/components/layout/RightSidebar";
 import Footer from "@/components/layout/Footer";
-import { PerformanceMonitor } from "@/components/performance/performance-monitor";
-import TopLoadingBar from "@/components/ui/top-loading-bar";
+import { PerformanceMonitor } from "@/components/performance/PerformanceMonitor";
+import TopLoadingBar from "@/components/ui/TopLoadingBar";
 import { Suspense } from "react";
 
 export function ClientLayout({

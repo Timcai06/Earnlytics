@@ -4,9 +4,9 @@ import Link from "next/link";
 import { use, useEffect, useState } from "react";
 import { BotIcon, XCircleIcon, SparklesIcon, AlertTriangleIcon, ThumbsUpIcon, ThumbsDownIcon, ClockIcon, DatabaseIcon, TrendingUpIcon } from "@/components/icons";
 import { PageLoading } from "@/components/ui/spinner";
-import { EarningsTrendChart } from "@/components/sections/EarningsTrendChart";
-import { SentimentTimeline } from "@/components/sections/SentimentTimeline";
-import { SurpriseRadar } from "@/components/sections/SurpriseRadar";
+import { EarningsTrendChart } from "@/components/investment/EarningsTrendChart";
+import { SentimentTimeline } from "@/components/investment/SentimentTimeline";
+import { SurpriseRadar } from "@/components/investment/SurpriseRadar";
 
 interface EarningWithAnalysis {
   id: number;

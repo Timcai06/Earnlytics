@@ -1,2 +1,2 @@
-export { FeedbackWidget } from "./feedback-widget";
-export { NPSSurvey } from "./nps-survey";
+export { FeedbackWidget } from "./FeedbackWidget";
+export { NPSSurvey } from "./NpsSurvey";

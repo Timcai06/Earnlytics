@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react'
-import { InvestmentRatingCard } from '@/components/investment/investment-rating-card'
+import { InvestmentRatingCard } from '@/components/investment/InvestmentRatingCard'
 import { 
   mockInvestmentRating, 
   createMockInvestmentRating 

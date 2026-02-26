@@ -7,8 +7,8 @@ import type { CompanyWithEarnings } from "./page";
 import { LayoutGridIcon, ListIcon, ArrowUpDownIcon } from "@/components/icons";
 import { SearchIcon, XIcon } from "lucide-react";
 import { CompanyCardSkeleton } from "@/components/ui/skeleton";
-import { SearchEmptyState, NoDataState } from "@/components/ui/empty-state";
-import HorizontalGlow from "@/components/ui/horizontal-glow";
+import { SearchEmptyState, NoDataState } from "@/components/ui/EmptyState";
+import HorizontalGlow from "@/components/ui/HorizontalGlow";
 import CompanyListStats from "@/components/companies/CompanyListStats";
 
 /** Highlight matching prefix text in a string */

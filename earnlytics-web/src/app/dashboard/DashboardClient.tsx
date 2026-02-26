@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { TrendingUp, TrendingDown, AlertCircle, Target, Sparkles, Building2, Calendar } from "lucide-react";
 import { StatCardSkeleton, CardSkeleton } from "@/components/ui/skeleton";
-import { NoDataState } from "@/components/ui/empty-state";
+import { NoDataState } from "@/components/ui/EmptyState";
 import type { Company } from "@/types/database";
 import CompaniesList from "../companies/CompaniesList";
 import CalendarClient from "../calendar/CalendarClient";

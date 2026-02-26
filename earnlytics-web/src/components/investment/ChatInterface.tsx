@@ -5,7 +5,7 @@ import { Send, Bot, User, Loader2, Lightbulb, Sparkles } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { ScrollArea } from '@/components/ui/scroll-area'
+import { ScrollArea } from '@/components/ui/ScrollArea'
 import { RAGSource } from '@/types/investment'
 
 interface Message {

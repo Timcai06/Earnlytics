@@ -4,17 +4,17 @@ import { useRef } from "react";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { ZapIcon, BotIcon, DiamondIcon, AppleIcon, WindowIcon, SearchIcon, CpuIcon, MetaIcon } from "@/components/icons";
-import MysticalGlow from "@/components/ui/mystical-glow";
-import DataStreamBackground from "@/components/ui/data-stream-background";
-import FlipCard from "@/components/ui/flip-card";
-import ScrollIndicator from "@/components/ui/scroll-indicator";
-import FeatureCard from "@/components/ui/feature-card";
-import StepCard from "@/components/ui/step-card";
-import AccordionFAQ from "@/components/ui/accordion-faq";
-import GlowingButton from "@/components/ui/glowing-button";
-import SciFiStatCard from "@/components/ui/stat-card";
-import HeroTitle from "@/components/ui/hero-title";
-import AnalysisPreview from "@/components/ui/analysis-preview";
+import MysticalGlow from "@/components/ui/MysticalGlow";
+import DataStreamBackground from "@/components/ui/DataStreamBackground";
+import FlipCard from "@/components/ui/FlipCard";
+import ScrollIndicator from "@/components/ui/ScrollIndicator";
+import FeatureCard from "@/components/ui/FeatureCard";
+import StepCard from "@/components/ui/StepCard";
+import AccordionFAQ from "@/components/ui/AccordionFAQ";
+import GlowingButton from "@/components/ui/GlowingButton";
+import SciFiStatCard from "@/components/ui/StatCard";
+import HeroTitle from "@/components/ui/HeroTitle";
+import AnalysisPreview from "@/components/ui/AnalysisPreview";
 
 const steps = [
     { step: 1, title: "选择公司", desc: "从30+科技公司中选择感兴趣的目标" },
