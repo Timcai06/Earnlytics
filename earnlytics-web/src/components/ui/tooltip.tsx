@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { cn } from "@/lib/utils";
 
 type TooltipSide = "top" | "right" | "bottom" | "left";
@@ -29,6 +29,7 @@ export function Tooltip({
 }: TooltipProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+  const [positionStyles, setPositionStyles] = useState<React.CSSProperties>({});
   const triggerRef = useRef<HTMLDivElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -54,7 +55,7 @@ export function Tooltip({
     };
   }, []);
 
-  const getPositionStyles = (): React.CSSProperties => {
+  const calculatePositionStyles = useCallback((): React.CSSProperties => {
     if (!triggerRef.current) return {};
 
     const triggerRect = triggerRef.current.getBoundingClientRect();
@@ -109,9 +110,24 @@ export function Tooltip({
     }
 
     return { top, left };
-  };
+  }, [side, align]);
 
-  const positionStyles = getPositionStyles();
+  useEffect(() => {
+    if (!isMounted) return;
+
+    const updatePosition = () => {
+      setPositionStyles(calculatePositionStyles());
+    };
+
+    updatePosition();
+    window.addEventListener("resize", updatePosition);
+    window.addEventListener("scroll", updatePosition, true);
+
+    return () => {
+      window.removeEventListener("resize", updatePosition);
+      window.removeEventListener("scroll", updatePosition, true);
+    };
+  }, [isMounted, calculatePositionStyles]);
 
   return (
     <>

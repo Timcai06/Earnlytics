@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { fetchStockPriceFromYahoo, saveStockPrice, type StockData } from '@/lib/stock-data'
+import { fetchStockPriceFromYahoo, saveStockPrice } from '@/lib/stock-data'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -12,20 +12,35 @@ const TICKER_SYMBOLS = [
     'AAPL', 'NVDA', 'MSFT', 'TSLA', 'GOOGL', 'META', 'AMZN', 'AMD', 'INTC', 'NFLX'
 ]
 
+interface TickerPriceItem {
+    symbol: string
+    price: number
+    change: number
+    change_percent?: number
+    changePercent?: number
+    timestamp: string
+}
+
 export async function GET() {
     try {
         // 1. Fetch cached data from DB
-        const { data: cachedData, error } = await supabase
+        const { data: cachedData } = await supabase
             .from('stock_prices')
             .select('symbol, price, change, change_percent, timestamp')
             .in('symbol', TICKER_SYMBOLS)
             .order('timestamp', { ascending: false })
 
-        const priceMap = new Map<string, any>()
+        const priceMap = new Map<string, TickerPriceItem>()
         if (cachedData) {
-            cachedData.forEach(item => {
+            cachedData.forEach((item) => {
                 if (!priceMap.has(item.symbol)) {
-                    priceMap.set(item.symbol, item)
+                    priceMap.set(item.symbol, {
+                        symbol: item.symbol,
+                        price: item.price,
+                        change: item.change,
+                        change_percent: item.change_percent ?? undefined,
+                        timestamp: item.timestamp,
+                    })
                 }
             })
         }

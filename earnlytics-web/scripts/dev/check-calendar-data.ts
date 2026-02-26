@@ -14,6 +14,8 @@ if (!supabaseUrl || !supabaseKey) {
 
 const supabase = createClient(supabaseUrl, supabaseKey)
 
+type CompanyRef = { symbol?: string } | { symbol?: string }[] | null
+
 async function checkCalendarData() {
   console.log('=== Checking Calendar Data ===\n')
 
@@ -61,7 +63,10 @@ async function checkCalendarData() {
 
   console.log('\nMost recent 20 earnings:')
   recentDates.forEach(e => {
-    const company = (e.companies as any)?.symbol || 'Unknown'
+    const companies = e.companies as CompanyRef
+    const company = Array.isArray(companies)
+      ? companies[0]?.symbol || 'Unknown'
+      : companies?.symbol || 'Unknown'
     console.log(`  ${e.report_date} - ${company} Q${e.fiscal_quarter} FY${e.fiscal_year}`)
   })
 

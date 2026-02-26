@@ -1,7 +1,7 @@
 "use client";
 
-import { motion, useSpring, useTransform, useInView } from "framer-motion";
-import { useEffect, useRef, useState } from "react";
+import { motion, useSpring, useInView } from "framer-motion";
+import { useEffect, useRef } from "react";
 import { Building2Icon, BrainCircuitIcon, PieChartIcon } from "lucide-react";
 
 interface CompanyListStatsProps {

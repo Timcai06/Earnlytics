@@ -2,7 +2,6 @@ import { supabase } from '@/lib/supabase'
 import { SearchResult } from '@/types/investment'
 import { generateEmbedding } from './embeddings'
 
-const DEFAULT_MATCH_THRESHOLD = 0.7
 const DEFAULT_MATCH_COUNT = 5
 
 export interface RAGSearchOptions {

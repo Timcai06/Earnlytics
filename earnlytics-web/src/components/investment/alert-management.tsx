@@ -1,10 +1,10 @@
 'use client'
 
 import * as React from 'react'
-import { Bell, BellOff, Trash2, Plus, Settings, Mail, Smartphone } from 'lucide-react'
+import { Bell, BellOff, Trash2, Plus, Mail } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Switch } from '@/components/ui/switch'
 import { Badge } from '@/components/ui/badge'
 import { AlertRule, AlertHistory } from '@/types/investment'

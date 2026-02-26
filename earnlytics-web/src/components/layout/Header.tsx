@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { BarChart3, Menu, X, LogIn, User as UserIcon, LayoutDashboard, LogOut, Wallet, Sparkles } from "lucide-react";
-import { useEffect, useState } from "react";
+import { BarChart3, Menu, X, LogIn, User as UserIcon, Wallet, Sparkles } from "lucide-react";
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 
 interface HeaderProps {
@@ -17,18 +17,11 @@ interface User {
 }
 
 export default function Header({ onMenuToggle, isMenuOpen }: HeaderProps) {
-  const [user, setUser] = useState<User | null>(null);
-
-  useEffect(() => {
+  const [user] = useState<User | null>(() => {
+    if (typeof window === "undefined") return null;
     const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      const parsed = JSON.parse(storedUser);
-      console.log("Header: 用户已登录", parsed);
-      setUser(parsed);
-    } else {
-      console.log("Header: 用户未登录");
-    }
-  }, []);
+    return storedUser ? JSON.parse(storedUser) : null;
+  });
 
   return (
     <header className="fixed top-0 left-0 right-0 z-40 h-[87px] border-b border-border bg-background/80 backdrop-blur-md">

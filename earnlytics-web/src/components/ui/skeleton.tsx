@@ -102,6 +102,8 @@ export function CardSkeleton({ className }: { className?: string }) {
 }
 
 export function ChartSkeleton({ className }: { className?: string }) {
+  const barHeights = ["26%", "41%", "58%", "33%", "72%", "49%", "64%", "37%"];
+
   return (
     <div className={cn("rounded-xl border border-border bg-surface p-5", className)}>
       <div className="flex items-center justify-between mb-6">
@@ -116,12 +118,12 @@ export function ChartSkeleton({ className }: { className?: string }) {
       <div className="relative h-[200px] w-full">
         <Skeleton variant="rectangular" width="100%" height="100%" />
         <div className="absolute bottom-0 left-0 right-0 flex items-end justify-between px-4 pb-4 gap-2">
-          {[...Array(8)].map((_, i) => (
+          {barHeights.map((height, i) => (
             <Skeleton
               key={i}
               variant="rectangular"
               width="100%"
-              height={`${Math.random() * 60 + 20}%`}
+              height={height}
               className="rounded-t-sm"
             />
           ))}

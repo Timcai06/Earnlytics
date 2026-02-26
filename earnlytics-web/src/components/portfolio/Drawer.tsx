@@ -1,6 +1,7 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
+import Image from "next/image"
 import { motion, AnimatePresence } from "framer-motion"
 import { X, TrendingUp, TrendingDown, Calendar, Bot, ExternalLink, ChevronRight } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -95,10 +96,9 @@ interface PositionDrawerContentProps {
     lastSummary?: string
     lastSentiment?: string
   }
-  onClose: () => void
 }
 
-export function PositionDrawerContent({ position, earnings, onClose }: PositionDrawerContentProps) {
+export function PositionDrawerContent({ position, earnings }: PositionDrawerContentProps) {
   const isPositive = position.gain >= 0
 
   return (
@@ -106,7 +106,14 @@ export function PositionDrawerContent({ position, earnings, onClose }: PositionD
       <div className="flex items-center gap-4">
         <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-surface-secondary border border-white/10">
           {position.logo_url ? (
-            <img src={position.logo_url} alt={position.symbol} className="h-10 w-10 rounded" />
+            <Image
+              src={position.logo_url}
+              alt={position.symbol}
+              width={40}
+              height={40}
+              unoptimized
+              className="h-10 w-10 rounded"
+            />
           ) : (
             <span className="text-2xl font-bold text-primary">{position.symbol.charAt(0)}</span>
           )}

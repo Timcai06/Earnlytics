@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useMemo, useState, useEffect } from "react"
+import Image from "next/image"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -27,37 +28,34 @@ export function AddPositionDialog({ open, onOpenChange, onAdd, adding, className
   const [shares, setShares] = useState("")
   const [costBasis, setCostBasis] = useState("")
   const [companies, setCompanies] = useState<Company[]>([])
-  const [searchResults, setSearchResults] = useState<Company[]>([])
   const [showResults, setShowResults] = useState(false)
-  const [loadingCompanies, setLoadingCompanies] = useState(false)
+  const [isSearchFocused, setIsSearchFocused] = useState(false)
   const [error, setError] = useState("")
 
   useEffect(() => {
     if (open && companies.length === 0) {
-      setLoadingCompanies(true)
       fetch('/api/companies')
         .then(res => res.json())
         .then(data => {
           setCompanies(data.companies || [])
         })
         .catch(err => console.error('Error loading companies:', err))
-        .finally(() => setLoadingCompanies(false))
     }
   }, [open, companies.length])
 
-  useEffect(() => {
-    if (symbol.length > 0) {
-      const filtered = companies.filter(c =>
-        c.symbol.toLowerCase().includes(symbol.toLowerCase()) ||
-        c.name.toLowerCase().includes(symbol.toLowerCase())
-      )
-      setSearchResults(filtered.slice(0, 5))
-      setShowResults(true)
-    } else {
-      setSearchResults([])
-      setShowResults(false)
-    }
-  }, [symbol, companies])
+  const searchResults = useMemo(
+    () =>
+      symbol.length > 0
+        ? companies
+            .filter(
+              (c) =>
+                c.symbol.toLowerCase().includes(symbol.toLowerCase()) ||
+                c.name.toLowerCase().includes(symbol.toLowerCase())
+            )
+            .slice(0, 5)
+        : [],
+    [symbol, companies]
+  )
 
   const handleSelect = (company: Company) => {
     setSymbol(company.symbol)
@@ -127,11 +125,21 @@ export function AddPositionDialog({ open, onOpenChange, onAdd, adding, className
                   type="text"
                   placeholder="例如: AAPL"
                   value={symbol}
-                  onChange={(e) => setSymbol(e.target.value.toUpperCase())}
-                  onFocus={() => symbol && setShowResults(true)}
+                  onChange={(e) => {
+                    const value = e.target.value.toUpperCase()
+                    setSymbol(value)
+                    if (!value) setShowResults(false)
+                  }}
+                  onFocus={() => {
+                    setIsSearchFocused(true)
+                    if (symbol) setShowResults(true)
+                  }}
+                  onBlur={() => {
+                    setIsSearchFocused(false)
+                  }}
                   className="h-10 border-border bg-surface-secondary pl-10 text-white"
                 />
-                {showResults && searchResults.length > 0 && (
+                {(showResults || (isSearchFocused && symbol.length > 0)) && searchResults.length > 0 && (
                   <div className="absolute top-full left-0 right-0 z-10 mt-1 max-h-48 overflow-auto rounded-lg border border-border bg-surface-secondary shadow-lg">
                     {searchResults.map((company) => (
                       <button
@@ -141,7 +149,14 @@ export function AddPositionDialog({ open, onOpenChange, onAdd, adding, className
                         className="flex w-full items-center gap-3 px-3 py-2 text-left hover:bg-surface"
                       >
                         {company.logo_url ? (
-                          <img src={company.logo_url} alt={company.symbol} className="h-6 w-6 rounded" />
+                          <Image
+                            src={company.logo_url}
+                            alt={company.symbol}
+                            width={24}
+                            height={24}
+                            unoptimized
+                            className="h-6 w-6 rounded"
+                          />
                         ) : (
                           <div className="flex h-6 w-6 items-center justify-center rounded bg-primary/20 text-xs font-bold text-primary">
                             {company.symbol.charAt(0)}
@@ -156,9 +171,6 @@ export function AddPositionDialog({ open, onOpenChange, onAdd, adding, className
                   </div>
                 )}
               </div>
-              {loadingCompanies && (
-                <p className="text-xs text-text-tertiary">加载中...</p>
-              )}
             </div>
 
             <div className="space-y-2">

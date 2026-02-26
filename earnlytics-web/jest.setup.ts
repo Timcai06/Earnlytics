@@ -1,4 +1,5 @@
 import '@testing-library/jest-dom'
+/* eslint-disable @typescript-eslint/no-require-imports */
 
 // Polyfill Web APIs for Next.js API route tests using native Node.js fetch (Node 18+)
 // This ensures NextRequest/NextResponse work correctly in tests
@@ -9,7 +10,7 @@ if (!global.Request) {
   global.Headers = nodeFetch.Headers
 
   // Add static json method that NextResponse.json() expects
-  global.Response.json = (data: any, init?: ResponseInit) => {
+  global.Response.json = (data: unknown, init?: ResponseInit) => {
     const body = JSON.stringify(data)
     return new nodeFetch.Response(body, {
       ...init,

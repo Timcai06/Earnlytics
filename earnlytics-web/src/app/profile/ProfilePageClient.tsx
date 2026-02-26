@@ -2,7 +2,7 @@
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 interface User {
   id: number;
@@ -41,20 +41,15 @@ function ProfileCompletionRing({ percent }: { percent: number }) {
 }
 
 export default function ProfilePageClient() {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(() => {
+    if (typeof window === "undefined") return null;
+    const storedUser = localStorage.getItem("user");
+    return storedUser ? JSON.parse(storedUser) : null;
+  });
   const [activeTab, setActiveTab] = useState(0);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [editName, setEditName] = useState("");
-
-  useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      const parsed = JSON.parse(storedUser);
-      setUser(parsed);
-      setEditName(parsed.name || "");
-    }
-  }, []);
+  const [editName, setEditName] = useState(() => user?.name || "");
 
   const handleLogout = () => {
     localStorage.removeItem("user");

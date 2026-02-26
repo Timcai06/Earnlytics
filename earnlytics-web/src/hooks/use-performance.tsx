@@ -95,7 +95,7 @@ export function usePerformanceMonitoring() {
 
   const getMetrics = useCallback(() => metricsRef.current, []);
 
-  return { metrics: metricsRef.current, getMetrics };
+  return { getMetrics };
 }
 
 export function useLazyLoad<T extends HTMLElement>() {

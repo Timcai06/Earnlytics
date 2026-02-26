@@ -110,7 +110,7 @@ async function backfillTier2Earnings() {
   console.log(`Target companies: ${TIER2_SYMBOLS.join(', ')}`)
   
   let newEarningsCount = 0
-  let errors: string[] = []
+  const errors: string[] = []
   
   for (const symbol of TIER2_SYMBOLS) {
     try {

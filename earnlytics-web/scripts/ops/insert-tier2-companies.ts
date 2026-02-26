@@ -31,11 +31,11 @@ async function insertTier2Companies() {
   console.log('Inserting Tier 2 companies...\n')
   
   let insertedCount = 0
-  let errors: string[] = []
+  const errors: string[] = []
   
   for (const company of tier2Companies) {
     try {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('companies')
         .upsert(company, { onConflict: 'symbol' })
         .select()

@@ -130,6 +130,8 @@ interface AnalysisData {
   peers: PeerData[];
 }
 
+type AIInvestmentAnalysisPayload = Omit<InvestmentAnalysis, 'symbol' | 'companyId'>;
+
 /**
  * 投资分析器主类
  */
@@ -153,14 +155,14 @@ export class InvestmentAnalyzer {
       }
 
       // 获取最新估值数据
-      const { data: valuation, error: valuationError } = await supabase
+      const { data: valuation } = await supabase
         .from('company_valuation')
         .select('*')
         .eq('company_id', company.id)
         .single();
 
       // 获取最新财报
-      const { data: earnings, error: earningsError } = await supabase
+      const { data: earnings } = await supabase
         .from('earnings')
         .select('*')
         .eq('company_id', company.id)
@@ -169,13 +171,13 @@ export class InvestmentAnalyzer {
         .single();
 
       // 获取行业基准
-      const { data: benchmarks, error: benchmarkError } = await supabase
+      const { data: benchmarks } = await supabase
         .from('industry_benchmarks')
         .select('*')
         .eq('sector', company.sector);
 
       // 获取同行对比数据
-      const { data: peers, error: peersError } = await supabase
+      const { data: peers } = await supabase
         .from('peer_comparison')
         .select('*')
         .eq('company_id', company.id);
@@ -240,7 +242,7 @@ export class InvestmentAnalyzer {
   /**
    * 调用DeepSeek API进行分析
    */
-  private async callDeepSeekAPI(prompt: string): Promise<any> {
+  private async callDeepSeekAPI(prompt: string): Promise<AIInvestmentAnalysisPayload> {
     if (!DEEPSEEK_API_KEY) {
       throw new Error('DEEPSEEK_API_KEY not configured');
     }
@@ -274,7 +276,7 @@ export class InvestmentAnalyzer {
       throw new Error('Empty response from DeepSeek API');
     }
 
-    return JSON.parse(content);
+    return JSON.parse(content) as AIInvestmentAnalysisPayload;
   }
 
   /**

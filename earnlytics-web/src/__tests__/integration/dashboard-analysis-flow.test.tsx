@@ -1,4 +1,5 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+/* eslint-disable @typescript-eslint/no-require-imports */
 import { useRouter } from 'next/navigation'
 import DashboardPage from '@/app/dashboard/page'
 import AnalysisPage from '@/app/analysis/[symbol]/page'

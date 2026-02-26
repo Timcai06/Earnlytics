@@ -4,9 +4,8 @@ import { resolve } from 'path'
 config({ path: resolve(process.cwd(), '.env.local') })
 
 import { createClient } from '@supabase/supabase-js'
-import { fetchLatestFiling, parseFilingDocument } from '../../src/lib/sec-edgar/fetch-document'
-import { getRecentFilings, fetchFilingDocument } from '../../src/lib/sec-edgar/fetch-document'
-import { COMPANY_CIK_MAP, formatCIK } from '../../src/lib/sec-edgar/cik-map'
+import { fetchLatestFiling } from '../../src/lib/sec-edgar/fetch-document'
+import { COMPANY_CIK_MAP } from '../../src/lib/sec-edgar/cik-map'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -17,45 +16,8 @@ if (!supabaseUrl || !supabaseKey) {
 
 const supabase = createClient(supabaseUrl, supabaseKey)
 
-const USER_AGENT = 'Earnlytics (research@earnlytics.com)'
-const SEC_ARCHIVE_BASE = 'https://www.sec.gov/Archives/edgar/data'
-
-interface FilingDocument {
-  cik: string
-  accessionNumber: string
-  filingDate: string
-  formType: string
-  primaryDocument: string
-}
-
 async function getCIK(symbol: string): Promise<string | null> {
   return COMPANY_CIK_MAP[symbol]?.cik || null
-}
-
-async function fetchFilingContent(cik: string, accessionNumber: string, primaryDocument: string): Promise<string | null> {
-  try {
-    const cleanAccession = accessionNumber.replace(/-/g, '')
-    const url = `${SEC_ARCHIVE_BASE}/${cik}/${cleanAccession}/${primaryDocument}`
-    
-    console.log(`    Fetching: ${url}`)
-    
-    const response = await fetch(url, {
-      headers: {
-        'User-Agent': USER_AGENT,
-        'Accept': 'text/html,application/xhtml+xml',
-      },
-    })
-    
-    if (!response.ok) {
-      console.warn(`    ⚠ SEC returned ${response.status}`)
-      return null
-    }
-    
-    return await response.text()
-  } catch (error) {
-    console.error(`    ✗ Error fetching filing:`, error)
-    return null
-  }
 }
 
 async function saveDocumentToDB(
@@ -65,7 +27,7 @@ async function saveDocumentToDB(
     source: string
     documentType: string
     filingDate: string
-    content: any
+    content: unknown
     rawHtmlUrl: string
     rawText?: string
   }

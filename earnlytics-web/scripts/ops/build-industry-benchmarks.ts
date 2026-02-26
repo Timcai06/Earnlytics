@@ -30,6 +30,13 @@ if (!supabaseUrl || !supabaseKey) {
 
 const supabase = createClient(supabaseUrl, supabaseKey)
 
+interface IndustryBenchmarkRow {
+  sector: string
+  metric_name: string
+  avg_value: number
+  median_value: number
+}
+
 /**
  * 计算数组的平均值
  */
@@ -137,7 +144,7 @@ async function calculateSectorBenchmark(sectorName: string, symbols: string[]) {
 /**
  * 保存行业基准到数据库
  */
-async function saveBenchmarks(benchmarks: any[]): Promise<number> {
+async function saveBenchmarks(benchmarks: IndustryBenchmarkRow[]): Promise<number> {
   if (benchmarks.length === 0) return 0
 
   let savedCount = 0

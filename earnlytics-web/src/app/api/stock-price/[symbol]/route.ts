@@ -7,12 +7,24 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
+interface MockStockData {
+  symbol: string
+  price: number
+  change: number
+  changePercent: number
+  volume: number
+  marketCap: number
+  peRatio: number
+  high52w: number
+  low52w: number
+}
+
 /**
  * Fallback: Get mock/demo data for demonstration
  */
 function getMockStockData(symbol: string) {
   // Demo data for common stocks
-  const mockData: Record<string, any> = {
+  const mockData: Record<string, MockStockData> = {
     'PLTR': {
       symbol: 'PLTR',
       price: 79.50,

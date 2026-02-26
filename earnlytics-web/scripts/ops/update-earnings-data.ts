@@ -12,6 +12,14 @@ const supabase = createClient(
 
 const FMP_API_KEY = process.env.FMP_API_KEY
 
+interface FMPQuarterlyRecord {
+  calendarYear: string
+  period: string
+  revenue: number
+  netIncome: number
+  eps: number
+}
+
 async function fetchEarningsFromFMP(symbol: string) {
   const url = `https://financialmodelingprep.com/api/v3/income-statement/${symbol}?period=quarter&apikey=${FMP_API_KEY}`
   
@@ -20,7 +28,7 @@ async function fetchEarningsFromFMP(symbol: string) {
     throw new Error(`FMP API error: ${response.status}`)
   }
   
-  return response.json()
+  return response.json() as Promise<FMPQuarterlyRecord[]>
 }
 
 async function updateEarnings() {
@@ -49,7 +57,7 @@ async function updateEarnings() {
     const fiscalYear = earning.fiscal_year
     const fiscalQuarter = earning.fiscal_quarter
     
-    const matchingFMP = fmpData.find((fmp: any) => {
+    const matchingFMP = fmpData.find((fmp) => {
       const fmpYear = parseInt(fmp.calendarYear)
       const fmpPeriod = fmp.period
       return fmpYear === fiscalYear && fmpPeriod === `Q${fiscalQuarter}`

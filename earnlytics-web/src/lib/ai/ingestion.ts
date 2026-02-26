@@ -1,4 +1,3 @@
-import { openai } from './openai-client'
 import { supabase } from '@/lib/supabase'
 import { splitTextIntoChunks, generateEmbeddingsBatch, formatDocumentForEmbedding } from './embeddings'
 

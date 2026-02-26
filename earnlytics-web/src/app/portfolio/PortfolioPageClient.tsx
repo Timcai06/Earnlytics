@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Plus, Calendar, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -19,6 +19,8 @@ interface EarningsInfo {
   report_date: string
   days_until: number
 }
+
+const AUTO_REFRESH_INTERVAL = 5 * 60 * 1000
 
 export function PortfolioPageClient() {
   const router = useRouter()
@@ -42,8 +44,6 @@ export function PortfolioPageClient() {
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
   const [refreshing, setRefreshing] = useState(false)
 
-  const AUTO_REFRESH_INTERVAL = 5 * 60 * 1000
-
   useEffect(() => {
     const storedUser = localStorage.getItem("user")
     if (!storedUser) {
@@ -53,26 +53,7 @@ export function PortfolioPageClient() {
     setUser(JSON.parse(storedUser))
   }, [router])
 
-  useEffect(() => {
-    if (user) {
-      fetchPortfolio()
-      fetchEarnings()
-    }
-  }, [user])
-
-  useEffect(() => {
-    if (!user || positions.length === 0) return
-
-    const interval = setInterval(() => {
-      setRefreshing(true)
-      fetchPortfolio()
-      fetchEarnings()
-    }, AUTO_REFRESH_INTERVAL)
-
-    return () => clearInterval(interval)
-  }, [user, positions.length])
-
-  const fetchPortfolio = async () => {
+  const fetchPortfolio = useCallback(async () => {
     if (!user) return
 
     try {
@@ -89,9 +70,9 @@ export function PortfolioPageClient() {
       setLoading(false)
       setRefreshing(false)
     }
-  }
+  }, [user])
 
-  const fetchEarnings = async () => {
+  const fetchEarnings = useCallback(async () => {
     if (!user) return
 
     try {
@@ -113,7 +94,26 @@ export function PortfolioPageClient() {
     } catch (error) {
       console.error('Error fetching earnings:', error)
     }
-  }
+  }, [user])
+
+  useEffect(() => {
+    if (user) {
+      fetchPortfolio()
+      fetchEarnings()
+    }
+  }, [user, fetchPortfolio, fetchEarnings])
+
+  useEffect(() => {
+    if (!user || positions.length === 0) return
+
+    const interval = setInterval(() => {
+      setRefreshing(true)
+      fetchPortfolio()
+      fetchEarnings()
+    }, AUTO_REFRESH_INTERVAL)
+
+    return () => clearInterval(interval)
+  }, [user, positions.length, fetchPortfolio, fetchEarnings])
 
   const handleAddPosition = async (data: { symbol: string; shares: number; cost_basis: number }) => {
     if (!user) return
@@ -323,7 +323,6 @@ export function PortfolioPageClient() {
               nextDate: earningsData[selectedPosition.symbol].reportDate,
               daysUntil: earningsData[selectedPosition.symbol].daysUntil
             } : undefined}
-            onClose={() => setDrawerOpen(false)}
           />
         )}
       </Drawer>

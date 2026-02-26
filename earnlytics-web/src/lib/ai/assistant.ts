@@ -2,10 +2,8 @@ import { openai } from './openai-client'
 import { searchWithContext, buildRAGSystemPrompt } from './rag'
 import { supabase } from '@/lib/supabase'
 import { ChatMessage, RAGSource } from '@/types/investment'
-import { Readable } from 'stream'
 
 const CHAT_MODEL = 'deepseek-chat'
-const MAX_CONTEXT_LENGTH = 4000
 
 export interface ChatResponse {
   content: string
@@ -51,11 +49,6 @@ export async function processChatMessage(
     // Build system prompt with context
     const hasResults = sources.length > 0
     const systemPrompt = buildRAGSystemPrompt(context, hasResults)
-
-    // Truncate context if too long
-    const truncatedContext = context.length > MAX_CONTEXT_LENGTH
-      ? context.slice(0, MAX_CONTEXT_LENGTH) + '\n... (内容已截断)'
-      : context
 
     // Build messages array
     const messages: ConversationMessage[] = [
@@ -143,11 +136,6 @@ export async function processChatMessageStream(
     // Build system prompt with context
     const hasResults = sources.length > 0
     const systemPrompt = buildRAGSystemPrompt(context, hasResults)
-
-    // Truncate context if too long
-    const truncatedContext = context.length > MAX_CONTEXT_LENGTH
-      ? context.slice(0, MAX_CONTEXT_LENGTH) + '\n... (内容已截断)'
-      : context
 
     // Build messages array
     const messages: ConversationMessage[] = [

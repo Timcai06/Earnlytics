@@ -10,6 +10,11 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
+interface DocumentContent {
+  mdAndA?: string
+  guidance?: string
+}
+
 async function checkRaw() {
   const { data: doc } = await supabase
     .from('earnings_documents')
@@ -25,7 +30,7 @@ async function checkRaw() {
   console.log('Document type:', doc.document_type)
   console.log('URL:', doc.raw_html_url)
   console.log('\n=== FULL MD&A (前3000字符) ===\n')
-  const content = doc.content as any
+  const content = doc.content as DocumentContent
   console.log(content.mdAndA?.substring(0, 3000) || 'Empty')
   
   console.log('\n\n=== GUIDANCE (完整) ===\n')

@@ -292,7 +292,7 @@ export default function EarningsPageClient({ params }: Props) {
 
       <div className="bg-surface px-4 py-6 sm:px-6 lg:px-20">
         <div className="mx-auto flex max-w-6xl items-center gap-2 text-sm">
-          <Link href="/home" className="text-text-secondary">首页</Link>
+          <Link href="/" className="text-text-secondary">首页</Link>
           <span className="text-border">/</span>
           <Link href="/companies" className="text-text-secondary">公司</Link>
           <span className="text-border">/</span>

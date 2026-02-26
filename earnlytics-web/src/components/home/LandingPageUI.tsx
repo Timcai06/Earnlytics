@@ -1,8 +1,7 @@
 "use client";
 
-import Link from "next/link";
-import { useState, useRef } from "react";
-import { motion, useScroll, useTransform, useSpring } from "framer-motion";
+import { useRef } from "react";
+import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { ZapIcon, BotIcon, DiamondIcon, AppleIcon, WindowIcon, SearchIcon, CpuIcon, MetaIcon } from "@/components/icons";
 import MysticalGlow from "@/components/ui/mystical-glow";

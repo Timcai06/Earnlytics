@@ -3,7 +3,6 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import type { Company } from "@/types/database";
 import CompaniesList from "./CompaniesList";
-import { CompanyCardSkeleton } from "@/components/ui/skeleton";
 
 export const metadata: Metadata = {
   title: "公司列表 - Earnlytics | 30+科技公司财报",

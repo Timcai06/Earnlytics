@@ -2,7 +2,6 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import { cn } from "@/lib/utils";
 import { TrendingUp, FileText, BarChart3, ShieldCheck, Zap } from "lucide-react";
 
 export default function AnalysisPreview() {

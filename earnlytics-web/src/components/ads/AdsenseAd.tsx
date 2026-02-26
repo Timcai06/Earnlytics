@@ -14,15 +14,11 @@ declare global {
 
 export default function AdsenseAd({ adSlot }: AdsenseAdProps) {
   const adRef = useRef<HTMLModElement>(null);
-  const [isMounted, setIsMounted] = useState(false);
   const [hasAdLoaded, setHasAdLoaded] = useState(false);
+  const isBrowser = typeof window !== "undefined";
 
   useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (!isMounted || hasAdLoaded || !adRef.current) return;
+    if (!isBrowser || hasAdLoaded || !adRef.current) return;
 
     const checkWidth = () => {
       if (!adRef.current) return false;
@@ -35,14 +31,14 @@ export default function AdsenseAd({ adSlot }: AdsenseAdProps) {
     try {
       if (window.adsbygoogle) {
         window.adsbygoogle.push({});
-        setHasAdLoaded(true);
+        setTimeout(() => setHasAdLoaded(true), 0);
       }
     } catch (err) {
       console.error("AdSense error:", err);
     }
-  }, [isMounted, hasAdLoaded]);
+  }, [isBrowser, hasAdLoaded]);
 
-  if (!isMounted) {
+  if (!isBrowser) {
     return null;
   }
 

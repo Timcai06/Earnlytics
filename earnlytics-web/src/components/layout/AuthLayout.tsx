@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import { ZapIcon, BotIcon, DiamondIcon } from "@/components/icons";
 
 const features = [
@@ -35,12 +34,6 @@ interface AuthLayoutProps {
 }
 
 export default function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
-    const [mounted, setMounted] = useState(false);
-
-    useEffect(() => {
-        setMounted(true);
-    }, []);
-
     return (
         <div className="flex min-h-[calc(100vh-64px)] w-full">
             {/* Left Brand Panel */}
@@ -71,34 +64,24 @@ export default function AuthLayout({ children, title, subtitle }: AuthLayoutProp
                             <span className="text-xl font-bold text-white">Earnlytics</span>
                         </Link>
 
-                        <h2
-                            className={`mb-4 text-center text-3xl font-bold leading-tight text-white xl:text-4xl transition-all duration-700 ${mounted ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
-                                }`}
-                        >
+                        <h2 className="mb-4 text-center text-3xl font-bold leading-tight text-white xl:text-4xl">
                             让财报分析
                             <br />
                             <span className="bg-gradient-to-r from-primary to-info bg-clip-text text-transparent">
                                 变得简单
                             </span>
                         </h2>
-                        <p
-                            className={`mb-8 text-center text-base leading-relaxed text-text-secondary transition-all duration-700 delay-100 ${mounted ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
-                                }`}
-                        >
+                        <p className="mb-8 text-center text-base leading-relaxed text-text-secondary">
                             通过 AI 自动分析美国科技公司财报，
                             <br />
                             快速获取深度洞察与投资建议。
                         </p>
 
                         {/* Decorator Line */}
-                        <div
-                            className={`mx-auto mb-10 h-px max-w-[200px] bg-gradient-to-r from-transparent via-primary/50 to-transparent transition-all duration-700 delay-200 ${mounted ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
-                                }`}
-                        />
+                        <div className="mx-auto mb-10 h-px max-w-[200px] bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
 
                         {/* Features - 2 Column Grid */}
-                        <div className={`grid grid-cols-2 gap-4 transition-all duration-700 delay-300 ${mounted ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
-                            }`}>
+                        <div className="grid grid-cols-2 gap-4">
                             {features.map((feature, i) => (
                                 <div
                                     key={feature.title}
@@ -116,10 +99,7 @@ export default function AuthLayout({ children, title, subtitle }: AuthLayoutProp
                     </div>
 
                     {/* Bottom Stats - Centered & Prominent */}
-                    <div
-                        className={`relative z-10 flex justify-center items-center gap-12 py-6 border-t border-b border-border/50 transition-all duration-700 delay-500 ${mounted ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
-                            }`}
-                    >
+                    <div className="relative z-10 flex justify-center items-center gap-12 py-6 border-t border-b border-border/50">
                         {stats.map((stat) => (
                             <div key={stat.label} className="flex flex-col items-center">
                                 <span className="text-3xl font-bold text-primary-hover">{stat.value}</span>
@@ -132,10 +112,7 @@ export default function AuthLayout({ children, title, subtitle }: AuthLayoutProp
 
             {/* Right Form Panel */}
             <div className="flex flex-1 flex-col items-center justify-center bg-background px-6 py-12 sm:px-10">
-                <div
-                    className={`w-full max-w-[440px] transition-all duration-500 ${mounted ? "translate-y-0 opacity-100" : "translate-y-6 opacity-0"
-                        }`}
-                >
+                <div className="w-full max-w-[440px]">
                     {/* Page Title */}
                     <div className="mb-8">
                         <h1 className="mb-2 text-2xl font-bold text-white sm:text-3xl">{title}</h1>

@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabase";
 import { AppleIcon } from "@/components/icons";
 import SubscribeForm from "@/components/sections/SubscribeForm";
 import HorizontalGlow from "@/components/ui/horizontal-glow";
@@ -13,34 +12,11 @@ import HeroStats from "@/components/home/HeroStats";
 import MarketTicker from "@/components/home/MarketTicker";
 import EarningsCard from "@/components/home/EarningsCard";
 import CalendarTimeline from "@/components/home/CalendarTimeline";
-
-interface EarningsWithCompany {
-  id: number;
-  company_id: number;
-  fiscal_year: number;
-  fiscal_quarter: number;
-  report_date: string;
-  revenue: number | null;
-  eps: number | null;
-  revenue_yoy_growth: number | null;
-  eps_surprise: number | null;
-  companies: {
-    symbol: string;
-    name: string;
-  } | null;
-  ai_analyses: {
-    sentiment: 'positive' | 'neutral' | 'negative' | null;
-  } | null;
-}
-
-interface CalendarEvent {
-  id: number;
-  date: string;
-  symbol: string;
-  companyName: string;
-  fiscalYear: number;
-  fiscalQuarter: number;
-}
+import {
+  fetchHomePageData,
+  HomeCalendarEvent,
+  HomeEarningsWithCompany,
+} from "./home-data";
 
 function formatCurrency(value: number | null): string {
   if (!value) return 'N/A';
@@ -51,8 +27,8 @@ function formatCurrency(value: number | null): string {
 }
 
 export default function HomePageClient() {
-  const [latestEarnings, setLatestEarnings] = useState<EarningsWithCompany[]>([]);
-  const [upcomingEarnings, setUpcomingEarnings] = useState<CalendarEvent[]>([]);
+  const [latestEarnings, setLatestEarnings] = useState<HomeEarningsWithCompany[]>([]);
+  const [upcomingEarnings, setUpcomingEarnings] = useState<HomeCalendarEvent[]>([]);
   const [revenueHistoryMap, setRevenueHistoryMap] = useState<Record<number, number[]>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -61,113 +37,10 @@ export default function HomePageClient() {
     async function fetchData() {
       try {
         setLoading(true);
-
-        if (!supabase) {
-          setError('Database not configured');
-          setLoading(false);
-          return;
-        }
-
-        const { data: latestData, error: latestError } = await supabase
-          .from('earnings')
-          .select(`
-            id,
-            company_id,
-            fiscal_year,
-            fiscal_quarter,
-            report_date,
-            revenue,
-            eps,
-            revenue_yoy_growth,
-            eps_surprise,
-            companies (
-              symbol,
-              name
-            ),
-            ai_analyses (
-              sentiment
-            )
-          `)
-          .not('revenue', 'is', null)
-          .order('report_date', { ascending: false })
-          .limit(6);
-
-        if (latestError) throw latestError;
-
-        const today = new Date();
-        const nextWeek = new Date(today.getTime() + 14 * 24 * 60 * 60 * 1000);
-
-        const { data: upcomingData, error: upcomingError } = await supabase
-          .from('earnings')
-          .select(`
-            id,
-            report_date,
-            fiscal_year,
-            fiscal_quarter,
-            companies (
-              symbol,
-              name
-            )
-          `)
-          .gte('report_date', today.toISOString().split('T')[0])
-          .lte('report_date', nextWeek.toISOString().split('T')[0])
-          .order('report_date', { ascending: true })
-          .limit(10);
-
-        if (upcomingError) throw upcomingError;
-
-        const mappedLatest = latestData
-          ?.filter((item) => item.companies !== null && item.revenue > 0)
-          .map((item) => ({
-            id: item.id,
-            company_id: item.company_id,
-            fiscal_year: item.fiscal_year,
-            fiscal_quarter: item.fiscal_quarter,
-            report_date: item.report_date,
-            revenue: item.revenue,
-            eps: item.eps,
-            revenue_yoy_growth: item.revenue_yoy_growth,
-            eps_surprise: item.eps_surprise,
-            companies: Array.isArray(item.companies) ? item.companies[0] : item.companies,
-            ai_analyses: Array.isArray(item.ai_analyses) ? item.ai_analyses[0] : item.ai_analyses,
-          })) || [];
-
-        const companyIds = [...new Set(mappedLatest.map(e => e.company_id))];
-        const historyMap: Record<number, number[]> = {};
-        if (companyIds.length > 0) {
-          const { data: historyData } = await supabase
-            .from('earnings')
-            .select('company_id, revenue, fiscal_year, fiscal_quarter')
-            .in('company_id', companyIds)
-            .not('revenue', 'is', null)
-            .order('fiscal_year', { ascending: true })
-            .order('fiscal_quarter', { ascending: true });
-
-          if (historyData) {
-            for (const row of historyData) {
-              if (!historyMap[row.company_id]) historyMap[row.company_id] = [];
-              historyMap[row.company_id].push(row.revenue);
-            }
-          }
-        }
-        setRevenueHistoryMap(historyMap);
-
-        const mappedUpcoming = upcomingData
-          ?.filter((e) => e.companies !== null)
-          .map((e) => {
-            const company = Array.isArray(e.companies) ? e.companies[0] : e.companies;
-            return {
-              id: e.id,
-              date: e.report_date,
-              symbol: company?.symbol || '',
-              companyName: company?.name || '',
-              fiscalYear: e.fiscal_year,
-              fiscalQuarter: e.fiscal_quarter,
-            };
-          }) || [];
-
-        setLatestEarnings(mappedLatest);
-        setUpcomingEarnings(mappedUpcoming);
+        const data = await fetchHomePageData();
+        setLatestEarnings(data.latestEarnings);
+        setUpcomingEarnings(data.upcomingEarnings);
+        setRevenueHistoryMap(data.revenueHistoryMap);
       } catch (e: unknown) {
         console.error('Error fetching data:', e);
         setError('加载数据失败，请重试');

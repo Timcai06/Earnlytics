@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -230,11 +229,12 @@ async function getAnalysisData(symbol: string, earningsId?: string): Promise<Ana
     console.error(`Error fetching AI analysis for earnings ${latestEarning.id}:`, analysisError);
   }
 
-  let { data: document, error: documentError } = await supabase
+  const { data: initialDocument, error: documentError } = await supabase
     .from("earnings_documents")
     .select("content, source_url")
     .eq("earnings_id", latestEarning.id)
     .single();
+  let document = initialDocument;
 
   if (documentError && documentError.code === "PGRST116") {
     const { data: latestDoc } = await supabase

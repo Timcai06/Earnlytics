@@ -50,7 +50,7 @@ async function sendDigests(period: 'daily' | 'weekly') {
 
       // Check if it's the right time
       const now = new Date()
-      const [hours, minutes] = (pref.digest_time || '09:00:00').split(':')
+      const [hours] = (pref.digest_time || '09:00:00').split(':')
       if (now.getHours() !== parseInt(hours) || now.getMinutes() > 5) {
         continue
       }

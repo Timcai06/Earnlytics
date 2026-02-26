@@ -22,7 +22,7 @@ export function VirtualList<T>({
 
   const totalHeight = items.length * itemHeight;
 
-  const { virtualItems, startIndex, endIndex } = useCallback(() => {
+  const { virtualItems, startIndex } = useCallback(() => {
     const start = Math.floor(scrollTop / itemHeight);
     const visibleCount = Math.ceil(containerHeight / itemHeight);
     const startIdx = Math.max(0, start - overscan);

@@ -10,6 +10,13 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
+interface DocumentContent {
+  financialHighlights?: string
+  mdAndA?: string
+  riskFactors?: string[] | string
+  guidance?: string
+}
+
 async function check() {
   const { data: doc } = await supabase
     .from('earnings_documents')
@@ -22,7 +29,7 @@ async function check() {
     return
   }
 
-  const content = doc.content as any
+  const content = doc.content as DocumentContent
   
   console.log('Content keys:', Object.keys(content))
   console.log('\n=== Financial Highlights (length):', content.financialHighlights?.length || 0)

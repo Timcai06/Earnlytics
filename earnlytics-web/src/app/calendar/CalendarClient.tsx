@@ -5,11 +5,9 @@ import Link from "next/link"
 import { motion, AnimatePresence } from "framer-motion"
 import { cn } from "@/lib/utils"
 import HorizontalGlow from "@/components/ui/horizontal-glow"
-import DataStreamBackground from "@/components/ui/data-stream-background"
 import { SectionLoading } from "@/components/ui/spinner"
 import { Tooltip } from "@/components/ui/tooltip"
 import {
-  CalendarIcon,
   ListIcon,
   ChevronDown,
   ChevronLeft,
@@ -18,7 +16,6 @@ import {
   Search,
   LayoutGrid,
   Zap,
-  Bot
 } from "lucide-react"
 
 interface CalendarEvent {

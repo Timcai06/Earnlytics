@@ -1,9 +1,5 @@
 "use client";
 
-import Link from "next/link";
-import { Calendar } from "lucide-react";
-import { useState, useEffect } from "react";
-
 interface TimelineEvent {
     id: number;
     date: string;
@@ -18,11 +14,7 @@ interface CalendarTimelineProps {
 }
 
 export default function CalendarTimeline({ events }: CalendarTimelineProps) {
-    const [today, setToday] = useState<string>("");
-
-    useEffect(() => {
-        setToday(new Date().toISOString().split('T')[0]);
-    }, []);
+    const today = new Date().toISOString().split('T')[0];
 
     return (
         <div className="rounded-2xl border border-white/5 bg-surface/30 backdrop-blur-md p-6">

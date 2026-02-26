@@ -4,7 +4,6 @@ import { resolve } from 'path'
 config({ path: resolve(process.cwd(), '.env.local') })
 
 import { createClient } from '@supabase/supabase-js'
-import { randomUUID } from 'crypto'
 
 const COHERE_API_KEY = process.env.COHERE_API_KEY
 const COHERE_API_URL = 'https://api.cohere.ai/v1/embed'
@@ -12,26 +11,6 @@ const COHERE_MODEL = 'embed-english-v3.0'
 
 if (!COHERE_API_KEY) {
   throw new Error('COHERE_API_KEY environment variable not set')
-}
-
-function generateEmbedding(text: string): Promise<number[]> {
-  return fetch(COHERE_API_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${COHERE_API_KEY}`,
-    },
-    body: JSON.stringify({
-      model: COHERE_MODEL,
-      input_type: 'search_document',
-      texts: [text],
-    }),
-  }).then(res => {
-    if (!res.ok) {
-      throw new Error(`Cohere API error: ${res.status}`)
-    }
-    return res.json()
-  }).then(data => data.embeddings[0])
 }
 
 async function generateEmbeddingsBatch(texts: string[]): Promise<Array<{ embedding: number[]; tokensUsed: number }>> {

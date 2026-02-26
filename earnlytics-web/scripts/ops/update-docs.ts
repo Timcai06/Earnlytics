@@ -11,6 +11,13 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
+interface ParsedDocumentContent {
+  financialHighlights?: string
+  mdAndA?: string
+  riskFactors?: string[] | string
+  guidance?: string
+}
+
 async function updateDocuments(symbol: string) {
   console.log(`\nUpdating documents for ${symbol}...`)
 
@@ -44,7 +51,7 @@ async function updateDocuments(symbol: string) {
       continue
     }
 
-    const content = parsedDoc.content as any
+    const content = parsedDoc.content as ParsedDocumentContent
     console.log(`    Extracted:`, {
       highlights: content.financialHighlights?.length || 0,
       mdAndA: content.mdAndA?.length || 0,

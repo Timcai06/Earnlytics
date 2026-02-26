@@ -11,7 +11,6 @@ interface EarningsBadgeProps {
 
 export function EarningsBadge({ daysUntil, className }: EarningsBadgeProps) {
   const isUrgent = daysUntil <= 3
-  const isSoon = daysUntil <= 7
 
   if (daysUntil > 7) return null
 

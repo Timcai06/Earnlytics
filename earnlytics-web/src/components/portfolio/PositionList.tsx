@@ -1,6 +1,7 @@
 "use client"
 
 import { motion, type Variants } from "framer-motion"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Trash2, TrendingUp, TrendingDown, ExternalLink } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -103,9 +104,12 @@ export function PositionList({ positions, onDelete, deleting, className, onPosit
               <div className="flex items-center gap-4">
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-surface border border-white/10">
                   {position.logo_url ? (
-                    <img
+                    <Image
                       src={position.logo_url}
                       alt={position.symbol}
+                      width={32}
+                      height={32}
+                      unoptimized
                       className="h-8 w-8 rounded"
                     />
                   ) : (

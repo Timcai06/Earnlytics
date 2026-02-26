@@ -56,7 +56,6 @@ export async function fetchStockPriceFromYahoo(symbol: string): Promise<StockDat
         }
 
         const meta = result.meta
-        const timestamps = result.timestamp
         const quote = result.indicators?.quote?.[0]
 
         // Get the last valid close price

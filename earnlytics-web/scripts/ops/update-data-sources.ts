@@ -20,9 +20,6 @@ async function updateDataSources() {
   // Tier 1 companies - FMP API
   const tier1Symbols = ['AAPL', 'MSFT', 'GOOGL', 'NVDA', 'META', 'AMZN', 'TSLA', 'AMD', 'NFLX', 'CRM']
 
-  // Tier 2 companies - mostly sample data (backfilled)
-  const tier2Symbols = ['AVGO', 'ORCL', 'ADBE', 'IBM', 'INTC', 'QCOM', 'TXN', 'NOW', 'PANW', 'PLTR']
-
   // Tier 3 companies - SEC EDGAR + some sample
   const tier3Symbols = ['SNOW', 'CRWD', 'DDOG', 'NET', 'MDB', 'ZS', 'OKTA', 'DOCU', 'ROKU', 'UBER']
 

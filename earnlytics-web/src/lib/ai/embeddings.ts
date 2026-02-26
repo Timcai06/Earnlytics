@@ -1,5 +1,3 @@
-import { openai } from './openai-client'
-
 const COHERE_API_KEY = process.env.COHERE_API_KEY
 const COHERE_API_URL = 'https://api.cohere.ai/v1/embed'
 const COHERE_MODEL = 'embed-english-v3.0'

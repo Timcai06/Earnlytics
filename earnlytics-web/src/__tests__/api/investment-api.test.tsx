@@ -1,4 +1,5 @@
 import { NextRequest } from 'next/server'
+/* eslint-disable @typescript-eslint/no-require-imports */
 
 // Mock Supabase before importing routes
 jest.mock('@/lib/supabase', () => ({

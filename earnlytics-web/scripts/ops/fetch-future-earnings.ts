@@ -120,7 +120,7 @@ async function fetchFutureEarnings() {
   console.log(`Fetching earnings from ${from} to ${to}...\n`)
   
   let newEarningsCount = 0
-  let errors: string[] = []
+  const errors: string[] = []
   
   try {
     const calendarData = await fetchEarningsCalendar(from, to)

@@ -95,7 +95,7 @@ async function analyzeBatch() {
   
   let analyzedCount = 0
   let totalCost = 0
-  let errors: string[] = []
+  const errors: string[] = []
   
   for (const earning of unanalyzed) {
     try {

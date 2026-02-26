@@ -55,6 +55,10 @@ const ToastContext = createContext<ToastContextType | undefined>(undefined);
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
+  const dismiss = useCallback((id: string) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  }, []);
+
   const toast = useCallback((newToast: Omit<Toast, "id">) => {
     const id = Math.random().toString(36).substring(2, 9);
     const toastWithId: Toast = { ...newToast, id };
@@ -65,11 +69,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
         dismiss(id);
       }, newToast.duration || 5000);
     }
-  }, []);
-
-  const dismiss = useCallback((id: string) => {
-    setToasts((prev) => prev.filter((t) => t.id !== id));
-  }, []);
+  }, [dismiss]);
 
   const dismissAll = useCallback(() => {
     setToasts([]);
@@ -101,10 +101,10 @@ function ToastItem({
   const Icon = toastIcons[toast.variant || "default"];
   const [isExiting, setIsExiting] = useState(false);
 
-  const handleDismiss = () => {
+  const handleDismiss = useCallback(() => {
     setIsExiting(true);
     setTimeout(() => onDismiss(toast.id), 300);
-  };
+  }, [onDismiss, toast.id]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -114,7 +114,7 @@ function ToastItem({
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
+  }, [handleDismiss]);
 
   return (
     <div

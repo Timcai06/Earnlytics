@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -37,6 +38,7 @@ function CompanyLogo({ symbol, name, size = "md" }: CompanyLogoProps) {
     md: "w-12 h-12 text-sm",
     lg: "w-16 h-16 text-base",
   };
+  const sizePixels = { sm: 32, md: 48, lg: 64 };
 
   const firstLetter = symbol.charAt(0).toUpperCase();
 
@@ -56,9 +58,12 @@ function CompanyLogo({ symbol, name, size = "md" }: CompanyLogoProps) {
   }
 
   return (
-    <img
+    <Image
       src={clearbitUrl}
       alt={`${name || symbol} logo`}
+      width={sizePixels[size]}
+      height={sizePixels[size]}
+      unoptimized
       className={cn("rounded-xl object-contain bg-surface", sizeClasses[size])}
       onError={() => setImageError(true)}
     />

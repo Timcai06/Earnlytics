@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Bot, Database, Activity, Zap, TrendingUp, Users, Globe } from "lucide-react";
+import { Bot, Database, Users, Globe } from "lucide-react";
 
 interface StatItem {
     id: string;

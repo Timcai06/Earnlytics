@@ -19,49 +19,6 @@ const supabase = createClient(supabaseUrl, supabaseKey)
 
 const USER_AGENT = 'Earnlytics (research@earnlytics.com)'
 
-interface SECFiling {
-  accessionNumber?: string
-  filingDate?: string
-  reportDate?: string
-  acceptanceDateTime?: string
-  act?: string
-  form?: string
-  fileNumber?: string
-  filmNumber?: string
-  items?: string
-  size?: number
-  isXBRL?: number
-  isInlineXBRL?: number
-  primaryDocument?: string
-  primaryDocDescription?: string
-}
-
-interface SECCompanyFacts {
-  cik: string
-  entityName: string
-  facts: {
-    usgaap: {
-      [key: string]: {
-        label: string
-        description: string
-        units: {
-          [unit: string]: Array<{
-            start: string
-            end: string
-            val: number
-            accn: string
-            fy: number
-            fp: string
-            form: string
-            filed: string
-            frame: string
-          }>
-        }
-      }
-    }
-  }
-}
-
 interface ParsedEarnings {
   fiscalYear: number
   fiscalQuarter: number
@@ -102,29 +59,6 @@ async function fetchCompanyFilings(symbol: string): Promise<{ forms: string[]; d
     forms: recent.form || [],
     dates: recent.filingDate || [],
   }
-}
-
-async function fetchCompanyFacts(symbol: string): Promise<SECCompanyFacts | null> {
-  const cik = COMPANY_CIK_MAP[symbol]?.cik
-  if (!cik) {
-    throw new Error(`Unknown symbol: ${symbol}`)
-  }
-  
-  const url = `${SEC_EDGAR_BASE}/api/companyFacts/CIK${formatCIK(cik)}.json`
-  
-  const response = await fetch(url, {
-    headers: {
-      'User-Agent': USER_AGENT,
-      'Accept': 'application/json',
-    },
-  })
-  
-  if (!response.ok) {
-    if (response.status === 404) return null
-    throw new Error(`SEC API error: ${response.status}`)
-  }
-  
-  return response.json()
 }
 
 function parseFiscalQuarter(filingDate: string): { year: number; quarter: number } {

@@ -136,11 +136,9 @@ export function AnimatedList({
 export function AnimatedListItem({
   children,
   className = "",
-  onRemove,
 }: {
   children: ReactNode;
   className?: string;
-  onRemove?: () => void;
 }) {
   return (
     <motion.div

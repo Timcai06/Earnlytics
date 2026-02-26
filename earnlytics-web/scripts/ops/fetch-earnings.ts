@@ -4,7 +4,7 @@ import { resolve } from 'path'
 config({ path: resolve(process.cwd(), '.env.local') })
 
 import { createClient } from '@supabase/supabase-js'
-import type { FMPIncomeStatement, FMPEarningsCalendar } from '../../src/types/database'
+import type { FMPIncomeStatement } from '../../src/types/database'
 
 const fmpApiKey = process.env.FMP_API_KEY
 const fmpApiUrl = process.env.FMP_API_URL || 'https://financialmodelingprep.com/api/v3'
@@ -31,17 +31,6 @@ const SYMBOLS = [
 
 async function fetchIncomeStatements(symbol: string): Promise<FMPIncomeStatement[]> {
   const url = `${fmpApiUrl}/income-statement/${symbol}?apikey=${fmpApiKey}&limit=4`
-  
-  const response = await fetch(url)
-  if (!response.ok) {
-    throw new Error(`FMP API error: ${response.status}`)
-  }
-  
-  return response.json()
-}
-
-async function fetchEarningsCalendar(from: string, to: string): Promise<FMPEarningsCalendar[]> {
-  const url = `${fmpApiUrl}/earning_calendar?from=${from}&to=${to}&apikey=${fmpApiKey}`
   
   const response = await fetch(url)
   if (!response.ok) {
@@ -125,7 +114,7 @@ async function fetchAndStoreEarnings() {
   console.log('Starting earnings fetch...')
   
   let newEarningsCount = 0
-  let errors: string[] = []
+  const errors: string[] = []
   
   for (const symbol of SYMBOLS) {
     try {

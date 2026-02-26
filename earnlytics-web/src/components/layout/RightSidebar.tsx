@@ -15,7 +15,8 @@ export default function RightSidebar({ isOpen, onClose }: RightSidebarProps) {
   const panelRef = useRef<HTMLDivElement>(null);
 
   const navItems = [
-    { label: "首页", href: "/home", icon: Home, description: "回到主页" },
+    { label: "首页", href: "/", icon: Home, description: "返回 Landing" },
+    { label: "工作台", href: "/home", icon: LayoutDashboard, description: "金融指挥中心" },
     { label: "公司", href: "/companies", icon: Building2, description: "浏览公司列表" },
     { label: "日历", href: "/calendar", icon: Calendar, description: "财报日历" },
     { label: "仪表盘", href: "/dashboard", icon: LayoutDashboard, description: "数据概览" },

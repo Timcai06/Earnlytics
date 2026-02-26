@@ -6,6 +6,37 @@ const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
 
 const supabase = createClient(supabaseUrl, supabaseKey)
 
+interface CompanyRelation {
+  symbol: string
+  name: string
+  logo_url: string | null
+}
+
+interface AnalysisRelation {
+  summary: string | null
+  sentiment: string | null
+}
+
+interface EarningRow {
+  id: number
+  company_id: number
+  fiscal_year: number
+  fiscal_quarter: number
+  report_date: string
+  companies: CompanyRelation | CompanyRelation[] | null
+  ai_analyses?: AnalysisRelation[] | null
+}
+
+function pickCompany(companies: EarningRow["companies"]): CompanyRelation | null {
+  if (!companies) return null
+  return Array.isArray(companies) ? companies[0] ?? null : companies
+}
+
+function pickFirstAnalysis(analyses: AnalysisRelation[] | null | undefined): AnalysisRelation | null {
+  if (!analyses || analyses.length === 0) return null
+  return analyses[0]
+}
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
@@ -74,24 +105,31 @@ export async function GET(request: Request) {
       .order('report_date', { ascending: false })
       .limit(10)
 
-    const upcoming = (upcomingEarnings || []).map((e: any) => ({
-      symbol: e.companies?.symbol,
-      company_name: e.companies?.name,
-      logo_url: e.companies?.logo_url,
+    const upcoming = ((upcomingEarnings || []) as EarningRow[]).map((e) => {
+      const company = pickCompany(e.companies)
+      return {
+      symbol: company?.symbol,
+      company_name: company?.name,
+      logo_url: company?.logo_url,
       report_date: e.report_date,
       fiscal_quarter: `Q${e.fiscal_quarter} ${e.fiscal_year}`,
       days_until: Math.ceil((new Date(e.report_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
-    }))
+      }
+    })
 
-    const recent = (recentEarnings || []).map((e: any) => ({
-      symbol: e.companies?.symbol,
-      company_name: e.companies?.name,
-      logo_url: e.companies?.logo_url,
+    const recent = ((recentEarnings || []) as EarningRow[]).map((e) => {
+      const company = pickCompany(e.companies)
+      const analysis = pickFirstAnalysis(e.ai_analyses)
+      return {
+      symbol: company?.symbol,
+      company_name: company?.name,
+      logo_url: company?.logo_url,
       report_date: e.report_date,
       fiscal_quarter: `Q${e.fiscal_quarter} ${e.fiscal_year}`,
-      ai_sentiment: e.ai_analyses?.[0]?.sentiment || 'neutral',
-      ai_summary: e.ai_analyses?.[0]?.summary || ''
-    }))
+      ai_sentiment: analysis?.sentiment || 'neutral',
+      ai_summary: analysis?.summary || ''
+      }
+    })
 
     return NextResponse.json({
       upcoming,

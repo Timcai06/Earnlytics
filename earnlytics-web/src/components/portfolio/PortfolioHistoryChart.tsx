@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { motion, type Variants } from "framer-motion"
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts"
 import { TrendingUp, TrendingDown, Calendar } from "lucide-react"
@@ -48,11 +48,7 @@ export function PortfolioHistoryChart({ userId, className }: PortfolioHistoryCha
     changePct: number
   } | null>(null)
 
-  useEffect(() => {
-    fetchHistory()
-  }, [userId, range])
-
-  const fetchHistory = async () => {
+  const fetchHistory = useCallback(async () => {
     setLoading(true)
     try {
       const res = await fetch(`/api/portfolio/history?user_id=${userId}&days=${range}`)
@@ -66,7 +62,11 @@ export function PortfolioHistoryChart({ userId, className }: PortfolioHistoryCha
     } finally {
       setLoading(false)
     }
-  }
+  }, [userId, range])
+
+  useEffect(() => {
+    fetchHistory()
+  }, [fetchHistory])
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr)

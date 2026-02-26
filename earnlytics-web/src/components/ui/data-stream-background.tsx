@@ -10,6 +10,50 @@ interface DataStreamBackgroundProps {
     opacity?: number;
 }
 
+interface StreamParticle {
+    x: number;
+    y: number;
+    text: string;
+    velocity: number;
+    size: number;
+}
+
+function randomFrom<T>(items: T[]): T {
+    return items[Math.floor(Math.random() * items.length)];
+}
+
+function createParticle(x: number, width: number, height: number, symbols: string[], speed: number): StreamParticle {
+    return {
+        x,
+        y: Math.random() * height * -1,
+        text: randomFrom(symbols),
+        velocity: (Math.random() * 1.5 + 0.5) * speed,
+        size: Math.floor(Math.random() * 10) + 12,
+    };
+}
+
+function updateParticle(
+    particle: StreamParticle,
+    width: number,
+    height: number,
+    symbols: string[],
+    speed: number
+) {
+    particle.y += particle.velocity;
+    if (particle.y > height) {
+        particle.y = -20;
+        particle.x = Math.floor(Math.random() * width);
+        particle.text = randomFrom(symbols);
+        particle.velocity = (Math.random() * 1.5 + 0.5) * speed;
+    }
+}
+
+function drawParticle(ctx: CanvasRenderingContext2D, particle: StreamParticle) {
+    ctx.font = `${particle.size}px monospace`;
+    ctx.fillStyle = "#4ade80";
+    ctx.fillText(particle.text, particle.x, particle.y);
+}
+
 export default function DataStreamBackground({
     className,
     symbolCount = 30, // Number of columns
@@ -26,7 +70,7 @@ export default function DataStreamBackground({
         if (!ctx) return;
 
         let animationFrameId: number;
-        let particles: Particle[] = [];
+        let particles: StreamParticle[] = [];
 
         // Financial symbols and data to display
         const symbols = [
@@ -34,48 +78,6 @@ export default function DataStreamBackground({
             "$120.50", "+1.2%", "EPS $2.15", "REV $85B", "🟢", "▲", "▼",
             "AI", "BULL", "BEAT", "MISS", "Q1", "Q2", "Q3", "Q4"
         ];
-
-        class Particle {
-            x: number;
-            y: number;
-            text: string;
-            velocity: number;
-            size: number;
-            // opacity: number;
-
-            constructor(x: number) {
-                this.x = x;
-                this.y = Math.random() * canvas!.height * -1; // Start above canvas
-                this.text = symbols[Math.floor(Math.random() * symbols.length)];
-                this.velocity = (Math.random() * 1.5 + 0.5) * speed;
-                this.size = Math.floor(Math.random() * 10) + 12; // 12-22px
-                // this.opacity = Math.random() * 0.5 + 0.3;
-            }
-
-            update() {
-                this.y += this.velocity;
-                if (this.y > canvas!.height) {
-                    this.y = -20;
-                    this.x = Math.floor(Math.random() * canvas!.width);
-                    this.text = symbols[Math.floor(Math.random() * symbols.length)];
-                    this.velocity = (Math.random() * 1.5 + 0.5) * speed;
-                }
-            }
-
-            draw() {
-                if (!ctx) return;
-                ctx.font = `${this.size}px monospace`;
-
-                // Greenish/Cyan tint for futuristic financial look
-                // We use globalAlpha for the whole canvas, but we can also set fillStyle alpha
-                // ctx.fillStyle = `rgba(0, 255, 128, ${this.opacity})`; 
-
-                // Using a gradient or solid color based on theme would be cool, 
-                // but let's stick to a subtle text color that blends with dark mode
-                ctx.fillStyle = "#4ade80"; // tailwind green-400
-                ctx.fillText(this.text, this.x, this.y);
-            }
-        }
 
         const init = () => {
             canvas.width = window.innerWidth;
@@ -89,7 +91,7 @@ export default function DataStreamBackground({
             for (let i = 0; i < symbolCount; i++) {
                 // Distribute roughly across width
                 const x = i * columnWidth + Math.random() * columnWidth;
-                particles.push(new Particle(x));
+                particles.push(createParticle(x, canvas.width, canvas.height, symbols, speed));
             }
         };
 
@@ -98,8 +100,8 @@ export default function DataStreamBackground({
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             particles.forEach((p) => {
-                p.update();
-                p.draw();
+                updateParticle(p, canvas.width, canvas.height, symbols, speed);
+                drawParticle(ctx, p);
             });
 
             animationFrameId = requestAnimationFrame(animate);

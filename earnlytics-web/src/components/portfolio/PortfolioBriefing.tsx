@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { motion, type Variants } from "framer-motion"
 import { Bot, RefreshCw, TrendingUp, TrendingDown, AlertTriangle, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -37,11 +37,7 @@ export function PortfolioBriefing({ userId, className }: PortfolioBriefingProps)
   const [generating, setGenerating] = useState(false)
   const [briefing, setBriefing] = useState<Briefing | null>(null)
 
-  useEffect(() => {
-    fetchBriefing()
-  }, [userId])
-
-  const fetchBriefing = async () => {
+  const fetchBriefing = useCallback(async () => {
     setLoading(true)
     try {
       const res = await fetch(`/api/portfolio/briefing?user_id=${userId}`)
@@ -54,7 +50,11 @@ export function PortfolioBriefing({ userId, className }: PortfolioBriefingProps)
     } finally {
       setLoading(false)
     }
-  }
+  }, [userId])
+
+  useEffect(() => {
+    fetchBriefing()
+  }, [fetchBriefing])
 
   const generateBriefing = async () => {
     setGenerating(true)

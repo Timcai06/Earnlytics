@@ -14,7 +14,7 @@ import {
   Tooltip,
   Legend,
 } from "recharts";
-import { Target, TrendingUp } from "lucide-react";
+import { Target } from "lucide-react";
 
 type SurpriseStatus = 'beat' | 'miss' | 'meet';
 
@@ -102,7 +102,7 @@ function getStatus(surprise_pct: number | null): SurpriseStatus {
   return 'meet';
 }
 
-function normalizeValue(value: number | null, expected: number | null, metricKey: string): number {
+function normalizeValue(value: number | null, expected: number | null): number {
   if (value === null) return 0;
   if (expected === null || expected === 0) return 50;
   
@@ -168,7 +168,7 @@ export function SurpriseRadar({
       if (!config) return;
       
       const status = getStatus(value.surprise_pct);
-      const actualNormalized = normalizeValue(value.actual, value.expected, key);
+      const actualNormalized = normalizeValue(value.actual, value.expected);
       const expectedNormalized = 100;
       
       metrics.push({
@@ -256,7 +256,7 @@ export function SurpriseRadar({
               />
               <PolarAngleAxis 
                 dataKey="metric"
-                tick={({ payload, x, y, cx, cy, ...rest }) => {
+                tick={({ payload, x, y, cx, cy }) => {
                   const config = metricConfig[payload.value as keyof typeof metricConfig];
                   return (
                     <text

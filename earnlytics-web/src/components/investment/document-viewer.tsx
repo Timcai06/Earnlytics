@@ -1,7 +1,6 @@
 "use client";
 
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { FileText, Sparkles, AlertCircle, Loader2, ExternalLink } from "lucide-react";

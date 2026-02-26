@@ -98,8 +98,6 @@ export function ChatInterface({
     setInput('')
     setIsLoading(true)
 
-    let conversationCreated = false
-
     try {
       const response = await fetch('/api/assistant/chat', {
         method: 'POST',
@@ -142,7 +140,6 @@ export function ChatInterface({
             const data = JSON.parse(line.slice(6))
 
             if (data.type === 'conversation') {
-              conversationCreated = true
               setConversationId(data.id)
             } else if (data.type === 'sources') {
               currentSources = data.sources || []

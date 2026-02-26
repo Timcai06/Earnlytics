@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 
 interface LiveRegionProps {
   message: string;
@@ -8,17 +8,8 @@ interface LiveRegionProps {
   clearAfter?: number;
 }
 
-export function useLiveRegion({ message, priority = "polite", clearAfter = 3000 }: LiveRegionProps) {
-  const [announcement, setAnnouncement] = useState(message);
-
-  useEffect(() => {
-    setAnnouncement(message);
-    const timer = setTimeout(() => {
-      setAnnouncement("");
-    }, clearAfter);
-
-    return () => clearTimeout(timer);
-  }, [message, clearAfter]);
+export function useLiveRegion({ message, priority = "polite" }: LiveRegionProps) {
+  const announcement = message;
 
   return {
     liveRegionProps: {
@@ -47,10 +38,6 @@ export function useAriaDescribedBy(...ids: (string | undefined)[]): string {
 
 export function VisuallyHidden({ children }: { children: React.ReactNode }) {
   return <span className="sr-only">{children}</span>;
-}
-
-export function DecorativeImage({ alt = "", ...props }: React.ImgHTMLAttributes<HTMLImageElement>) {
-  return <img alt={alt} aria-hidden="true" {...props} />;
 }
 
 export function AriaLabelledBy({ id, children }: { id: string; children: React.ReactNode }) {

@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase'
-import { AlertRule, AlertHistory, AlertConditions } from '@/types/investment'
+import { AlertRule, AlertConditions } from '@/types/investment'
 
 export interface RuleEvaluationResult {
   triggered: boolean
