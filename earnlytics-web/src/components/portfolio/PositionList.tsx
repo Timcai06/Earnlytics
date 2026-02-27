@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Trash2, TrendingUp, TrendingDown, ExternalLink } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { PortfolioPosition } from "@/lib/supabase"
+import { shouldBypassNextImageOptimization } from "@/lib/image-optimization"
 import { Sparkline } from "./Sparkline"
 import { EarningsBadge } from "./EarningsBadge"
 
@@ -109,7 +110,7 @@ export function PositionList({ positions, onDelete, deleting, className, onPosit
                       alt={position.symbol}
                       width={32}
                       height={32}
-                      unoptimized
+                      unoptimized={shouldBypassNextImageOptimization(position.logo_url)}
                       className="h-8 w-8 rounded"
                     />
                   ) : (

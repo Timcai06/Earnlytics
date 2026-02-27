@@ -5,6 +5,7 @@ import Image from "next/image"
 import { motion, AnimatePresence } from "framer-motion"
 import { X, TrendingUp, TrendingDown, Calendar, Bot, ExternalLink, ChevronRight } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { shouldBypassNextImageOptimization } from "@/lib/image-optimization"
 import { Button } from "@/components/ui/button"
 
 interface DrawerProps {
@@ -111,7 +112,7 @@ export function PositionDrawerContent({ position, earnings }: PositionDrawerCont
               alt={position.symbol}
               width={40}
               height={40}
-              unoptimized
+              unoptimized={shouldBypassNextImageOptimization(position.logo_url)}
               className="h-10 w-10 rounded"
             />
           ) : (

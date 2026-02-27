@@ -1,5 +1,6 @@
 "use client";
 
+import { memo, useMemo } from "react";
 import Link from "next/link";
 import { ArrowUpRight, ArrowDownRight } from "lucide-react";
 
@@ -42,7 +43,7 @@ function generateSparklinePath(data: number[], width: number, height: number): s
     return path;
 }
 
-export default function EarningsCard({
+function EarningsCard({
     companyName,
     ticker,
     quarter,
@@ -58,13 +59,18 @@ export default function EarningsCard({
     const isPositiveGrowth = (revenueGrowth || 0) > 0;
     const isPositiveSurprise = (epsSurprise || 0) > 0;
 
-    const sparklinePath = revenueHistory && revenueHistory.length >= 2
-        ? generateSparklinePath(revenueHistory, 60, 20)
-        : "";
+    const sparklinePath = useMemo(
+        () =>
+            revenueHistory && revenueHistory.length >= 2
+                ? generateSparklinePath(revenueHistory, 60, 20)
+                : "",
+        [revenueHistory]
+    );
 
     return (
         <Link
             href={`/earnings/${ticker.toLowerCase()}`}
+            prefetch={false}
             className="group relative overflow-hidden rounded-2xl border border-white/5 bg-surface/50 p-5 backdrop-blur-md transition-all duration-300 hover:border-primary/30 hover:bg-surface/80 hover:shadow-xl hover:shadow-primary/5 hover:-translate-y-1"
         >
             {/* Background Glow */}
@@ -135,3 +141,20 @@ export default function EarningsCard({
         </Link>
     );
 }
+
+function areEqual(prev: EarningsCardProps, next: EarningsCardProps) {
+    return (
+        prev.companyName === next.companyName &&
+        prev.ticker === next.ticker &&
+        prev.quarter === next.quarter &&
+        prev.fiscalYear === next.fiscalYear &&
+        prev.reportDate === next.reportDate &&
+        prev.revenue === next.revenue &&
+        prev.revenueGrowth === next.revenueGrowth &&
+        prev.eps === next.eps &&
+        prev.epsSurprise === next.epsSurprise &&
+        prev.revenueHistory === next.revenueHistory
+    );
+}
+
+export default memo(EarningsCard, areEqual);

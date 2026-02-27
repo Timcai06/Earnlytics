@@ -1,7 +1,7 @@
 # AGENTS.md - AI 助手操作手册
 
 **版本:** 2.0  
-**更新日期:** 2026-02-18  
+**更新日期:** 2026-02-27  
 **适用对象:** AI 编程助手 (Claude, Cursor, Kimi, etc.)  
 **必读要求:** 每次会话开始前必须完整阅读本文档
 
@@ -66,6 +66,11 @@
 4. 设计在 FRONTEND_GUIDELINES.md 中有规范
 5. 数据结构在 BACKEND_STRUCTURE.md 中有定义
 
+**文档源规则 (2026-02-27 起):**
+- `for_AGENTS/` 下文档是唯一事实来源 (source of truth)。
+- 根目录历史文档 `earnlytics-web-architecture.md` 已下线，不再作为参考依据。
+- 涉及性能改造时，必须同步更新 `progress.txt` 与相关规范文档。
+
 ### 3.2 代码提交规范
 **每次完成一个功能后，必须：**
 1. 更新 `progress.txt` 文件
@@ -96,13 +101,13 @@
 ```yaml
 Next.js: 16.1.6
 React: 19.2.3
-TypeScript: 5.7.3
+TypeScript: ^5
 Node.js: 20.x+
 ```
 
 ### 4.2 样式系统
 ```yaml
-Tailwind CSS: 4.0.0
+Tailwind CSS: ^4
 shadcn/ui: latest
 class-variance-authority: latest
 clsx: latest
@@ -111,14 +116,14 @@ tailwind-merge: latest
 
 ### 4.3 UI 组件
 ```yaml
-Lucide React: 0.475.0
-Framer Motion: 12.4.0
-Recharts: 2.15.0
+Lucide React: ^0.563.0
+Framer Motion: ^12.34.0
+Recharts: ^2.15.1
 ```
 
 ### 4.4 后端服务
 ```yaml
-Supabase (PostgreSQL): @supabase/supabase-js ^2.48.0
+Supabase (PostgreSQL): @supabase/supabase-js ^2.95.3
 DeepSeek API: deepseek-chat (DeepSeek-V3)
 FMP API: financialmodelingprep.com
 ```
@@ -563,6 +568,7 @@ PGRST116 - 记录不存在 (返回 404)
 3. **检查代码** - 对照本规范检查是否违反规则
 4. **修复问题** - 应用修复
 5. **验证修复** - 重新构建和测试
+6. **处理重命名缓存问题** - 若重命名后报旧路径，执行 `rm -rf .next` 并重启 dev，必要时重启 TS Server
 
 ---
 

@@ -55,7 +55,9 @@ export default function MarketTicker() {
     const [tickerData, setTickerData] = useState<TickerItem[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [setWidth, setSetWidth] = useState(0);
+    const [isAnimating, setIsAnimating] = useState(true);
     const measureRef = useRef<HTMLDivElement>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         async function fetchTickerData() {
@@ -95,6 +97,36 @@ export default function MarketTicker() {
         return () => observer.disconnect();
     }, [tickerData, isLoading]);
 
+    useEffect(() => {
+        if (!containerRef.current) return;
+
+        const node = containerRef.current;
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                const canAnimate = entry.isIntersecting && !document.hidden;
+                setIsAnimating(canAnimate);
+            },
+            { threshold: 0.1 }
+        );
+        observer.observe(node);
+
+        const handleVisibilityChange = () => {
+            if (document.hidden) {
+                setIsAnimating(false);
+                return;
+            }
+            const rect = node.getBoundingClientRect();
+            const inViewport = rect.bottom > 0 && rect.top < window.innerHeight;
+            setIsAnimating(inViewport);
+        };
+
+        document.addEventListener("visibilitychange", handleVisibilityChange);
+        return () => {
+            observer.disconnect();
+            document.removeEventListener("visibilitychange", handleVisibilityChange);
+        };
+    }, []);
+
     const mergedData = FALLBACK_TICKER.map(fallbackItem => {
         const apiItem = tickerData.find(item => item.symbol === fallbackItem.symbol);
         // Use API item if it exists and has valid-looking data (non-zero price and change)
@@ -115,13 +147,13 @@ export default function MarketTicker() {
     const duration = setWidth > 0 ? setWidth / speed : 60;
 
     return (
-        <div className="w-full overflow-hidden border-b border-white/5 bg-background/50 backdrop-blur-sm">
+        <div ref={containerRef} className="w-full overflow-hidden border-b border-white/5 bg-background/50 backdrop-blur-sm">
             <div className="relative flex py-3">
                 <div
                     className="flex animate-marquee"
                     style={{
                         animationDuration: `${duration}s`,
-                        animationPlayState: setWidth > 0 ? "running" : "paused",
+                        animationPlayState: setWidth > 0 && isAnimating ? "running" : "paused",
                     }}
                 >
                     <div ref={measureRef} className="flex shrink-0">

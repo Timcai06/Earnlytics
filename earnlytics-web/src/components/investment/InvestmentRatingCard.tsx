@@ -63,7 +63,6 @@ function CompanyLogo({ symbol, name, size = "md" }: CompanyLogoProps) {
       alt={`${name || symbol} logo`}
       width={sizePixels[size]}
       height={sizePixels[size]}
-      unoptimized
       className={cn("rounded-xl object-contain bg-surface", sizeClasses[size])}
       onError={() => setImageError(true)}
     />

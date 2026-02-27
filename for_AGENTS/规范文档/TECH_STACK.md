@@ -1,7 +1,7 @@
 # 技术栈文档 (TECH STACK)
 
 **文档版本:** 2.0  
-**更新日期:** 2026-02-18  
+**更新日期:** 2026-02-27  
 **适用范围:** Earnlytics 全栈技术架构  
 **状态:** LOCKED - 未经许可不得更改
 
@@ -42,23 +42,23 @@ Data: Financial Modeling Prep (FMP) API
 |------|---------|------|----------|
 | **Next.js** | 16.1.6 | React 框架，App Router | ❌ 不允许 |
 | **React** | 19.2.3 | UI 库 | ❌ 不允许 |
-| **TypeScript** | 5.7.3 | 类型系统 | ❌ 不允许 |
+| **TypeScript** | ^5 | 类型系统 | ❌ 不允许 |
 
 **版本选择理由:**
 - Next.js 16 提供 App Router 和 Server Components，性能最优
 - React 19 带来更好的并发特性和自动记忆化
-- TypeScript 5.7 提供最新的类型推断能力
+- TypeScript 5.x 提供稳定的类型推断能力
 
 ### 2.2 样式解决方案
 
 | 技术 | 锁定版本 | 用途 |
 |------|---------|------|
-| **Tailwind CSS** | 4.0.0 | 原子化 CSS 框架 |
+| **Tailwind CSS** | ^4 | 原子化 CSS 框架 |
 | **PostCSS** | 8.5.0 | CSS 处理 |
 | **Autoprefixer** | 10.4.20 | 浏览器前缀自动添加 |
 | **class-variance-authority** | 0.7.1 | 组件变体管理 |
 | **clsx** | 2.1.1 | 条件类名合并 |
-| **tailwind-merge** | 3.0.0 | Tailwind 类名去重合并 |
+| **tailwind-merge** | ^3.4.0 | Tailwind 类名去重合并 |
 
 **Tailwind 配置 (tailwind.config.ts):**
 ```typescript
@@ -100,7 +100,7 @@ const config = {
 |------|---------|------|
 | **shadcn/ui** | latest (通过 CLI 安装) | 基础 UI 组件库 |
 | **@radix-ui/react-* | latest | 无头 UI 原语 |
-| **Lucide React** | 0.475.0 | 图标库 |
+| **Lucide React** | ^0.563.0 | 图标库 |
 
 **已安装的 shadcn/ui 组件:**
 - button, card, input, label
@@ -113,8 +113,9 @@ const config = {
 
 | 技术 | 锁定版本 | 用途 |
 |------|---------|------|
-| **Framer Motion** | 12.4.0 | React 动画库 |
-| **Recharts** | 2.15.0 | 图表库 |
+| **Framer Motion** | ^12.34.0 | React 动画库 |
+| **Recharts** | ^2.15.1 | 图表库 |
+| **next/web-vitals** | Next.js 内置 | 前端性能指标上报 |
 
 **Framer Motion 使用场景:**
 - 页面过渡动画
@@ -126,6 +127,13 @@ const config = {
 - 估值历史图表
 - 同行对比图表
 - 财务指标趋势图
+
+### 2.7 性能基建约定
+
+- 首页数据优先使用 Server Component + 缓存。
+- 客户端按需加载：`next/dynamic` + 可见区挂载。
+- API 支持条件请求：`ETag` / `304 Not Modified`。
+- Web Vitals 统一通过 `/api/web-vitals` 汇总观察。
 
 ### 2.5 表单和验证
 
@@ -173,7 +181,7 @@ const config = {
 | 技术 | 版本/计划 | 用途 |
 |------|----------|------|
 | **PostgreSQL** | 15.x | 关系型数据库 |
-| **Supabase JS Client** | 2.48.0 | 数据库客户端 |
+| **Supabase JS Client** | ^2.95.3 | 数据库客户端 |
 | **Supabase Plan** | Free Tier | 托管服务 |
 
 **Supabase 配置:**
@@ -237,7 +245,7 @@ const FMP_BASE_URL = "https://financialmodelingprep.com/api/v3"
 | 工具 | 锁定版本 | 配置位置 |
 |------|---------|----------|
 | **ESLint** | 9.x | eslint.config.ts |
-| **TypeScript** | 5.7.3 | tsconfig.json |
+| **TypeScript** | ^5 | tsconfig.json |
 
 **ESLint 规则:**
 - 使用 Next.js 推荐配置
@@ -248,8 +256,8 @@ const FMP_BASE_URL = "https://financialmodelingprep.com/api/v3"
 
 | 工具 | 锁定版本 | 用途 |
 |------|---------|------|
-| **Jest** | 29.7.0 | 单元测试框架 |
-| **React Testing Library** | 16.2.0 | React 组件测试 |
+| **Jest** | ^30.2.0 | 单元测试框架 |
+| **React Testing Library** | ^16.3.2 | React 组件测试 |
 | **node-fetch** | 2.7.0 | Node.js fetch polyfill (测试用) |
 
 **Jest 配置:**
@@ -268,8 +276,8 @@ export default {
 
 | 工具 | 锁定版本 | 用途 |
 |------|---------|------|
-| **tsx** | 4.19.0 | TypeScript 脚本执行 |
-| **dotenv** | 16.4.0 | 环境变量加载 |
+| **tsx** | ^4.21.0 | TypeScript 脚本执行 |
+| **dotenv** | ^17.2.4 | 环境变量加载 |
 
 ---
 
@@ -333,17 +341,16 @@ npm install package-name@1.2.3
 {
   "dependencies": {
     "next": "16.1.6",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "@supabase/supabase-js": "^2.48.0",
-    "framer-motion": "^12.4.0",
-    "recharts": "^2.15.0",
-    "lucide-react": "^0.475.0",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "@supabase/supabase-js": "^2.95.3",
+    "framer-motion": "^12.34.0",
+    "recharts": "^2.15.1",
+    "lucide-react": "^0.563.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "tailwind-merge": "^3.0.0",
-    "zod": "^3.24.0",
-    "react-hook-form": "^7.54.0"
+    "tailwind-merge": "^3.4.0",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@types/node": "^20",
@@ -351,8 +358,8 @@ npm install package-name@1.2.3
     "@types/react-dom": "^19",
     "typescript": "^5",
     "eslint": "^9",
-    "jest": "^29.7.0",
-    "tsx": "^4.19.0"
+    "jest": "^30.2.0",
+    "tsx": "^4.21.0"
   }
 }
 ```
@@ -503,6 +510,7 @@ FMP API → GitHub Actions → Supabase → Next.js → 用户
 |------|------|----------|
 | 1.0 | 2026-02-17 | 初始版本 |
 | 2.0 | 2026-02-18 | 锁定确切版本号，添加架构图 |
+| 2.1 | 2026-02-26 | 同步当前依赖版本并校正文档示例 |
 
 ---
 

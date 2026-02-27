@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { X, Plus, Search, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { shouldBypassNextImageOptimization } from "@/lib/image-optimization"
 
 interface Company {
   symbol: string
@@ -154,7 +155,7 @@ export function AddPositionDialog({ open, onOpenChange, onAdd, adding, className
                             alt={company.symbol}
                             width={24}
                             height={24}
-                            unoptimized
+                            unoptimized={shouldBypassNextImageOptimization(company.logo_url)}
                             className="h-6 w-6 rounded"
                           />
                         ) : (

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { createHash } from 'node:crypto'
 import { fetchStockPriceFromYahoo, saveStockPrice } from '@/lib/stock-data'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
@@ -21,8 +22,55 @@ interface TickerPriceItem {
     timestamp: string
 }
 
-export async function GET() {
+interface CachedTickerResponse {
+    expiresAt: number
+    payload: string
+    etag: string
+}
+
+const CACHE_CONTROL = 'public, max-age=30, s-maxage=300, stale-while-revalidate=600'
+const MEMORY_TTL_MS = 30 * 1000
+let cachedResponse: CachedTickerResponse | null = null
+
+function buildEtag(payload: string) {
+    const digest = createHash('sha1').update(payload).digest('base64url')
+    return `W/"${digest}"`
+}
+
+function buildHeaders(etag: string): HeadersInit {
+    return {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Cache-Control': CACHE_CONTROL,
+        ETag: etag,
+    }
+}
+
+function etagMatches(ifNoneMatch: string | null, etag: string) {
+    if (!ifNoneMatch) return false
+    return ifNoneMatch
+        .split(',')
+        .map((value) => value.trim())
+        .some((value) => value === etag || value === '*')
+}
+
+export async function GET(request: Request) {
     try {
+        const ifNoneMatch = request.headers.get('if-none-match')
+        const now = Date.now()
+
+        if (cachedResponse && cachedResponse.expiresAt > now) {
+            if (etagMatches(ifNoneMatch, cachedResponse.etag)) {
+                return new NextResponse(null, {
+                    status: 304,
+                    headers: buildHeaders(cachedResponse.etag),
+                })
+            }
+            return new NextResponse(cachedResponse.payload, {
+                status: 200,
+                headers: buildHeaders(cachedResponse.etag),
+            })
+        }
+
         // 1. Fetch cached data from DB
         const { data: cachedData } = await supabase
             .from('stock_prices')
@@ -46,12 +94,12 @@ export async function GET() {
         }
 
         // 2. Identify missing or stale symbols (older than 15 minutes)
-        const now = new Date().getTime()
+        const currentTime = new Date().getTime()
         const missingSymbols = TICKER_SYMBOLS.filter(symbol => {
             const item = priceMap.get(symbol)
             if (!item) return true
             const lastUpdate = new Date(item.timestamp).getTime()
-            const isStale = (now - lastUpdate) > 15 * 60 * 1000 // 15 minutes
+            const isStale = (currentTime - lastUpdate) > 15 * 60 * 1000 // 15 minutes
             const hasNoChangeData = item.change_percent === 0 && item.change === 0
             return isStale || hasNoChangeData
         })
@@ -96,10 +144,24 @@ export async function GET() {
             }
         }).filter(Boolean)
 
-        return NextResponse.json(results, {
-            headers: {
-                'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
-            },
+        const payload = JSON.stringify(results)
+        const etag = buildEtag(payload)
+        cachedResponse = {
+            payload,
+            etag,
+            expiresAt: Date.now() + MEMORY_TTL_MS,
+        }
+
+        if (etagMatches(ifNoneMatch, etag)) {
+            return new NextResponse(null, {
+                status: 304,
+                headers: buildHeaders(etag),
+            })
+        }
+
+        return new NextResponse(payload, {
+            status: 200,
+            headers: buildHeaders(etag),
         })
     } catch (error) {
         console.error('Error in market-ticker API:', error)

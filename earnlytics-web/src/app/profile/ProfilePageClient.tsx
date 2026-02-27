@@ -2,12 +2,31 @@
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
+import { useMemo, useState, useSyncExternalStore } from "react";
 
 interface User {
   id: number;
   name: string;
   email: string;
+}
+
+function subscribeUserStore(onStoreChange: () => void) {
+  if (typeof window === "undefined") return () => {};
+  const handleStorage = (event: StorageEvent) => {
+    if (!event.key || event.key === "user") onStoreChange();
+  };
+  const handleCustom = () => onStoreChange();
+  window.addEventListener("storage", handleStorage);
+  window.addEventListener("user-storage-change", handleCustom);
+  return () => {
+    window.removeEventListener("storage", handleStorage);
+    window.removeEventListener("user-storage-change", handleCustom);
+  };
+}
+
+function readStoredUserRaw() {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem("user");
 }
 
 function ProfileCompletionRing({ percent }: { percent: number }) {
@@ -41,15 +60,20 @@ function ProfileCompletionRing({ percent }: { percent: number }) {
 }
 
 export default function ProfilePageClient() {
-  const [user, setUser] = useState<User | null>(() => {
-    if (typeof window === "undefined") return null;
-    const storedUser = localStorage.getItem("user");
-    return storedUser ? JSON.parse(storedUser) : null;
-  });
+  const userRaw = useSyncExternalStore(subscribeUserStore, readStoredUserRaw, () => null);
+  const user = useMemo<User | null>(() => {
+    if (!userRaw) return null;
+    try {
+      return JSON.parse(userRaw) as User;
+    } catch {
+      return null;
+    }
+  }, [userRaw]);
   const [activeTab, setActiveTab] = useState(0);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [editName, setEditName] = useState(() => user?.name || "");
+  const [editNameDraft, setEditNameDraft] = useState<string | null>(null);
+  const editName = editNameDraft ?? user?.name ?? "";
 
   const handleLogout = () => {
     localStorage.removeItem("user");
@@ -61,8 +85,9 @@ export default function ProfilePageClient() {
     await new Promise((r) => setTimeout(r, 800));
     if (user) {
       const updated = { ...user, name: editName };
-      setUser(updated);
       localStorage.setItem("user", JSON.stringify(updated));
+      window.dispatchEvent(new Event("user-storage-change"));
+      setEditNameDraft(null);
     }
     setSaving(false);
     setSaved(true);
@@ -159,7 +184,7 @@ export default function ProfilePageClient() {
                         id="name"
                         type="text"
                         value={editName}
-                        onChange={(e) => setEditName(e.target.value)}
+                        onChange={(e) => setEditNameDraft(e.target.value)}
                         className="h-12 border-border bg-surface-secondary px-4 text-white"
                       />
                     </div>
@@ -171,7 +196,8 @@ export default function ProfilePageClient() {
                         <Input
                           id="email"
                           type="email"
-                          defaultValue={user?.email || ""}
+                          value={user?.email || ""}
+                          readOnly
                           disabled
                           className="h-12 border-border bg-surface-secondary/50 px-4 text-text-tertiary"
                         />

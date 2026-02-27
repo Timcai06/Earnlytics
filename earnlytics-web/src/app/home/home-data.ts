@@ -39,53 +39,57 @@ export async function fetchHomePageData(): Promise<HomePageDataResult> {
     throw new Error("Database not configured");
   }
 
-  const { data: latestData, error: latestError } = await supabase
-    .from("earnings")
-    .select(`
-      id,
-      company_id,
-      fiscal_year,
-      fiscal_quarter,
-      report_date,
-      revenue,
-      eps,
-      revenue_yoy_growth,
-      eps_surprise,
-      companies (
-        symbol,
-        name
-      ),
-      ai_analyses (
-        sentiment
-      )
-    `)
-    .not("revenue", "is", null)
-    .order("report_date", { ascending: false })
-    .limit(6);
+  const today = new Date();
+  const nextWeek = new Date(today.getTime() + 14 * 24 * 60 * 60 * 1000);
+
+  const [latestResult, upcomingResult] = await Promise.all([
+    supabase
+      .from("earnings")
+      .select(`
+        id,
+        company_id,
+        fiscal_year,
+        fiscal_quarter,
+        report_date,
+        revenue,
+        eps,
+        revenue_yoy_growth,
+        eps_surprise,
+        companies (
+          symbol,
+          name
+        ),
+        ai_analyses (
+          sentiment
+        )
+      `)
+      .not("revenue", "is", null)
+      .order("report_date", { ascending: false })
+      .limit(6),
+    supabase
+      .from("earnings")
+      .select(`
+        id,
+        report_date,
+        fiscal_year,
+        fiscal_quarter,
+        companies (
+          symbol,
+          name
+        )
+      `)
+      .gte("report_date", today.toISOString().split("T")[0])
+      .lte("report_date", nextWeek.toISOString().split("T")[0])
+      .order("report_date", { ascending: true })
+      .limit(10),
+  ]);
+
+  const { data: latestData, error: latestError } = latestResult;
+  const { data: upcomingData, error: upcomingError } = upcomingResult;
 
   if (latestError) {
     throw latestError;
   }
-
-  const today = new Date();
-  const nextWeek = new Date(today.getTime() + 14 * 24 * 60 * 60 * 1000);
-
-  const { data: upcomingData, error: upcomingError } = await supabase
-    .from("earnings")
-    .select(`
-      id,
-      report_date,
-      fiscal_year,
-      fiscal_quarter,
-      companies (
-        symbol,
-        name
-      )
-    `)
-    .gte("report_date", today.toISOString().split("T")[0])
-    .lte("report_date", nextWeek.toISOString().split("T")[0])
-    .order("report_date", { ascending: true })
-    .limit(10);
 
   if (upcomingError) {
     throw upcomingError;

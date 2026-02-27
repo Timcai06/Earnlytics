@@ -1,5 +1,7 @@
 "use client";
 
+import { useMemo, useState } from "react";
+
 interface TimelineEvent {
     id: number;
     date: string;
@@ -13,8 +15,17 @@ interface CalendarTimelineProps {
     events: TimelineEvent[];
 }
 
+const INITIAL_VISIBLE_COUNT = 6;
+const LOAD_MORE_STEP = 4;
+
 export default function CalendarTimeline({ events }: CalendarTimelineProps) {
+    const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_COUNT);
     const today = new Date().toISOString().split('T')[0];
+    const visibleEvents = useMemo(
+        () => events.slice(0, visibleCount),
+        [events, visibleCount]
+    );
+    const hasMore = events.length > visibleCount;
 
     return (
         <div className="rounded-2xl border border-white/5 bg-surface/30 backdrop-blur-md p-6">
@@ -25,7 +36,7 @@ export default function CalendarTimeline({ events }: CalendarTimelineProps) {
                         近期暂无财报发布
                     </div>
                 ) : (
-                    events.map((event) => {
+                    visibleEvents.map((event) => {
                         const isToday = today && event.date === today;
                         const dateObj = new Date(event.date);
                         const displayDate = `${dateObj.getMonth() + 1}/${dateObj.getDate()}`;
@@ -60,6 +71,19 @@ export default function CalendarTimeline({ events }: CalendarTimelineProps) {
                     })
                 )}
             </div>
+            {hasMore ? (
+                <div className="mt-5 flex justify-center">
+                    <button
+                        type="button"
+                        onClick={() =>
+                            setVisibleCount((count) => Math.min(count + LOAD_MORE_STEP, events.length))
+                        }
+                        className="rounded-full border border-white/10 bg-white/5 px-3.5 py-1.5 text-xs font-medium text-text-secondary transition-colors hover:border-white/20 hover:bg-white/10 hover:text-white"
+                    >
+                        展开更多财报
+                    </button>
+                </div>
+            ) : null}
         </div >
     );
 }

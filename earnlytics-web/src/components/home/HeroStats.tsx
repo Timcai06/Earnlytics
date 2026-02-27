@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Bot, Database, Users, Globe } from "lucide-react";
 
@@ -58,28 +58,37 @@ const stats: StatItem[] = [
     },
 ];
 
-function AnimatedCounter({ value, suffix }: { value: number; suffix: string }) {
+function AnimatedCounter({
+    value,
+    suffix,
+    shouldStart,
+}: {
+    value: number;
+    suffix: string;
+    shouldStart: boolean;
+}) {
     const [count, setCount] = useState(0);
 
     useEffect(() => {
+        if (!shouldStart) return;
+
         const duration = 2000;
-        const steps = 60;
-        const interval = duration / steps;
-        const increment = value / steps;
-        let current = 0;
+        const start = performance.now();
+        let raf = 0;
 
-        const timer = setInterval(() => {
-            current += increment;
-            if (current >= value) {
-                setCount(value);
-                clearInterval(timer);
+        const tick = (now: number) => {
+            const progress = Math.min((now - start) / duration, 1);
+            setCount(Math.floor(value * progress));
+            if (progress < 1) {
+                raf = requestAnimationFrame(tick);
             } else {
-                setCount(Math.floor(current));
+                setCount(value);
             }
-        }, interval);
+        };
 
-        return () => clearInterval(timer);
-    }, [value]);
+        raf = requestAnimationFrame(tick);
+        return () => cancelAnimationFrame(raf);
+    }, [shouldStart, value]);
 
     return (
         <span>
@@ -90,8 +99,27 @@ function AnimatedCounter({ value, suffix }: { value: number; suffix: string }) {
 }
 
 export default function HeroStats() {
+    const containerRef = useRef<HTMLDivElement>(null);
+    const [shouldStartCounters, setShouldStartCounters] = useState(false);
+
+    useEffect(() => {
+        if (!containerRef.current || shouldStartCounters) return;
+
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                if (!entry.isIntersecting) return;
+                setShouldStartCounters(true);
+                observer.disconnect();
+            },
+            { threshold: 0.2 }
+        );
+
+        observer.observe(containerRef.current);
+        return () => observer.disconnect();
+    }, [shouldStartCounters]);
+
     return (
-        <div className="w-full max-w-5xl mx-auto px-4">
+        <div ref={containerRef} className="w-full max-w-5xl mx-auto px-4">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
                 {stats.map((stat) => (
                     <motion.div
@@ -114,7 +142,7 @@ export default function HeroStats() {
 
                             {/* Value */}
                             <div className="flex items-baseline gap-0.5 text-2xl md:text-3xl font-bold text-white tracking-tight mb-1 tabular-nums">
-                                <AnimatedCounter value={stat.value} suffix={stat.suffix} />
+                                <AnimatedCounter value={stat.value} suffix={stat.suffix} shouldStart={shouldStartCounters} />
                             </div>
 
                             {/* Label */}

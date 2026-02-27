@@ -3,7 +3,7 @@
 > AI-driven US tech company earnings analysis platform with Chinese summaries.
 
 **Production**: https://earnlytics-ebon.vercel.app  
-**Last Updated**: 2026-02-25
+**Last Updated**: 2026-02-27
 
 ## 🎯 Current Progress
 
@@ -96,6 +96,24 @@ npm run lint                              # Lint check
 - **Embedding**: Cohere Embedding API (1024-dim, free tier)
 - **Data Source**: Financial Modeling Prep (FMP) API + SEC EDGAR
 - **Automation**: GitHub Actions (every 4 hours)
+
+## ⚡ Performance Updates (2026-02-27)
+
+- `/home` now uses server-side prefetch + cache (`revalidate=300`) to reduce client waterfall.
+- Added dynamic imports and viewport-triggered rendering for below-the-fold sections.
+- `HeroStats` counters start only when entering viewport.
+- `MarketTicker` animation pauses when tab hidden/offscreen to reduce CPU usage.
+- `EarningsCard` optimized with `memo` + memoized sparkline generation.
+- `/api/market-ticker` now supports in-memory short cache + `ETag` / `304`.
+- Added Web Vitals collection pipeline:
+  - client reporter: `src/components/performance/WebVitalsReporter.tsx`
+  - API endpoint: `src/app/api/web-vitals/route.ts` (POST ingest + GET summary)
+- Added image optimization helper `src/lib/image-optimization.ts` to avoid unnecessary `unoptimized`.
+
+## 🗂 Architecture Docs Note
+
+- Legacy root doc `earnlytics-web-architecture.md` has been removed.
+- Use `for_AGENTS/AGENTS.md` and `for_AGENTS/规范文档/*` as the canonical architecture and implementation references.
 
 ## 📋 Development Plans (Based on Actual Code)
 
@@ -200,4 +218,4 @@ npm run lint                              # Lint check
 **Production**: https://earnlytics-ebon.vercel.app  
 **GitHub**: https://github.com/Timcai06/Earnlytics  
 **Branch**: main  
-**Last Updated**: 2026-02-25
+**Last Updated**: 2026-02-27

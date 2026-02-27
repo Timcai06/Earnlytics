@@ -1,6 +1,6 @@
 # 后端架构规范
 
-**更新日期:** 2026-02-21  
+**更新日期:** 2026-02-27  
 **适用范围:** earnlytics-web 后端系统
 
 ---
@@ -23,6 +23,8 @@ Earnlytics 采用 Serverless 架构，基于 Next.js 16 App Router 的 API Route
 ---
 
 ## 目录结构
+
+> 注：以下为后端路由能力示意结构，实际代码结构以 `earnlytics-web/src/app/api` 当前目录为准。
 
 ```
 src/app/api/
@@ -254,7 +256,19 @@ CREATE INDEX idx_companies_sector ON companies(sector);
 |------|------|------|
 | `/api/calendar` | GET | 获取财报日历 |
 | `/api/health` | GET | 健康检查 |
-| `/api/market-ticker` | GET | 获取市场行情 |
+| `/api/market-ticker` | GET | 获取市场行情（含短缓存 + ETag/304） |
+| `/api/web-vitals` | POST | 接收前端 Web Vitals 指标 |
+| `/api/web-vitals` | GET | 返回按 path+metric 聚合的指标摘要 |
+
+### 性能相关后端约定 (2026-02-27)
+
+- `/api/market-ticker`
+  - 应返回 `Cache-Control` 与 `ETag`
+  - 支持 `If-None-Match` 命中后返回 `304`
+  - 允许短时进程内缓存（当前实现: 30 秒）
+- `/api/web-vitals`
+  - `POST` 仅接收必要字段：`name`, `value`, `path`, `ts`
+  - `GET` 返回聚合统计（建议包含 `count/avg/p75`）
 
 ### 响应格式
 

@@ -5,6 +5,7 @@ import Header from "@/components/layout/Header";
 import RightSidebar from "@/components/layout/RightSidebar";
 import Footer from "@/components/layout/Footer";
 import { PerformanceMonitor } from "@/components/performance/PerformanceMonitor";
+import { WebVitalsReporter } from "@/components/performance/WebVitalsReporter";
 import TopLoadingBar from "@/components/ui/TopLoadingBar";
 import { Suspense } from "react";
 
@@ -18,6 +19,7 @@ export function ClientLayout({
   return (
     <>
       <PerformanceMonitor />
+      <WebVitalsReporter />
       <Suspense fallback={null}>
         <TopLoadingBar />
       </Suspense>

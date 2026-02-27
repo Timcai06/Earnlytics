@@ -1,7 +1,7 @@
 # 实施指南
 
-**更新日期:** 2026-02-18  
-**版本:** 1.1
+**更新日期:** 2026-02-27  
+**版本:** 1.2
 
 ---
 
@@ -214,10 +214,12 @@ main();
 ```json
 {
   "scripts": {
-    "my-script": "tsx scripts/my-script.ts"
+    "my-script": "tsx scripts/ops/my-script.ts"
   }
 }
 ```
+
+> 脚本约定：生产/运营脚本放 `scripts/ops/`，一次性排查脚本放 `scripts/dev/`。
 
 ---
 
@@ -257,6 +259,38 @@ npm run test:watch # 监听模式
 ## 故障排除
 
 ### 开发环境问题
+
+#### 组件重命名后仍报旧路径
+
+```bash
+# 清理 Next.js 构建缓存
+rm -rf .next
+
+# 重新启动开发服务器
+npm run dev
+```
+
+如果编辑器仍报旧路径，重启 TypeScript Server。
+
+### 性能迭代检查清单 (新增)
+
+涉及首页/列表性能优化时，按以下顺序执行：
+
+1. 优先服务端获取并缓存首屏数据 (`unstable_cache` + `revalidate`)
+2. 将重组件改为 `dynamic import`
+3. 对非首屏块使用可见区渲染 (`ViewportRender`)
+4. 长列表采用“首屏分段 + 加载更多”策略
+5. 关闭低价值自动预取 (`prefetch={false}`)
+6. API 增加短缓存与 `ETag` 条件请求
+7. 接入/核对 Web Vitals 上报 (`/api/web-vitals`)
+
+推荐验证命令：
+
+```bash
+npm run lint
+npm run dev
+# 可选: 访问 /api/web-vitals 查看聚合结果
+```
 
 #### npm install 失败
 ```bash

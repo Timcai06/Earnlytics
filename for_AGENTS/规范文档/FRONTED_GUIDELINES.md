@@ -1,6 +1,6 @@
 # 前端开发规范
 
-**更新日期:** 2026-02-18  
+**更新日期:** 2026-02-27  
 **版本:** 1.1
 
 ---
@@ -65,6 +65,25 @@ src/
 | Hook | camelCase | `useAuth.ts` |
 | 工具函数 | camelCase | `formatDate.ts` |
 | 类型定义 | PascalCase | `types/earnings.ts` |
+
+**当前状态 (2026-02-26):**
+- `src/components` 历史 kebab-case 组件文件已完成迁移到 `PascalCase`。
+- 新增组件必须延续 `PascalCase`，不再新增 kebab-case 组件文件。
+
+### 性能组件约定 (2026-02-27)
+
+- 首屏之外的重组件优先 `dynamic import`。
+- 使用 `src/components/performance/ViewportRender.tsx` 做可见区挂载。
+- 对高频列表项组件使用 `memo`，并保证 props 稳定（`useMemo` 预处理映射数据）。
+- 对大量详情链接禁用默认预取：`prefetch={false}`。
+- 图片加载统一经过 `src/lib/image-optimization.ts` 策略判断，避免无意义 `unoptimized`。
+
+### 重命名后排错
+
+如果组件重命名后开发环境报旧路径（例如 `xxx-old-name.tsx`）：
+1. 删除缓存：`rm -rf .next`
+2. 重启开发服务器：`npm run dev`
+3. 如编辑器仍报错，重启 TypeScript Server
 
 ### shadcn/ui 组件模板
 
