@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
 interface PortfolioBriefingProps {
-  userId: number
   className?: string
 }
 
@@ -32,7 +31,7 @@ const itemVariants: Variants = {
   }
 }
 
-export function PortfolioBriefing({ userId, className }: PortfolioBriefingProps) {
+export function PortfolioBriefing({ className }: PortfolioBriefingProps) {
   const [loading, setLoading] = useState(true)
   const [generating, setGenerating] = useState(false)
   const [briefing, setBriefing] = useState<Briefing | null>(null)
@@ -40,7 +39,7 @@ export function PortfolioBriefing({ userId, className }: PortfolioBriefingProps)
   const fetchBriefing = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await fetch(`/api/portfolio/briefing?user_id=${userId}`)
+      const res = await fetch('/api/portfolio/briefing')
       const json = await res.json()
       if (json.briefing) {
         setBriefing(json.briefing)
@@ -50,7 +49,7 @@ export function PortfolioBriefing({ userId, className }: PortfolioBriefingProps)
     } finally {
       setLoading(false)
     }
-  }, [userId])
+  }, [])
 
   useEffect(() => {
     fetchBriefing()
@@ -61,8 +60,7 @@ export function PortfolioBriefing({ userId, className }: PortfolioBriefingProps)
     try {
       const res = await fetch('/api/portfolio/briefing', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: userId })
+        headers: { 'Content-Type': 'application/json' }
       })
       const json = await res.json()
       if (json.briefing) {

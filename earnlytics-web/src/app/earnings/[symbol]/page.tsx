@@ -3,6 +3,7 @@ import EarningsPageClient from "./EarningsPageClient";
 
 interface Props {
   params: Promise<{ symbol: string }>;
+  searchParams: Promise<{ earning_id?: string }>;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -13,6 +14,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default function EarningsPage({ params }: Props) {
-  return <EarningsPageClient params={params} />;
+export default async function EarningsPage({ params, searchParams }: Props) {
+  const { earning_id } = await searchParams;
+  return <EarningsPageClient params={params} initialEarningId={earning_id} />;
 }

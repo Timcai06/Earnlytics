@@ -7,6 +7,7 @@ import { PageLoading } from "@/components/ui/spinner";
 import { EarningsTrendChart } from "@/components/investment/EarningsTrendChart";
 import { SentimentTimeline } from "@/components/investment/SentimentTimeline";
 import { SurpriseRadar } from "@/components/investment/SurpriseRadar";
+import { InvestmentMemoPanel } from "@/components/investment/InvestmentMemoPanel";
 
 interface EarningWithAnalysis {
   id: number;
@@ -40,6 +41,7 @@ interface EarningWithAnalysis {
 
 interface Props {
   params: Promise<{ symbol: string }>;
+  initialEarningId?: string;
 }
 
 function formatCurrency(value: number | null): string {
@@ -91,7 +93,7 @@ function getDataSourceLabel(source: string | null): { label: string; color: stri
   }
 }
 
-export default function EarningsPageClient({ params }: Props) {
+export default function EarningsPageClient({ params, initialEarningId }: Props) {
   const { symbol } = use(params);
   const [earnings, setEarnings] = useState<EarningWithAnalysis | null>(null);
   const [earningsHistory, setEarningsHistory] = useState<EarningWithAnalysis[]>([]);
@@ -135,10 +137,11 @@ export default function EarningsPageClient({ params }: Props) {
 
     async function fetchData() {
       try {
-        const [latestResponse, historyResponse, sentimentResponse] = await Promise.all([
+        const [latestResponse, historyResponse, sentimentResponse, selectedResponse] = await Promise.all([
           fetch(`/api/earnings?symbol=${symbol}&latest=true`),
           fetch(`/api/earnings?symbol=${symbol}`),
           fetch(`/api/sentiment-history/${symbol}`),
+          initialEarningId ? fetch(`/api/earnings/${initialEarningId}`) : Promise.resolve(null),
         ]);
 
         if (!latestResponse.ok) throw new Error(`Failed to fetch latest earnings: ${latestResponse.status}`);
@@ -154,6 +157,13 @@ export default function EarningsPageClient({ params }: Props) {
           const historyData = await historyResponse.json();
           if (historyData.earnings) {
             setEarningsHistory(Array.isArray(historyData.earnings) ? historyData.earnings : [historyData.earnings]);
+          }
+        }
+
+        if (selectedResponse?.ok) {
+          const selectedData = await selectedResponse.json();
+          if (selectedData.earnings) {
+            setEarnings(selectedData.earnings as EarningWithAnalysis);
           }
         }
 
@@ -173,7 +183,7 @@ export default function EarningsPageClient({ params }: Props) {
     }
 
     fetchData();
-  }, [symbol, retries]);
+  }, [initialEarningId, symbol, retries]);
 
   const handleEarningClick = async (earningId: number) => {
     if (earningId === earnings?.id) return;
@@ -347,6 +357,18 @@ export default function EarningsPageClient({ params }: Props) {
               <SurpriseRadar data={surpriseRadarData} />
             </div>
           )}
+
+          <div className="mb-8">
+            <InvestmentMemoPanel
+              earningId={earnings.id}
+              symbol={company.symbol}
+              aiSummary={{
+                summary: analysis?.summary || "",
+                highlights: analysis?.highlights || [],
+                concerns: analysis?.concerns || [],
+              }}
+            />
+          </div>
 
           {analysis ? (
             <>

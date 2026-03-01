@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { InvestmentRatingCard, FinancialHealthScorecard, DocumentViewer } from "@/components/investment";
 import { ArrowLeft, TrendingUp, Shield, Target, AlertTriangle, Sparkles } from "lucide-react";
+import AnalysisMemoSectionClient from "./AnalysisMemoSectionClient";
 
 export async function generateMetadata({ params }: { params: Promise<{ symbol: string }> }): Promise<Metadata> {
   const { symbol } = await params;
@@ -20,6 +21,7 @@ interface AnalysisData {
   symbol: string;
   name: string;
   sector: string;
+  summary: string;
   currentPrice: number;
   rating: string;
   confidence: string;
@@ -344,6 +346,7 @@ async function getAnalysisData(symbol: string, earningsId?: string): Promise<Ana
     symbol: company.symbol,
     name: company.name,
     sector: company.sector || "Unknown",
+    summary: analysis?.summary || "",
     currentPrice: currentPrice > 0 ? currentPrice : 0,
     rating,
     confidence: confidence as "high" | "medium" | "low",
@@ -626,6 +629,18 @@ export default async function AnalysisPage({ params, searchParams }: { params: P
             </TabsContent>
           </Tabs>
         </div>
+      </div>
+
+      <div className="mb-8">
+        <AnalysisMemoSectionClient
+          earningId={Number(data.earningsId)}
+          symbol={data.symbol}
+          aiSummary={{
+            summary: data.summary,
+            highlights: data.keyPoints,
+            concerns: data.risks,
+          }}
+        />
       </div>
 
       <div className="mb-8">

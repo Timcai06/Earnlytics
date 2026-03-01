@@ -7,12 +7,8 @@ import { Button } from "@/components/ui/button"
 import { PortfolioSummary, PositionList, AddPositionDialog, Drawer, PositionDrawerContent, PortfolioHistoryChart, PortfolioBriefing } from "@/components/portfolio"
 import { cn } from "@/lib/utils"
 import type { PortfolioPosition, PortfolioSummary as PortfolioSummaryType } from "@/lib/supabase"
-
-interface User {
-  id: number
-  name: string
-  email: string
-}
+import { useAuthUser } from "@/hooks/use-auth-user"
+import { writeLocalUser } from "@/lib/auth/client"
 
 interface EarningsInfo {
   symbol: string
@@ -24,8 +20,8 @@ const AUTO_REFRESH_INTERVAL = 5 * 60 * 1000
 
 export function PortfolioPageClient() {
   const router = useRouter()
-  const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(true)
+  const { user, loading: authLoading } = useAuthUser()
+  const [loading, setLoading] = useState(false)
   const [positions, setPositions] = useState<PortfolioPosition[]>([])
   const [summary, setSummary] = useState<PortfolioSummaryType>({
     total_value: 0,
@@ -43,21 +39,26 @@ export function PortfolioPageClient() {
   const [upcomingEarnings, setUpcomingEarnings] = useState<EarningsInfo[]>([])
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
   const [refreshing, setRefreshing] = useState(false)
+  const redirectToLogin = useCallback(() => {
+    writeLocalUser(null)
+    router.replace("/login?next=/portfolio")
+  }, [router])
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("user")
-    if (!storedUser) {
-      router.push("/home")
-      return
+    if (!authLoading && !user) {
+      redirectToLogin()
     }
-    setUser(JSON.parse(storedUser))
-  }, [router])
+  }, [authLoading, redirectToLogin, user])
 
   const fetchPortfolio = useCallback(async () => {
     if (!user) return
 
     try {
-      const res = await fetch(`/api/portfolio?user_id=${user.id}`)
+      const res = await fetch('/api/portfolio')
+      if (res.status === 401) {
+        redirectToLogin()
+        return
+      }
       const data = await res.json()
       if (data.positions) {
         setPositions(data.positions)
@@ -70,13 +71,17 @@ export function PortfolioPageClient() {
       setLoading(false)
       setRefreshing(false)
     }
-  }, [user])
+  }, [redirectToLogin, user])
 
   const fetchEarnings = useCallback(async () => {
     if (!user) return
 
     try {
-      const res = await fetch(`/api/portfolio/earnings?user_id=${user.id}`)
+      const res = await fetch('/api/portfolio/earnings')
+      if (res.status === 401) {
+        redirectToLogin()
+        return
+      }
       const data = await res.json()
       
       if (data.upcoming) {
@@ -94,10 +99,11 @@ export function PortfolioPageClient() {
     } catch (error) {
       console.error('Error fetching earnings:', error)
     }
-  }, [user])
+  }, [redirectToLogin, user])
 
   useEffect(() => {
     if (user) {
+      setLoading(true)
       fetchPortfolio()
       fetchEarnings()
     }
@@ -124,10 +130,13 @@ export function PortfolioPageClient() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          user_id: user.id,
           ...data
         })
       })
+      if (res.status === 401) {
+        redirectToLogin()
+        return
+      }
       const result = await res.json()
       
       if (result.success) {
@@ -155,9 +164,13 @@ export function PortfolioPageClient() {
 
     setDeleting(id)
     try {
-      const res = await fetch(`/api/portfolio?id=${id}&user_id=${user.id}`, {
+      const res = await fetch(`/api/portfolio?id=${id}`, {
         method: 'DELETE'
       })
+      if (res.status === 401) {
+        redirectToLogin()
+        return
+      }
       const result = await res.json()
       if (result.success) {
         if (isDeletingCurrentDrawerPosition) {
@@ -195,7 +208,7 @@ export function PortfolioPageClient() {
     setDrawerOpen(true)
   }
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -267,7 +280,7 @@ export function PortfolioPageClient() {
 
           {positions.length > 0 && (
             <div className="grid grid-cols-1 gap-6">
-              <PortfolioHistoryChart userId={user.id} />
+              <PortfolioHistoryChart />
               
               <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
                 <Card className="bg-surface border-border">
@@ -301,7 +314,7 @@ export function PortfolioPageClient() {
                   </div>
                 </Card>
 
-                <PortfolioBriefing userId={user.id} />
+                <PortfolioBriefing />
               </div>
             </div>
           )}

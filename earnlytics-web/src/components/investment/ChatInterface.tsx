@@ -23,16 +23,12 @@ interface QuickAction {
 
 interface ChatInterfaceProps {
   symbol?: string
-  userId?: string
-  sessionId?: string
   initialMessages?: Message[]
   className?: string
 }
 
 export function ChatInterface({
   symbol,
-  userId,
-  sessionId,
   initialMessages = [],
   className,
 }: ChatInterfaceProps) {
@@ -106,13 +102,14 @@ export function ChatInterface({
           message: content,
           conversationId,
           symbol,
-          userId,
-          sessionId,
           stream: true,
         }),
       })
 
       if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error('请先登录后再使用 AI 助手')
+        }
         throw new Error(`HTTP ${response.status}`)
       }
 
@@ -194,7 +191,10 @@ export function ChatInterface({
       const errorMessage: Message = {
         id: Date.now().toString(),
         role: 'assistant',
-        content: '抱歉，我暂时无法回答这个问题。请稍后再试。',
+        content:
+          error instanceof Error && error.message
+            ? error.message
+            : '抱歉，我暂时无法回答这个问题。请稍后再试。',
       }
 
       setMessages(prev =>

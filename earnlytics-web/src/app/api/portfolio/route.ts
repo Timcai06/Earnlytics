@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { applySessionCookies, resolveSessionFromRequest } from '@/lib/auth/session'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -32,20 +33,21 @@ function isPriceStale(timestamp: string | null): boolean {
 
 export async function GET(request: Request) {
   try {
-    const { searchParams } = new URL(request.url)
-    const userId = searchParams.get('user_id')
-
-    console.log('Portfolio GET received for user_id:', userId)
-
-    if (!userId) {
-      return NextResponse.json(
-        { error: '用户未登录' },
-        { status: 401 }
-      )
+    const resolvedSession = await resolveSessionFromRequest(request)
+    if (resolvedSession.error) {
+      return NextResponse.json({ error: resolvedSession.error }, { status: 500 })
     }
-
-    const userIdNum = parseInt(userId)
-    console.log('Fetching portfolio for userIdNum:', userIdNum)
+    if (!resolvedSession.appUser) {
+      return NextResponse.json({ error: '用户未登录' }, { status: 401 })
+    }
+    const userIdNum = resolvedSession.appUser.id
+    const respond = (payload: unknown, status = 200) => {
+      const response = NextResponse.json(payload, { status })
+      if (resolvedSession.refreshed && resolvedSession.session) {
+        applySessionCookies(response, resolvedSession.session)
+      }
+      return response
+    }
 
     const { data: positions, error } = await supabase
       .from('user_portfolios')
@@ -55,14 +57,11 @@ export async function GET(request: Request) {
 
     if (error) {
       console.error('Error fetching portfolio:', error)
-      return NextResponse.json(
-        { error: '获取持仓失败' },
-        { status: 500 }
-      )
+      return respond({ error: '获取持仓失败' }, 500)
     }
 
     if (!positions || positions.length === 0) {
-      return NextResponse.json({
+      return respond({
         positions: [],
         summary: {
           total_value: 0,
@@ -157,9 +156,7 @@ export async function GET(request: Request) {
     const totalGain = totalValue - totalCost
     const totalGainPct = totalCost > 0 ? (totalGain / totalCost) * 100 : 0
 
-    console.log('Returning portfolio data:', { positionCount: positionsWithData.length, totalValue })
-
-    return NextResponse.json({
+    return respond({
       positions: positionsWithData,
       metadata: {
         last_updated: new Date().toISOString(),
@@ -186,26 +183,38 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json()
-    const { user_id, symbol, shares, cost_basis } = body
-
-    console.log('Portfolio POST received:', { user_id, symbol, shares, cost_basis })
-
-    if (!user_id || !symbol || !shares || !cost_basis) {
-      return NextResponse.json(
-        { error: '缺少必要参数' },
-        { status: 400 }
-      )
+    const resolvedSession = await resolveSessionFromRequest(request)
+    if (resolvedSession.error) {
+      return NextResponse.json({ error: resolvedSession.error }, { status: 500 })
+    }
+    if (!resolvedSession.appUser) {
+      return NextResponse.json({ error: '用户未登录' }, { status: 401 })
     }
 
-    const userIdNum = parseInt(user_id)
+    const userIdNum = resolvedSession.appUser.id
+    const respond = (payload: unknown, status = 200) => {
+      const response = NextResponse.json(payload, { status })
+      if (resolvedSession.refreshed && resolvedSession.session) {
+        applySessionCookies(response, resolvedSession.session)
+      }
+      return response
+    }
+
+    const body = await request.json()
+    const symbol = typeof body.symbol === 'string' ? body.symbol.trim().toUpperCase() : ''
+    const shares = Number(body.shares)
+    const costBasis = Number(body.cost_basis)
+
+    if (!symbol || !Number.isFinite(shares) || !Number.isFinite(costBasis) || shares <= 0 || costBasis <= 0) {
+      return respond({ error: '缺少必要参数' }, 400)
+    }
 
     const { data: existing, error: existingError } = await supabase
       .from('user_portfolios')
       .select('*')
       .eq('user_id', userIdNum)
-      .eq('symbol', symbol.toUpperCase())
-      .single()
+      .eq('symbol', symbol)
+      .maybeSingle()
 
     if (existingError && existingError.code !== 'PGRST116') {
       console.error('Error checking existing position:', existingError)
@@ -213,7 +222,7 @@ export async function POST(request: Request) {
 
     if (existing) {
       const newShares = existing.shares + shares
-      const newCostBasis = ((existing.avg_cost_basis * existing.shares) + (cost_basis * shares)) / newShares
+      const newCostBasis = ((existing.avg_cost_basis * existing.shares) + (costBasis * shares)) / newShares
 
       const { error: updateError } = await supabase
         .from('user_portfolios')
@@ -226,20 +235,17 @@ export async function POST(request: Request) {
 
       if (updateError) {
         console.error('Error updating position:', updateError)
-        return NextResponse.json(
-          { error: '更新持仓失败' },
-          { status: 500 }
-        )
+        return respond({ error: '更新持仓失败' }, 500)
       }
 
       const { error: transactionError } = await supabase
         .from('user_transactions')
         .insert({
           user_id: userIdNum,
-          symbol: symbol.toUpperCase(),
+          symbol,
           transaction_type: 'buy',
-          shares: shares,
-          price_per_share: cost_basis,
+          shares,
+          price_per_share: costBasis,
           transaction_date: new Date().toISOString().split('T')[0]
         })
 
@@ -247,7 +253,7 @@ export async function POST(request: Request) {
         console.error('Error logging transaction:', transactionError)
       }
 
-      return NextResponse.json({
+      return respond({
         success: true,
         message: '持仓已更新'
       })
@@ -257,27 +263,24 @@ export async function POST(request: Request) {
       .from('user_portfolios')
       .insert({
         user_id: userIdNum,
-        symbol: symbol.toUpperCase(),
-        shares: shares,
-        avg_cost_basis: cost_basis
+        symbol,
+        shares,
+        avg_cost_basis: costBasis
       })
 
     if (insertError) {
       console.error('Error inserting position:', insertError)
-      return NextResponse.json(
-        { error: '添加持仓失败' },
-        { status: 500 }
-      )
+      return respond({ error: '添加持仓失败' }, 500)
     }
 
     const { error: transactionError } = await supabase
       .from('user_transactions')
       .insert({
         user_id: userIdNum,
-        symbol: symbol.toUpperCase(),
+        symbol,
         transaction_type: 'buy',
-        shares: shares,
-        price_per_share: cost_basis,
+        shares,
+        price_per_share: costBasis,
         transaction_date: new Date().toISOString().split('T')[0]
       })
 
@@ -285,7 +288,7 @@ export async function POST(request: Request) {
       console.error('Error logging transaction:', transactionError)
     }
 
-    return NextResponse.json({
+    return respond({
       success: true,
       message: '持仓已添加'
     })
@@ -301,32 +304,41 @@ export async function POST(request: Request) {
 
 export async function DELETE(request: Request) {
   try {
+    const resolvedSession = await resolveSessionFromRequest(request)
+    if (resolvedSession.error) {
+      return NextResponse.json({ error: resolvedSession.error }, { status: 500 })
+    }
+    if (!resolvedSession.appUser) {
+      return NextResponse.json({ error: '用户未登录' }, { status: 401 })
+    }
+
+    const respond = (payload: unknown, status = 200) => {
+      const response = NextResponse.json(payload, { status })
+      if (resolvedSession.refreshed && resolvedSession.session) {
+        applySessionCookies(response, resolvedSession.session)
+      }
+      return response
+    }
+
     const { searchParams } = new URL(request.url)
     const positionId = searchParams.get('id')
-    const userId = searchParams.get('user_id')
 
-    if (!positionId || !userId) {
-      return NextResponse.json(
-        { error: '缺少必要参数' },
-        { status: 400 }
-      )
+    if (!positionId) {
+      return respond({ error: '缺少必要参数' }, 400)
     }
 
     const { error: deleteError } = await supabase
       .from('user_portfolios')
       .delete()
       .eq('id', parseInt(positionId))
-      .eq('user_id', parseInt(userId))
+      .eq('user_id', resolvedSession.appUser.id)
 
     if (deleteError) {
       console.error('Error deleting position:', deleteError)
-      return NextResponse.json(
-        { error: '删除持仓失败' },
-        { status: 500 }
-      )
+      return respond({ error: '删除持仓失败' }, 500)
     }
 
-    return NextResponse.json({
+    return respond({
       success: true,
       message: '持仓已删除'
     })

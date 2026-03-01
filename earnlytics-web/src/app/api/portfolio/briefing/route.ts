@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { applySessionCookies, resolveSessionFromRequest } from '@/lib/auth/session'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -28,17 +29,22 @@ const BRIEFING_SYSTEM_PROMPT = `你是一个专业的AI投资助手，擅长分�
 
 export async function GET(request: Request) {
   try {
-    const { searchParams } = new URL(request.url)
-    const userId = searchParams.get('user_id')
-
-    if (!userId) {
-      return NextResponse.json(
-        { error: '用户未登录' },
-        { status: 401 }
-      )
+    const resolvedSession = await resolveSessionFromRequest(request)
+    if (resolvedSession.error) {
+      return NextResponse.json({ error: resolvedSession.error }, { status: 500 })
+    }
+    if (!resolvedSession.appUser) {
+      return NextResponse.json({ error: '用户未登录' }, { status: 401 })
     }
 
-    const userIdNum = parseInt(userId)
+    const userIdNum = resolvedSession.appUser.id
+    const respond = (payload: unknown, status = 200) => {
+      const response = NextResponse.json(payload, { status })
+      if (resolvedSession.refreshed && resolvedSession.session) {
+        applySessionCookies(response, resolvedSession.session)
+      }
+      return response
+    }
     const today = new Date().toISOString().split('T')[0]
 
     const { data: briefing, error } = await supabase
@@ -53,7 +59,7 @@ export async function GET(request: Request) {
     }
 
     if (briefing) {
-      return NextResponse.json({
+      return respond({
         briefing: {
           content: briefing.content,
           sentiment: briefing.sentiment,
@@ -65,7 +71,7 @@ export async function GET(request: Request) {
       })
     }
 
-    return NextResponse.json({
+    return respond({
       briefing: null,
       isGenerated: false
     })
@@ -81,17 +87,22 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json()
-    const { user_id } = body
-
-    if (!user_id) {
-      return NextResponse.json(
-        { error: '缺少用户ID' },
-        { status: 400 }
-      )
+    const resolvedSession = await resolveSessionFromRequest(request)
+    if (resolvedSession.error) {
+      return NextResponse.json({ error: resolvedSession.error }, { status: 500 })
+    }
+    if (!resolvedSession.appUser) {
+      return NextResponse.json({ error: '用户未登录' }, { status: 401 })
+    }
+    const respond = (payload: unknown, status = 200) => {
+      const response = NextResponse.json(payload, { status })
+      if (resolvedSession.refreshed && resolvedSession.session) {
+        applySessionCookies(response, resolvedSession.session)
+      }
+      return response
     }
 
-    const userIdNum = parseInt(user_id)
+    const userIdNum = resolvedSession.appUser.id
 
     const { data: positions, error: positionsError } = await supabase
       .from('user_portfolios')
@@ -99,10 +110,7 @@ export async function POST(request: Request) {
       .eq('user_id', userIdNum)
 
     if (positionsError || !positions || positions.length === 0) {
-      return NextResponse.json(
-        { error: '暂无持仓' },
-        { status: 400 }
-      )
+      return respond({ error: '暂无持仓' }, 400)
     }
 
     const symbols = positions.map(p => p.symbol)
@@ -159,10 +167,7 @@ export async function POST(request: Request) {
     const deepseekApiKey = process.env.DEEPSEEK_API_KEY
 
     if (!deepseekApiKey) {
-      return NextResponse.json(
-        { error: 'AI服务未配置' },
-        { status: 503 }
-      )
+      return respond({ error: 'AI服务未配置' }, 503)
     }
 
     const userPrompt = `请分析我的投资组合：
@@ -199,30 +204,21 @@ ${upcomingEarnings && upcomingEarnings.length > 0 ? `即将发布财报：${upco
     if (!response.ok) {
       const errorText = await response.text()
       console.error('DeepSeek API error:', errorText)
-      return NextResponse.json(
-        { error: 'AI生成失败' },
-        { status: 500 }
-      )
+      return respond({ error: 'AI生成失败' }, 500)
     }
 
     const data = await response.json()
     const content = data.choices?.[0]?.message?.content
 
     if (!content) {
-      return NextResponse.json(
-        { error: 'AI响应为空' },
-        { status: 500 }
-      )
+      return respond({ error: 'AI响应为空' }, 500)
     }
 
     let parsed: Record<string, unknown>
     try {
       parsed = JSON.parse(content)
     } catch {
-      return NextResponse.json(
-        { error: 'AI响应格式错误' },
-        { status: 500 }
-      )
+      return respond({ error: 'AI响应格式错误' }, 500)
     }
 
     const today = new Date().toISOString().split('T')[0]
@@ -246,7 +242,7 @@ ${upcomingEarnings && upcomingEarnings.length > 0 ? `即将发布财报：${upco
       console.error('Error saving briefing:', upsertError)
     }
 
-    return NextResponse.json({
+    return respond({
       success: true,
       briefing: {
         content: parsed.content,

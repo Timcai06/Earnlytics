@@ -14,7 +14,6 @@ interface HistoryData {
 }
 
 interface PortfolioHistoryChartProps {
-  userId: number
   className?: string
 }
 
@@ -37,7 +36,7 @@ const timeRanges = [
   { label: '90天', days: 90 }
 ]
 
-export function PortfolioHistoryChart({ userId, className }: PortfolioHistoryChartProps) {
+export function PortfolioHistoryChart({ className }: PortfolioHistoryChartProps) {
   const [loading, setLoading] = useState(true)
   const [data, setData] = useState<HistoryData[]>([])
   const [range, setRange] = useState(30)
@@ -51,7 +50,7 @@ export function PortfolioHistoryChart({ userId, className }: PortfolioHistoryCha
   const fetchHistory = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await fetch(`/api/portfolio/history?user_id=${userId}&days=${range}`)
+      const res = await fetch(`/api/portfolio/history?days=${range}`)
       const json = await res.json()
       if (json.history) {
         setData(json.history)
@@ -62,7 +61,7 @@ export function PortfolioHistoryChart({ userId, className }: PortfolioHistoryCha
     } finally {
       setLoading(false)
     }
-  }, [userId, range])
+  }, [range])
 
   useEffect(() => {
     fetchHistory()

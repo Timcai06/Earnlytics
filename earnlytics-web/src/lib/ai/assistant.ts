@@ -1,6 +1,7 @@
 import { openai } from './openai-client'
 import { searchWithContext, buildRAGSystemPrompt } from './rag'
 import { supabase } from '@/lib/supabase'
+import { getSupabaseAdmin } from '@/lib/supabase-admin'
 import { ChatMessage, RAGSource } from '@/types/investment'
 
 const CHAT_MODEL = 'deepseek-chat'
@@ -206,9 +207,10 @@ export async function createConversation(
   symbol: string | undefined,
   title: string
 ): Promise<string> {
-  if (!supabase) throw new Error('Database not configured');
+  const db = getSupabaseAdmin() ?? supabase
+  if (!db) throw new Error('Database not configured');
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('chat_conversations')
     .insert({
       user_id: userId,
@@ -224,7 +226,12 @@ export async function createConversation(
     throw new Error(`Failed to create conversation: ${error.message}`)
   }
 
-  return data.id
+  const conversationRow = data as { id?: string } | null
+  if (!conversationRow?.id) {
+    throw new Error('Failed to create conversation: missing conversation id')
+  }
+
+  return conversationRow.id
 }
 
 /**
@@ -241,9 +248,10 @@ export async function saveMessage(
     processingTimeMs?: number
   } = {}
 ): Promise<void> {
-  if (!supabase) return;
+  const db = getSupabaseAdmin() ?? supabase
+  if (!db) return;
 
-  const { error } = await supabase.from('chat_messages').insert({
+  const { error } = await db.from('chat_messages').insert({
     conversation_id: conversationId,
     role,
     content,
@@ -266,9 +274,10 @@ export async function getConversationHistory(
   conversationId: string,
   limit: number = 50
 ): Promise<ChatMessage[]> {
-  if (!supabase) return [];
+  const db = getSupabaseAdmin() ?? supabase
+  if (!db) return [];
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('chat_messages')
     .select('*')
     .eq('conversation_id', conversationId)
@@ -292,7 +301,8 @@ export async function getConversationHistory(
     created_at: string;
   }
 
-  return (data || []).map((msg: DBChatMessage) => ({
+  const rows = (data || []) as DBChatMessage[]
+  return rows.map((msg) => ({
     id: msg.id,
     conversationId: msg.conversation_id,
     role: msg.role,

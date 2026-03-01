@@ -2,12 +2,26 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import AuthLayout from "@/components/layout/AuthLayout";
+import { writeLocalUser } from "@/lib/auth/client";
+import { useAuthUser } from "@/hooks/use-auth-user";
+
+function resolveSafeNextPath(nextPath: string | null, fallback: string): string {
+  if (!nextPath) return fallback;
+  if (!nextPath.startsWith("/")) return fallback;
+  if (nextPath.startsWith("//")) return fallback;
+  if (nextPath.startsWith("/login") || nextPath.startsWith("/signup")) return fallback;
+  return nextPath;
+}
 
 export default function LoginPageClient() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const { user, loading: authLoading } = useAuthUser();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
@@ -16,11 +30,11 @@ export default function LoginPageClient() {
   const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
-    const user = localStorage.getItem("user");
-    if (user) {
-      window.location.href = "/profile";
-    }
-  }, []);
+    if (authLoading) return;
+    if (!user) return;
+    const nextPath = resolveSafeNextPath(searchParams.get("next"), "/home");
+    router.replace(nextPath);
+  }, [authLoading, router, searchParams, user]);
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -46,11 +60,9 @@ export default function LoginPageClient() {
         return;
       }
 
-      if (data.user) {
-        localStorage.setItem("user", JSON.stringify(data.user));
-      }
-
-      window.location.href = "/home";
+      if (data.user) writeLocalUser(data.user);
+      const nextPath = resolveSafeNextPath(searchParams.get("next"), "/home");
+      router.replace(nextPath);
     } catch {
       setError("网络错误，请稍后重试");
     } finally {

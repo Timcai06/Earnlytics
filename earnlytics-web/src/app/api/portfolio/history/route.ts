@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { applySessionCookies, resolveSessionFromRequest } from '@/lib/auth/session'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -8,18 +9,24 @@ const supabase = createClient(supabaseUrl, supabaseKey)
 
 export async function GET(request: Request) {
   try {
-    const { searchParams } = new URL(request.url)
-    const userId = searchParams.get('user_id')
-    const days = parseInt(searchParams.get('days') || '30')
-
-    if (!userId) {
-      return NextResponse.json(
-        { error: '用户未登录' },
-        { status: 401 }
-      )
+    const resolvedSession = await resolveSessionFromRequest(request)
+    if (resolvedSession.error) {
+      return NextResponse.json({ error: resolvedSession.error }, { status: 500 })
+    }
+    if (!resolvedSession.appUser) {
+      return NextResponse.json({ error: '用户未登录' }, { status: 401 })
+    }
+    const respond = (payload: unknown, status = 200) => {
+      const response = NextResponse.json(payload, { status })
+      if (resolvedSession.refreshed && resolvedSession.session) {
+        applySessionCookies(response, resolvedSession.session)
+      }
+      return response
     }
 
-    const userIdNum = parseInt(userId)
+    const { searchParams } = new URL(request.url)
+    const days = parseInt(searchParams.get('days') || '30')
+    const userIdNum = resolvedSession.appUser.id
     const startDate = new Date()
     startDate.setDate(startDate.getDate() - days)
 
@@ -32,10 +39,7 @@ export async function GET(request: Request) {
 
     if (error) {
       console.error('Error fetching portfolio history:', error)
-      return NextResponse.json(
-        { error: '获取历史记录失败' },
-        { status: 500 }
-      )
+      return respond({ error: '获取历史记录失败' }, 500)
     }
 
     const chartData = (history || []).map(item => ({
@@ -45,7 +49,7 @@ export async function GET(request: Request) {
       gainPct: Number(item.total_gain_pct)
     }))
 
-    return NextResponse.json({
+    return respond({
       history: chartData,
       summary: {
         period: days,
@@ -72,17 +76,22 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json()
-    const { user_id } = body
-
-    if (!user_id) {
-      return NextResponse.json(
-        { error: '缺少用户ID' },
-        { status: 400 }
-      )
+    const resolvedSession = await resolveSessionFromRequest(request)
+    if (resolvedSession.error) {
+      return NextResponse.json({ error: resolvedSession.error }, { status: 500 })
+    }
+    if (!resolvedSession.appUser) {
+      return NextResponse.json({ error: '用户未登录' }, { status: 401 })
+    }
+    const respond = (payload: unknown, status = 200) => {
+      const response = NextResponse.json(payload, { status })
+      if (resolvedSession.refreshed && resolvedSession.session) {
+        applySessionCookies(response, resolvedSession.session)
+      }
+      return response
     }
 
-    const userIdNum = parseInt(user_id)
+    const userIdNum = resolvedSession.appUser.id
 
     const { data: positions, error: positionsError } = await supabase
       .from('user_portfolios')
@@ -91,17 +100,11 @@ export async function POST(request: Request) {
 
     if (positionsError) {
       console.error('Error fetching positions:', positionsError)
-      return NextResponse.json(
-        { error: '获取持仓失败' },
-        { status: 500 }
-      )
+      return respond({ error: '获取持仓失败' }, 500)
     }
 
     if (!positions || positions.length === 0) {
-      return NextResponse.json(
-        { error: '暂无持仓' },
-        { status: 400 }
-      )
+      return respond({ error: '暂无持仓' }, 400)
     }
 
     const symbols = positions.map(p => p.symbol)
@@ -162,13 +165,10 @@ export async function POST(request: Request) {
 
     if (upsertError) {
       console.error('Error saving history:', upsertError)
-      return NextResponse.json(
-        { error: '保存历史记录失败' },
-        { status: 500 }
-      )
+      return respond({ error: '保存历史记录失败' }, 500)
     }
 
-    return NextResponse.json({
+    return respond({
       success: true,
       message: '历史记录已保存',
       data: {

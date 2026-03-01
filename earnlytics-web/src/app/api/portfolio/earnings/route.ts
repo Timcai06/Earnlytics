@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { applySessionCookies, resolveSessionFromRequest } from '@/lib/auth/session'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -39,17 +40,22 @@ function pickFirstAnalysis(analyses: AnalysisRelation[] | null | undefined): Ana
 
 export async function GET(request: Request) {
   try {
-    const { searchParams } = new URL(request.url)
-    const userId = searchParams.get('user_id')
-
-    if (!userId) {
-      return NextResponse.json(
-        { error: '用户未登录' },
-        { status: 401 }
-      )
+    const resolvedSession = await resolveSessionFromRequest(request)
+    if (resolvedSession.error) {
+      return NextResponse.json({ error: resolvedSession.error }, { status: 500 })
+    }
+    if (!resolvedSession.appUser) {
+      return NextResponse.json({ error: '用户未登录' }, { status: 401 })
     }
 
-    const userIdNum = parseInt(userId)
+    const userIdNum = resolvedSession.appUser.id
+    const respond = (payload: unknown, status = 200) => {
+      const response = NextResponse.json(payload, { status })
+      if (resolvedSession.refreshed && resolvedSession.session) {
+        applySessionCookies(response, resolvedSession.session)
+      }
+      return response
+    }
 
     const { data: positions, error: positionsError } = await supabase
       .from('user_portfolios')
@@ -58,14 +64,11 @@ export async function GET(request: Request) {
 
     if (positionsError) {
       console.error('Error fetching positions:', positionsError)
-      return NextResponse.json(
-        { error: '获取持仓失败' },
-        { status: 500 }
-      )
+      return respond({ error: '获取持仓失败' }, 500)
     }
 
     if (!positions || positions.length === 0) {
-      return NextResponse.json({
+      return respond({
         upcoming: [],
         recent: []
       })
@@ -131,7 +134,7 @@ export async function GET(request: Request) {
       }
     })
 
-    return NextResponse.json({
+    return respond({
       upcoming,
       recent
     })

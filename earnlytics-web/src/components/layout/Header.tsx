@@ -2,34 +2,16 @@
 
 import Link from "next/link";
 import { BarChart3, Menu, X, LogIn, User as UserIcon, Wallet, Sparkles } from "lucide-react";
-import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
+import { useAuthUser } from "@/hooks/use-auth-user";
 
 interface HeaderProps {
   onMenuToggle: () => void;
   isMenuOpen: boolean;
 }
 
-interface User {
-  id: number;
-  name: string;
-  email: string;
-}
-
 export default function Header({ onMenuToggle, isMenuOpen }: HeaderProps) {
-  const [user, setUser] = useState<User | null>(null);
-
-  useEffect(() => {
-    const rafId = window.requestAnimationFrame(() => {
-      try {
-        const raw = localStorage.getItem("user");
-        setUser(raw ? (JSON.parse(raw) as User) : null);
-      } catch {
-        setUser(null);
-      }
-    });
-    return () => window.cancelAnimationFrame(rafId);
-  }, []);
+  const { user } = useAuthUser();
 
   return (
     <header className="fixed top-0 left-0 right-0 z-40 h-[87px] border-b border-border bg-background/80 backdrop-blur-md">

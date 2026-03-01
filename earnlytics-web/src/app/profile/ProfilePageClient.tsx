@@ -2,32 +2,10 @@
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useMemo, useState, useSyncExternalStore } from "react";
-
-interface User {
-  id: number;
-  name: string;
-  email: string;
-}
-
-function subscribeUserStore(onStoreChange: () => void) {
-  if (typeof window === "undefined") return () => {};
-  const handleStorage = (event: StorageEvent) => {
-    if (!event.key || event.key === "user") onStoreChange();
-  };
-  const handleCustom = () => onStoreChange();
-  window.addEventListener("storage", handleStorage);
-  window.addEventListener("user-storage-change", handleCustom);
-  return () => {
-    window.removeEventListener("storage", handleStorage);
-    window.removeEventListener("user-storage-change", handleCustom);
-  };
-}
-
-function readStoredUserRaw() {
-  if (typeof window === "undefined") return null;
-  return localStorage.getItem("user");
-}
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useAuthUser } from "@/hooks/use-auth-user";
+import { writeLocalUser } from "@/lib/auth/client";
 
 function ProfileCompletionRing({ percent }: { percent: number }) {
   const r = 44;
@@ -60,24 +38,29 @@ function ProfileCompletionRing({ percent }: { percent: number }) {
 }
 
 export default function ProfilePageClient() {
-  const userRaw = useSyncExternalStore(subscribeUserStore, readStoredUserRaw, () => null);
-  const user = useMemo<User | null>(() => {
-    if (!userRaw) return null;
-    try {
-      return JSON.parse(userRaw) as User;
-    } catch {
-      return null;
-    }
-  }, [userRaw]);
+  const router = useRouter();
+  const { user, loading: authLoading } = useAuthUser();
   const [activeTab, setActiveTab] = useState(0);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [editNameDraft, setEditNameDraft] = useState<string | null>(null);
   const editName = editNameDraft ?? user?.name ?? "";
 
-  const handleLogout = () => {
-    localStorage.removeItem("user");
-    window.location.href = "/home";
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.replace("/login?next=/profile");
+    }
+  }, [authLoading, router, user]);
+
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
+    } catch (error) {
+      console.error("logout error:", error);
+    } finally {
+      writeLocalUser(null);
+      router.replace("/home");
+    }
   };
 
   const handleSave = async () => {
@@ -85,8 +68,7 @@ export default function ProfilePageClient() {
     await new Promise((r) => setTimeout(r, 800));
     if (user) {
       const updated = { ...user, name: editName };
-      localStorage.setItem("user", JSON.stringify(updated));
-      window.dispatchEvent(new Event("user-storage-change"));
+      writeLocalUser(updated);
       setEditNameDraft(null);
     }
     setSaving(false);
@@ -97,6 +79,18 @@ export default function ProfilePageClient() {
   const tabs = ["个人信息", "订阅管理", "通知偏好"];
 
   const completionPercent = user ? (user.name && user.email ? 75 : user.email ? 50 : 25) : 0;
+
+  if (authLoading && !user) {
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center text-sm text-text-secondary">
+        正在验证登录状态...
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
 
   return (
     <div className="flex flex-col">

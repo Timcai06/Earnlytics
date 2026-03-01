@@ -9,6 +9,7 @@ export { IndustryComparisonChart } from "./IndustryComparisonChart";
 export { EarningsTrendChart } from "./EarningsTrendChart";
 export { SentimentTimeline } from "./SentimentTimeline";
 export { SurpriseRadar } from "./SurpriseRadar";
+export { InvestmentMemoPanel } from "./InvestmentMemoPanel";
 export { ChatInterface } from "./ChatInterface";
 export { AlertManagementPanel, QuickAlertForm } from "./AlertManagement";
 export { NotificationPreferences } from "./NotificationPreferences";
