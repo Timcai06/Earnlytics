@@ -3,6 +3,9 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import type { Company } from "@/types/database";
 import CompaniesList from "./CompaniesList";
+import { getSiteUrl } from "@/lib/site-url";
+
+const siteUrl = getSiteUrl();
 
 export const metadata: Metadata = {
   title: "公司列表 - Earnlytics | 30+科技公司财报",
@@ -11,7 +14,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "公司列表 - Earnlytics",
     description: "覆盖30+科技公司的财报数据和AI分析",
-    url: "https://earnlytics-ebon.vercel.app/companies",
+    url: `${siteUrl}/companies`,
     siteName: "Earnlytics",
     locale: "zh_CN",
     type: "website",

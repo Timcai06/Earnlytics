@@ -1,6 +1,7 @@
 import { MetadataRoute } from "next";
+import { getSiteUrl } from "@/lib/site-url";
 
-const BASE_URL = "https://earnlytics-ebon.vercel.app";
+const BASE_URL = getSiteUrl();
 
 const staticPages = [
   "",
@@ -11,9 +12,7 @@ const staticPages = [
   "/privacy",
   "/terms",
   "/contact",
-  "/login",
-  "/signup",
-  "/dashboard",
+  "/assistant",
 ];
 
 const companies = [

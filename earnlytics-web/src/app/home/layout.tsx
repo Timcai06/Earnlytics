@@ -1,4 +1,7 @@
 import type { Metadata } from "next";
+import { getSiteUrl } from "@/lib/site-url";
+
+const siteUrl = getSiteUrl();
 
 export const metadata: Metadata = {
   title: "金融指挥中心 - Earnlytics | AI财报分析平台",
@@ -7,7 +10,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Earnlytics - 金融指挥中心",
     description: "实时洞察 • 深度分析 • 智能决策 | 覆盖30+科技公司财报",
-    url: "https://earnlytics-ebon.vercel.app/home",
+    url: `${siteUrl}/home`,
     siteName: "Earnlytics",
     locale: "zh_CN",
     type: "website",

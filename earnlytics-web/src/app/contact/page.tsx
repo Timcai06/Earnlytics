@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import AdsenseAd from "@/components/ads/AdsenseAd";
+import { getSiteUrl } from "@/lib/site-url";
+
+const siteUrl = getSiteUrl();
 
 export const metadata: Metadata = {
   title: "联系我们 - Earnlytics",
@@ -57,7 +60,7 @@ export default function ContactPage() {
           </p>
           <ul className="list-inside list-disc space-y-2">
             <li>GitHub: github.com/Timcai06/Earnlytics</li>
-            <li>产品官网: earnlytics-ebon.vercel.app</li>
+            <li>产品官网: {siteUrl}</li>
           </ul>
         </section>
 

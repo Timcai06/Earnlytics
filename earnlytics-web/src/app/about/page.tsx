@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import AdsenseAd from "@/components/ads/AdsenseAd";
+import { getSiteUrl } from "@/lib/site-url";
+
+const siteUrl = getSiteUrl();
 
 export const metadata: Metadata = {
   title: "关于我们 - Earnlytics | AI财报分析平台",
@@ -10,7 +13,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "关于我们 - Earnlytics",
     description: "AI驱动的美国科技公司财报分析平台",
-    url: "https://earnlytics-ebon.vercel.app/about",
+    url: `${siteUrl}/about`,
     siteName: "Earnlytics",
     locale: "zh_CN",
     type: "website",

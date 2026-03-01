@@ -1,4 +1,7 @@
 import { MetadataRoute } from "next";
+import { getSiteUrl } from "@/lib/site-url";
+
+const siteUrl = getSiteUrl();
 
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -6,9 +9,9 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/api/", "/profile/", "/dashboard/"],
+        disallow: ["/api", "/profile", "/dashboard", "/login", "/signup"],
       },
     ],
-    sitemap: "https://earnlytics-ebon.vercel.app/sitemap.xml",
+    sitemap: `${siteUrl}/sitemap.xml`,
   };
 }

@@ -3,6 +3,7 @@ import "./globals.css";
 import { ClientLayout } from "./ClientLayout";
 import Script from "next/script";
 import { Inter } from "next/font/google";
+import { getSiteUrl } from "@/lib/site-url";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -10,7 +11,10 @@ const inter = Inter({
   variable: "--font-inter",
 });
 
+const siteUrl = getSiteUrl();
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: "Earnlytics - AI财报分析 | 1小时内获取投资洞察",
   description: "专业的AI财报分析平台，覆盖Apple、Microsoft等30+科技公司。财报发布后1小时内生成深度分析，帮助投资者快速把握机会。",
   keywords: ["财报分析", "AI投资", "美股财报", "财务分析", "投资工具", "科技股", " earnings analysis", "AI finance"],
@@ -19,7 +23,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Earnlytics - AI财报分析平台",
     description: "1小时内获取专业财报分析，覆盖30+科技公司",
-    url: "https://earnlytics-ebon.vercel.app",
+    url: siteUrl,
     siteName: "Earnlytics",
     locale: "zh_CN",
     type: "website",

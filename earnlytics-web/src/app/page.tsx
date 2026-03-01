@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import LandingPageUI from "@/components/home/LandingPageUI";
+import { getSiteUrl } from "@/lib/site-url";
+
+const siteUrl = getSiteUrl();
 
 export const metadata: Metadata = {
   title: "Earnlytics - AI财报分析平台 | 1小时内获取投资洞察",
@@ -19,7 +22,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Earnlytics - AI驱动的财报分析平台",
     description: "1小时内获取专业财报分析，覆盖30+科技公司",
-    url: "https://earnlytics-ebon.vercel.app",
+    url: siteUrl,
     siteName: "Earnlytics",
     locale: "zh_CN",
     type: "website",

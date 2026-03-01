@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import CalendarClient from "./CalendarClient";
+import { getSiteUrl } from "@/lib/site-url";
+
+const siteUrl = getSiteUrl();
 
 export const metadata: Metadata = {
   title: "财报日历 - Earnlytics | 即将发布的财报",
@@ -8,7 +11,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "财报日历 - Earnlytics",
     description: "美国科技公司财报发布时间表",
-    url: "https://earnlytics-ebon.vercel.app/calendar",
+    url: `${siteUrl}/calendar`,
     siteName: "Earnlytics",
     locale: "zh_CN",
     type: "website",
