@@ -3,6 +3,7 @@
 import { SearchIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import Link from "next/link";
 
 export default function HeroSearch() {
     const router = useRouter();
@@ -45,6 +46,19 @@ export default function HeroSearch() {
                     </div>
                 </div>
             </form>
+
+            <div className="mt-5 flex flex-wrap items-center justify-center gap-2 text-sm sm:gap-3 opacity-0 animate-[fade-in_0.5s_ease-out_0.3s_forwards]">
+                <span className="text-text-tertiary font-medium">热门搜索:</span>
+                {["NVDA", "AAPL", "TSLA", "MSFT", "AMD"].map((ticker) => (
+                    <Link
+                        key={ticker}
+                        href={`/companies?q=${ticker}`}
+                        className="rounded-full bg-white/5 border border-white/10 px-3 py-1 text-text-secondary hover:bg-white/15 hover:text-white hover:border-white/20 hover:-translate-y-0.5 transition-all duration-200"
+                    >
+                        {ticker}
+                    </Link>
+                ))}
+            </div>
         </div>
     );
 }

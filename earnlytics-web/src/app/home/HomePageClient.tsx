@@ -58,6 +58,9 @@ const SubscribeForm = dynamic(() => import("@/components/home/SubscribeForm"), {
   loading: () => <div className="h-[220px] w-full" />,
 });
 
+const AIFeaturedInsight = dynamic(() => import("@/components/home/AIFeaturedInsight"));
+const ExploreSectors = dynamic(() => import("@/components/home/ExploreSectors"));
+
 function EarningsCardsFallback({ count = 4 }: { count?: number }) {
   return (
     <div className="space-y-4">
@@ -150,7 +153,11 @@ export default function HomePageClient({ initialData }: HomePageClientProps) {
         </div>
       </section>
 
-      <main className="flex-1 px-4 sm:px-6 lg:px-8 pb-20">
+      <section className="px-4 sm:px-6 lg:px-8 w-full mt-10 mb-20 lg:mb-28">
+        <AIFeaturedInsight />
+      </section>
+
+      <main className="flex-1 px-4 sm:px-6 lg:px-8 pb-20 space-y-20 lg:space-y-28">
         <div className="mx-auto max-w-7xl grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2">
@@ -239,6 +246,10 @@ export default function HomePageClient({ initialData }: HomePageClientProps) {
               <CalendarTimeline events={upcomingEarnings} />
             </ViewportRender>
           </div>
+        </div>
+
+        <div className="mx-auto max-w-7xl">
+          <ExploreSectors />
         </div>
       </main>
 
