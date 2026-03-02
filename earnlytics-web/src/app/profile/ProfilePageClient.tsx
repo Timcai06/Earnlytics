@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthUser } from "@/hooks/use-auth-user";
 import { writeLocalUser } from "@/lib/auth/client";
+import { redirectToLoginOnce } from "@/lib/auth/guard";
 
 function ProfileCompletionRing({ percent }: { percent: number }) {
   const r = 44;
@@ -40,6 +41,7 @@ function ProfileCompletionRing({ percent }: { percent: number }) {
 export default function ProfilePageClient() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuthUser();
+  const userId = user?.id ?? null;
   const [activeTab, setActiveTab] = useState(0);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -47,10 +49,10 @@ export default function ProfilePageClient() {
   const editName = editNameDraft ?? user?.name ?? "";
 
   useEffect(() => {
-    if (!authLoading && !user) {
-      router.replace("/login?next=/profile");
+    if (!authLoading && !userId) {
+      redirectToLoginOnce(router, "/profile");
     }
-  }, [authLoading, router, user]);
+  }, [authLoading, router, userId]);
 
   const handleLogout = async () => {
     try {
@@ -65,7 +67,6 @@ export default function ProfilePageClient() {
 
   const handleSave = async () => {
     setSaving(true);
-    await new Promise((r) => setTimeout(r, 800));
     if (user) {
       const updated = { ...user, name: editName };
       writeLocalUser(updated);
@@ -80,7 +81,7 @@ export default function ProfilePageClient() {
 
   const completionPercent = user ? (user.name && user.email ? 75 : user.email ? 50 : 25) : 0;
 
-  if (authLoading && !user) {
+  if (authLoading && !userId) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center text-sm text-text-secondary">
         正在验证登录状态...
@@ -88,7 +89,7 @@ export default function ProfilePageClient() {
     );
   }
 
-  if (!user) {
+  if (!userId) {
     return null;
   }
 

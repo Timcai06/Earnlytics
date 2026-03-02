@@ -1,11 +1,9 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
-import { fetchStockPriceFromYahoo, saveStockPrice } from '@/lib/stock-data'
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
-
-const supabase = createClient(supabaseUrl, supabaseServiceKey)
+import {
+  getLatestStockPrice,
+  isStockPriceStale,
+  refreshStockPrice,
+} from '@/lib/stock-price-service'
 
 interface MockStockData {
   symbol: string
@@ -70,30 +68,6 @@ function getMockStockData(symbol: string) {
   }
 }
 
-/**
- * 从数据库获取缓存的股价
- */
-async function getCachedStockPrice(symbol: string) {
-  try {
-    const { data, error } = await supabase
-      .from('stock_prices')
-      .select('*')
-      .eq('symbol', symbol.toUpperCase())
-      .order('timestamp', { ascending: false })
-      .limit(1)
-      .single()
-
-    if (error && error.code !== 'PGRST116') {
-      console.error('Database error:', error)
-    }
-
-    return data
-  } catch (error) {
-    console.error('Error getting cached price:', error)
-    return null
-  }
-}
-
 export async function GET(
   _request: Request,
   { params }: { params: Promise<{ symbol: string }> }
@@ -102,32 +76,45 @@ export async function GET(
     const { symbol } = await params
     const normalizedSymbol = symbol.toUpperCase()
 
-    // 1. 首先尝试从 Yahoo Finance 获取最新数据
-    const freshData = await fetchStockPriceFromYahoo(normalizedSymbol)
+    // 1. 先尝试使用未过期缓存，避免每次请求都触发外部 API
+    const cachedData = await getLatestStockPrice(normalizedSymbol)
+    if (cachedData && !isStockPriceStale(cachedData.timestamp)) {
+      return NextResponse.json({
+        symbol: cachedData.symbol,
+        price: cachedData.price,
+        change: cachedData.change,
+        changePercent: cachedData.change_percent,
+        volume: cachedData.volume,
+        marketCap: cachedData.market_cap,
+        peRatio: cachedData.pe_ratio,
+        high52w: cachedData.high_52w,
+        low52w: cachedData.low_52w,
+        timestamp: cachedData.timestamp,
+        source: 'cache',
+        cached: true
+      })
+    }
 
+    // 2. 缓存过期或缺失时再尝试刷新实时数据
+    const freshData = await refreshStockPrice(normalizedSymbol)
     if (freshData) {
-      // 异步保存到数据库
-      saveStockPrice(freshData)
-
       return NextResponse.json({
         symbol: normalizedSymbol,
         price: freshData.price,
         change: freshData.change,
-        changePercent: freshData.changePercent,
+        changePercent: freshData.change_percent,
         volume: freshData.volume,
-        marketCap: freshData.marketCap,
-        peRatio: freshData.peRatio,
-        high52w: freshData.high52w,
-        low52w: freshData.low52w,
+        marketCap: freshData.market_cap,
+        peRatio: freshData.pe_ratio,
+        high52w: freshData.high_52w,
+        low52w: freshData.low_52w,
         timestamp: freshData.timestamp,
         source: 'live',
         cached: false
       })
     }
 
-    // 2. 如果获取失败，尝试从数据库获取缓存数据
-    const cachedData = await getCachedStockPrice(normalizedSymbol)
-
+    // 3. 实时刷新失败时使用旧缓存兜底
     if (cachedData) {
       return NextResponse.json({
         symbol: cachedData.symbol,
@@ -145,7 +132,7 @@ export async function GET(
       })
     }
 
-    // 3. 开发环境允许显式开启 mock 数据回退
+    // 4. 开发环境允许显式开启 mock 数据回退
     const allowMockFallback =
       process.env.NODE_ENV !== 'production' &&
       process.env.ENABLE_STOCK_MOCK_DATA === 'true'
@@ -169,7 +156,7 @@ export async function GET(
       })
     }
 
-    // 4. 如果都没有数据，返回 unavailable
+    // 5. 如果都没有数据，返回 unavailable
     return NextResponse.json(
       { error: 'Stock price data not found', source: 'unavailable', cached: false },
       { status: 404 }

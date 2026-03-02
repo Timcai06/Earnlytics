@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import type { Company } from "@/types/database";
+import { getLatestStockPrices } from "@/lib/stock-price-service";
 
 export interface InvestmentRecommendation {
   symbol: string;
@@ -79,23 +80,7 @@ export async function getInvestmentRecommendations(): Promise<InvestmentRecommen
     ),
   ];
 
-  const stockPriceMap = new Map<string, { price: number; change_percent: number }>();
-
-  if (symbolList.length > 0) {
-    const { data: prices } = await supabase
-      .from("stock_prices")
-      .select("symbol, price, change_percent")
-      .in("symbol", symbolList)
-      .order("timestamp", { ascending: false });
-
-    if (prices) {
-      for (const price of prices) {
-        if (!stockPriceMap.has(price.symbol)) {
-          stockPriceMap.set(price.symbol, { price: price.price, change_percent: price.change_percent });
-        }
-      }
-    }
-  }
+  const stockPriceMap = await getLatestStockPrices(symbolList);
 
   return analyses.map((analysis) => {
     const earning = earningsMap.get(analysis.earnings_id);
@@ -103,7 +88,7 @@ export async function getInvestmentRecommendations(): Promise<InvestmentRecommen
     const highlights = analysis?.highlights || [];
     const sentiment = analysis?.sentiment || "neutral";
     const symbol = company?.symbol || "";
-    const stockData = stockPriceMap.get(symbol);
+    const stockData = stockPriceMap.get(symbol.toUpperCase());
     const currentPrice = stockData?.price || 0;
 
     let targetPriceLow = 0;

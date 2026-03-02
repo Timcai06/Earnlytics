@@ -11,6 +11,10 @@ interface TickerItem {
     isPositive: boolean;
 }
 
+interface MarketTickerProps {
+    initialData?: TickerItem[];
+}
+
 function SkeletonItem() {
     return (
         <div className="flex shrink-0 items-center gap-2 px-6">
@@ -51,9 +55,9 @@ const FALLBACK_TICKER: TickerItem[] = [
     { symbol: "NFLX", price: 685.90, change: 8.40, changePercent: 1.24, isPositive: true },
 ];
 
-export default function MarketTicker() {
-    const [tickerData, setTickerData] = useState<TickerItem[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+export default function MarketTicker({ initialData = [] }: MarketTickerProps) {
+    const [tickerData, setTickerData] = useState<TickerItem[]>(initialData);
+    const [isLoading, setIsLoading] = useState(initialData.length === 0);
     const [setWidth, setSetWidth] = useState(0);
     const [isAnimating, setIsAnimating] = useState(true);
     const measureRef = useRef<HTMLDivElement>(null);

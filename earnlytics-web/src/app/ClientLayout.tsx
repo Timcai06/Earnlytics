@@ -8,6 +8,7 @@ import { PerformanceMonitor } from "@/components/performance/PerformanceMonitor"
 import { WebVitalsReporter } from "@/components/performance/WebVitalsReporter";
 import TopLoadingBar from "@/components/ui/TopLoadingBar";
 import { Suspense } from "react";
+import { AuthProvider } from "@/lib/auth/context";
 
 export function ClientLayout({
   children,
@@ -17,7 +18,7 @@ export function ClientLayout({
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   return (
-    <>
+    <AuthProvider>
       <PerformanceMonitor />
       <WebVitalsReporter />
       <Suspense fallback={null}>
@@ -33,6 +34,6 @@ export function ClientLayout({
       />
       <main className="flex-1 pt-[87px]">{children}</main>
       <Footer />
-    </>
+    </AuthProvider>
   );
 }

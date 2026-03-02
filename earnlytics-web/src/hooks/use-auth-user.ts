@@ -4,17 +4,26 @@ import { useEffect, useMemo, useState } from "react";
 import {
   USER_STORAGE_EVENT,
   fetchSessionUser,
+  isSameAuthUser,
   readLocalUser,
   writeLocalUser,
   type AuthUser,
 } from "@/lib/auth/client";
+import { useOptionalAuth } from "@/lib/auth/context";
 
-export function useAuthUser() {
-  const [user, setUser] = useState<AuthUser | null>(() => readLocalUser());
-  const [loading, setLoading] = useState(true);
+function useLegacyAuthUser(enabled: boolean) {
+  // Avoid reading localStorage during initial render to keep hydration stable.
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [loading, setLoading] = useState(enabled);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!enabled) {
+      setLoading(false);
+      setError(null);
+      return;
+    }
+
     let cancelled = false;
 
     const refresh = async () => {
@@ -22,31 +31,37 @@ export function useAuthUser() {
         setError(null);
         const sessionUser = await fetchSessionUser();
         if (cancelled) return;
-        setUser(sessionUser);
+        setUser((prev) => (isSameAuthUser(prev, sessionUser) ? prev : sessionUser));
         writeLocalUser(sessionUser);
       } catch (err) {
         if (cancelled) return;
-        console.error("useAuthUser refresh error:", err);
+        console.error("useAuthUser legacy refresh error:", err);
         const cached = readLocalUser();
-        setUser(cached);
+        setUser((prev) => (isSameAuthUser(prev, cached) ? prev : cached));
         setError("Failed to validate session");
       } finally {
         if (!cancelled) setLoading(false);
       }
     };
 
-    refresh();
+    void refresh();
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [enabled]);
 
   useEffect(() => {
+    if (!enabled) return;
+
     const onStorage = (event: StorageEvent) => {
       if (event.key && event.key !== "user") return;
-      setUser(readLocalUser());
+      const nextUser = readLocalUser();
+      setUser((prev) => (isSameAuthUser(prev, nextUser) ? prev : nextUser));
     };
-    const onCustom = () => setUser(readLocalUser());
+    const onCustom = () => {
+      const nextUser = readLocalUser();
+      setUser((prev) => (isSameAuthUser(prev, nextUser) ? prev : nextUser));
+    };
 
     window.addEventListener("storage", onStorage);
     window.addEventListener(USER_STORAGE_EVENT, onCustom);
@@ -54,7 +69,7 @@ export function useAuthUser() {
       window.removeEventListener("storage", onStorage);
       window.removeEventListener(USER_STORAGE_EVENT, onCustom);
     };
-  }, []);
+  }, [enabled]);
 
   return useMemo(
     () => ({
@@ -65,4 +80,10 @@ export function useAuthUser() {
     }),
     [error, loading, user]
   );
+}
+
+export function useAuthUser() {
+  const context = useOptionalAuth();
+  const legacy = useLegacyAuthUser(!context);
+  return context ?? legacy;
 }

@@ -8,11 +8,17 @@ export interface AuthUser {
 
 export const USER_STORAGE_KEY = "user";
 export const USER_STORAGE_EVENT = "user-storage-change";
-const SESSION_CACHE_MS = 3000;
+const SESSION_CACHE_MS = 30_000;
 
 let sessionRequest: Promise<AuthUser | null> | null = null;
 let lastSessionFetchedAt = 0;
 let lastSessionUser: AuthUser | null = null;
+
+export function isSameAuthUser(a: AuthUser | null, b: AuthUser | null) {
+  if (a === b) return true;
+  if (!a || !b) return a === b;
+  return a.id === b.id && a.email === b.email && a.name === b.name;
+}
 
 export function readLocalUser(): AuthUser | null {
   if (typeof window === "undefined") return null;
@@ -32,22 +38,27 @@ export function readLocalUser(): AuthUser | null {
   }
 }
 
-export function writeLocalUser(user: AuthUser | null) {
+export function writeLocalUser(user: AuthUser | null, options?: { emitEvent?: boolean }) {
   if (typeof window === "undefined") return;
 
+  const emitEvent = options?.emitEvent ?? true;
   const currentRaw = localStorage.getItem(USER_STORAGE_KEY);
   const nextRaw = user ? JSON.stringify(user) : null;
-  if (currentRaw === nextRaw) return;
+  const hasChanged = currentRaw !== nextRaw;
 
-  if (!user) {
-    localStorage.removeItem(USER_STORAGE_KEY);
-  } else {
-    localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
+  if (hasChanged) {
+    if (!user) {
+      localStorage.removeItem(USER_STORAGE_KEY);
+    } else {
+      localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
+    }
   }
 
   lastSessionUser = user;
   lastSessionFetchedAt = Date.now();
-  window.dispatchEvent(new Event(USER_STORAGE_EVENT));
+  if (emitEvent && hasChanged) {
+    window.dispatchEvent(new Event(USER_STORAGE_EVENT));
+  }
 }
 
 export async function fetchSessionUser(options?: { force?: boolean }): Promise<AuthUser | null> {

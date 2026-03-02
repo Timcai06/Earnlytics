@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Bell, Loader2, X } from "lucide-react";
 import { useAuthUser } from "@/hooks/use-auth-user";
-import { writeLocalUser } from "@/lib/auth/client";
+import { redirectToLoginOnce } from "@/lib/auth/guard";
 import { AlertManagementPanel, NotificationPreferences, QuickAlertForm } from "@/components/investment";
 import { UserNotificationPreferences } from "@/types/investment";
 
@@ -63,6 +63,7 @@ export default function AlertsPageClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, loading: authLoading } = useAuthUser();
+  const userId = user?.id ?? null;
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [rules, setRules] = useState<AlertRuleView[]>([]);
@@ -77,41 +78,28 @@ export default function AlertsPageClient() {
   }, [searchParams]);
 
   const redirectToLogin = useCallback(() => {
-    writeLocalUser(null);
-    router.replace("/login?next=/alerts");
+    redirectToLoginOnce(router, "/alerts");
   }, [router]);
 
   const fetchAll = useCallback(async () => {
-    if (!user) return;
+    if (!userId) return;
     setLoading(true);
     setError(null);
     try {
-      const [rulesRes, historyRes, prefsRes] = await Promise.all([
-        fetch("/api/alerts?type=rules"),
-        fetch("/api/alerts?type=history"),
-        fetch("/api/alerts?type=preferences"),
-      ]);
-
-      if (rulesRes.status === 401 || historyRes.status === 401 || prefsRes.status === 401) {
+      const response = await fetch("/api/alerts?type=all");
+      if (response.status === 401) {
         redirectToLogin();
         return;
       }
 
-      const [rulesJson, historyJson, prefsJson] = await Promise.all([
-        rulesRes.json(),
-        historyRes.json(),
-        prefsRes.json(),
-      ]);
+      const json = await response.json();
+      if (!response.ok) throw new Error(json?.error || "加载预警数据失败");
 
-      if (!rulesRes.ok) throw new Error(rulesJson?.error || "加载预警规则失败");
-      if (!historyRes.ok) throw new Error(historyJson?.error || "加载预警历史失败");
-      if (!prefsRes.ok) throw new Error(prefsJson?.error || "加载通知偏好失败");
-
-      setRules((rulesJson.rules || []) as AlertRuleView[]);
-      setHistory((historyJson.history || []) as AlertHistoryView[]);
+      setRules((json.rules || []) as AlertRuleView[]);
+      setHistory((json.history || []) as AlertHistoryView[]);
       setPreferences({
         ...defaultPreferences,
-        ...(prefsJson.preferences || {}),
+        ...(json.preferences || {}),
       });
     } catch (err) {
       console.error("alerts fetch error:", err);
@@ -119,19 +107,19 @@ export default function AlertsPageClient() {
     } finally {
       setLoading(false);
     }
-  }, [redirectToLogin, user]);
+  }, [redirectToLogin, userId]);
 
   useEffect(() => {
-    if (!authLoading && !user) {
+    if (!authLoading && !userId) {
       redirectToLogin();
     }
-  }, [authLoading, redirectToLogin, user]);
+  }, [authLoading, redirectToLogin, userId]);
 
   useEffect(() => {
-    if (user) {
+    if (userId) {
       fetchAll();
     }
-  }, [fetchAll, user]);
+  }, [fetchAll, userId]);
 
   useEffect(() => {
     if (searchParams.get("create") === "1") {
@@ -278,7 +266,7 @@ export default function AlertsPageClient() {
     );
   }
 
-  if (!user) {
+  if (!userId) {
     return (
       <div className="container mx-auto max-w-4xl px-4 py-16">
         <h1 className="mb-4 text-3xl font-bold text-white">预警中心</h1>
@@ -368,4 +356,3 @@ export default function AlertsPageClient() {
     </div>
   );
 }
-

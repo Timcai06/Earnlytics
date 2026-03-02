@@ -2,11 +2,10 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useState, useMemo, useEffect, useRef, useCallback } from "react";
+import { useState, useMemo, useRef, useCallback } from "react";
 import type { CompanyWithEarnings } from "./page";
 import { LayoutGridIcon, ListIcon, ArrowUpDownIcon } from "@/components/icons";
 import { SearchIcon, XIcon } from "lucide-react";
-import { CompanyCardSkeleton } from "@/components/ui/skeleton";
 import { SearchEmptyState, NoDataState } from "@/components/ui/EmptyState";
 import HorizontalGlow from "@/components/ui/HorizontalGlow";
 import CompanyListStats from "@/components/companies/CompanyListStats";
@@ -78,14 +77,8 @@ export default function CompaniesList({ companies }: CompaniesListProps) {
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
   const [sortBy, setSortBy] = useState<SortOption>("symbol-asc");
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
-  const [isLoading, setIsLoading] = useState(true);
   const [isFocused, setIsFocused] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 300);
-    return () => clearTimeout(timer);
-  }, []);
 
   const handleClearSearch = useCallback(() => {
     setSearchQuery("");
@@ -302,21 +295,7 @@ export default function CompaniesList({ companies }: CompaniesListProps) {
 
       <section className="px-4 pb-24 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl">
-          {isLoading ? (
-            viewMode === "grid" ? (
-              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                {Array.from({ length: 6 }).map((_, i) => (
-                  <CompanyCardSkeleton key={i} />
-                ))}
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {Array.from({ length: 6 }).map((_, i) => (
-                  <CompanyCardSkeleton key={i} className="h-20" />
-                ))}
-              </div>
-            )
-          ) : filteredAndSortedCompanies.length === 0 ? (
+          {filteredAndSortedCompanies.length === 0 ? (
             <SearchEmptyState
               query={searchQuery}
               onClearAction={clearFilters}

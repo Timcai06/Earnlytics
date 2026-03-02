@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase";
+import { getLatestStockPrices } from "@/lib/stock-price-service";
 
 export interface HomeEarningsWithCompany {
   id: number;
@@ -32,7 +33,29 @@ export interface HomePageDataResult {
   latestEarnings: HomeEarningsWithCompany[];
   upcomingEarnings: HomeCalendarEvent[];
   revenueHistoryMap: Record<number, number[]>;
+  marketTicker: HomeTickerItem[];
 }
+
+export interface HomeTickerItem {
+  symbol: string;
+  price: number;
+  change: number;
+  changePercent: number;
+  isPositive: boolean;
+}
+
+const HOME_TICKER_SYMBOLS = [
+  "AAPL",
+  "NVDA",
+  "MSFT",
+  "TSLA",
+  "GOOGL",
+  "META",
+  "AMZN",
+  "AMD",
+  "INTC",
+  "NFLX",
+];
 
 export async function fetchHomePageData(): Promise<HomePageDataResult> {
   if (!supabase) {
@@ -42,6 +65,7 @@ export async function fetchHomePageData(): Promise<HomePageDataResult> {
   const today = new Date();
   const nextWeek = new Date(today.getTime() + 14 * 24 * 60 * 60 * 1000);
 
+  const tickerPromise = getLatestStockPrices(HOME_TICKER_SYMBOLS).catch(() => new Map());
   const [latestResult, upcomingResult] = await Promise.all([
     supabase
       .from("earnings")
@@ -149,9 +173,24 @@ export async function fetchHomePageData(): Promise<HomePageDataResult> {
         };
       }) || [];
 
+  const tickerMap = await tickerPromise;
+  const marketTicker = HOME_TICKER_SYMBOLS.map((symbol) => {
+    const ticker = tickerMap.get(symbol);
+    const change = ticker?.change ?? 0;
+    const changePercent = ticker?.change_percent ?? 0;
+    return {
+      symbol,
+      price: ticker?.price ?? 0,
+      change,
+      changePercent,
+      isPositive: changePercent >= 0,
+    };
+  }).filter((item) => item.price > 0);
+
   return {
     latestEarnings: mappedLatest,
     upcomingEarnings: mappedUpcoming,
     revenueHistoryMap: historyMap,
+    marketTicker,
   };
 }

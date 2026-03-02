@@ -1,47 +1,23 @@
 "use client";
 
 import Link from "next/link";
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { BotIcon, XCircleIcon, SparklesIcon, AlertTriangleIcon, ThumbsUpIcon, ThumbsDownIcon, ClockIcon, DatabaseIcon, TrendingUpIcon } from "@/components/icons";
 import { PageLoading } from "@/components/ui/spinner";
 import { EarningsTrendChart } from "@/components/investment/EarningsTrendChart";
 import { SentimentTimeline } from "@/components/investment/SentimentTimeline";
 import { SurpriseRadar } from "@/components/investment/SurpriseRadar";
 import { InvestmentMemoPanel } from "@/components/investment/InvestmentMemoPanel";
-
-interface EarningWithAnalysis {
-  id: number;
-  company_id: number;
-  fiscal_year: number;
-  fiscal_quarter: number;
-  report_date: string;
-  revenue: number | null;
-  revenue_yoy_growth: number | null;
-  eps: number | null;
-  eps_estimate: number | null;
-  eps_surprise: number | null;
-  net_income: number | null;
-  is_analyzed: boolean;
-  data_source: 'fmp' | 'sec' | 'sample' | null;
-  companies: {
-    id: number;
-    symbol: string;
-    name: string;
-    sector: string | null;
-  };
-  ai_analyses: {
-    id: number;
-    summary: string;
-    highlights: string[] | null;
-    concerns: string[] | null;
-    sentiment: 'positive' | 'neutral' | 'negative' | null;
-    created_at: string | null;
-  } | null;
-}
+import type {
+  EarningWithAnalysis,
+  EarningsPageInitialData,
+  SentimentHistoryData,
+} from "./earnings-data";
 
 interface Props {
-  params: Promise<{ symbol: string }>;
+  symbol: string;
   initialEarningId?: string;
+  initialData?: EarningsPageInitialData | null;
 }
 
 function formatCurrency(value: number | null): string {
@@ -93,42 +69,28 @@ function getDataSourceLabel(source: string | null): { label: string; color: stri
   }
 }
 
-export default function EarningsPageClient({ params, initialEarningId }: Props) {
-  const { symbol } = use(params);
-  const [earnings, setEarnings] = useState<EarningWithAnalysis | null>(null);
-  const [earningsHistory, setEarningsHistory] = useState<EarningWithAnalysis[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [retries, setRetries] = useState(0);
-  const [sentimentHistory, setSentimentHistory] = useState<{
-    quarters: Array<{
-      quarter: string;
-      fiscal_year: number;
-      fiscal_quarter: number;
-      sentiment: 'positive' | 'neutral' | 'negative' | null;
-      revenue: number | null;
-      eps: number | null;
-      revenue_yoy_growth: number | null;
-      eps_surprise: number | null;
-      ai_summary_preview: string;
-      earning_id: number;
-      report_date: string;
-    }>;
-    trend_analysis: {
-      positive_streak: number;
-      negative_streak: number;
-      sentiment_changes: number;
-      overall_trend: 'improving' | 'declining' | 'stable';
-    };
-  } | null>(null);
-
-  const maxRetries = 3;
+export default function EarningsPageClient({ symbol, initialEarningId, initialData }: Props) {
+  const [earnings, setEarnings] = useState<EarningWithAnalysis | null>(
+    initialData?.earnings ?? null
+  );
+  const [earningsHistory, setEarningsHistory] = useState<EarningWithAnalysis[]>(
+    initialData?.earningsHistory ?? []
+  );
+  const [loading, setLoading] = useState(() => !initialData?.earnings);
+  const [error, setError] = useState<string | null>(() =>
+    initialData && !initialData.earnings ? "未找到这支股票的财报数据" : null
+  );
+  const [sentimentHistory, setSentimentHistory] = useState<SentimentHistoryData | null>(
+    initialData?.sentimentHistory ?? null
+  );
 
   const validEarningsHistory = earningsHistory.filter(e => e.revenue !== null);
 
   const isLatestEarning = earnings && validEarningsHistory.length > 0 && earnings.id === validEarningsHistory[0].id;
 
   useEffect(() => {
+    let cancelled = false;
+
     if (!symbol) {
       setError('未提供股票代码');
       setLoading(false);
@@ -136,54 +98,38 @@ export default function EarningsPageClient({ params, initialEarningId }: Props) 
     }
 
     async function fetchData() {
+      if (!initialData?.earnings) {
+        setLoading(true);
+      }
+
       try {
-        const [latestResponse, historyResponse, sentimentResponse, selectedResponse] = await Promise.all([
-          fetch(`/api/earnings?symbol=${symbol}&latest=true`),
-          fetch(`/api/earnings?symbol=${symbol}`),
-          fetch(`/api/sentiment-history/${symbol}`),
-          initialEarningId ? fetch(`/api/earnings/${initialEarningId}`) : Promise.resolve(null),
-        ]);
-
-        if (!latestResponse.ok) throw new Error(`Failed to fetch latest earnings: ${latestResponse.status}`);
-        const latestData = await latestResponse.json();
-
-        if (latestData.earnings) {
-          setEarnings(latestData.earnings as EarningWithAnalysis);
-        } else {
-          setError('未找到这支股票的财报数据');
+        const query = initialEarningId
+          ? `?earning_id=${encodeURIComponent(initialEarningId)}`
+          : "";
+        const response = await fetch(`/api/earnings/overview/${encodeURIComponent(symbol)}${query}`);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch earnings overview: ${response.status}`);
         }
 
-        if (historyResponse.ok) {
-          const historyData = await historyResponse.json();
-          if (historyData.earnings) {
-            setEarningsHistory(Array.isArray(historyData.earnings) ? historyData.earnings : [historyData.earnings]);
-          }
-        }
+        const overview = (await response.json()) as EarningsPageInitialData;
+        if (cancelled) return;
 
-        if (selectedResponse?.ok) {
-          const selectedData = await selectedResponse.json();
-          if (selectedData.earnings) {
-            setEarnings(selectedData.earnings as EarningWithAnalysis);
-          }
-        }
-
-        if (sentimentResponse.ok) {
-          const sentimentData = await sentimentResponse.json();
-          setSentimentHistory(sentimentData);
-        }
+        setEarnings(overview.earnings ?? null);
+        setEarningsHistory(overview.earningsHistory ?? []);
+        setSentimentHistory(overview.sentimentHistory ?? null);
+        setError(overview.earnings ? null : "未找到这支股票的财报数据");
       } catch (e) {
-        if (retries < maxRetries) {
-          setRetries(r => r + 1);
-          return;
-        }
-        setError(e instanceof Error ? e.message : '加载失败');
+        if (!cancelled) setError(e instanceof Error ? e.message : '加载失败');
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     }
 
-    fetchData();
-  }, [initialEarningId, symbol, retries]);
+    void fetchData();
+    return () => {
+      cancelled = true;
+    };
+  }, [initialData?.earnings, initialEarningId, symbol]);
 
   const handleEarningClick = async (earningId: number) => {
     if (earningId === earnings?.id) return;

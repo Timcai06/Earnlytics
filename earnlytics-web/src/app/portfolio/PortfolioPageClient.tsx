@@ -8,7 +8,7 @@ import { PortfolioSummary, PositionList, AddPositionDialog, Drawer, PositionDraw
 import { cn } from "@/lib/utils"
 import type { PortfolioPosition, PortfolioSummary as PortfolioSummaryType } from "@/lib/supabase"
 import { useAuthUser } from "@/hooks/use-auth-user"
-import { writeLocalUser } from "@/lib/auth/client"
+import { redirectToLoginOnce } from "@/lib/auth/guard"
 
 interface EarningsInfo {
   symbol: string
@@ -21,7 +21,8 @@ const AUTO_REFRESH_INTERVAL = 5 * 60 * 1000
 export function PortfolioPageClient() {
   const router = useRouter()
   const { user, loading: authLoading } = useAuthUser()
-  const [loading, setLoading] = useState(false)
+  const userId = user?.id ?? null
+  const [loading, setLoading] = useState(true)
   const [positions, setPositions] = useState<PortfolioPosition[]>([])
   const [summary, setSummary] = useState<PortfolioSummaryType>({
     total_value: 0,
@@ -40,18 +41,17 @@ export function PortfolioPageClient() {
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
   const [refreshing, setRefreshing] = useState(false)
   const redirectToLogin = useCallback(() => {
-    writeLocalUser(null)
-    router.replace("/login?next=/portfolio")
+    redirectToLoginOnce(router, "/portfolio")
   }, [router])
 
   useEffect(() => {
-    if (!authLoading && !user) {
+    if (!authLoading && !userId) {
       redirectToLogin()
     }
-  }, [authLoading, redirectToLogin, user])
+  }, [authLoading, redirectToLogin, userId])
 
   const fetchPortfolio = useCallback(async () => {
-    if (!user) return
+    if (!userId) return
 
     try {
       const res = await fetch('/api/portfolio')
@@ -71,10 +71,10 @@ export function PortfolioPageClient() {
       setLoading(false)
       setRefreshing(false)
     }
-  }, [redirectToLogin, user])
+  }, [redirectToLogin, userId])
 
   const fetchEarnings = useCallback(async () => {
-    if (!user) return
+    if (!userId) return
 
     try {
       const res = await fetch('/api/portfolio/earnings')
@@ -99,18 +99,18 @@ export function PortfolioPageClient() {
     } catch (error) {
       console.error('Error fetching earnings:', error)
     }
-  }, [redirectToLogin, user])
+  }, [redirectToLogin, userId])
 
   useEffect(() => {
-    if (user) {
+    if (userId) {
       setLoading(true)
       fetchPortfolio()
       fetchEarnings()
     }
-  }, [user, fetchPortfolio, fetchEarnings])
+  }, [userId, fetchPortfolio, fetchEarnings])
 
   useEffect(() => {
-    if (!user || positions.length === 0) return
+    if (!userId || positions.length === 0) return
 
     const interval = setInterval(() => {
       setRefreshing(true)
@@ -119,10 +119,10 @@ export function PortfolioPageClient() {
     }, AUTO_REFRESH_INTERVAL)
 
     return () => clearInterval(interval)
-  }, [user, positions.length, fetchPortfolio, fetchEarnings])
+  }, [userId, positions.length, fetchPortfolio, fetchEarnings])
 
   const handleAddPosition = async (data: { symbol: string; shares: number; cost_basis: number }) => {
-    if (!user) return
+    if (!userId) return
 
     setAdding(true)
     try {
@@ -157,7 +157,7 @@ export function PortfolioPageClient() {
   }
 
   const handleDeletePosition = async (id: number) => {
-    if (!user) return
+    if (!userId) return
     if (!confirm('确定要删除这个持仓吗？')) return
 
     const isDeletingCurrentDrawerPosition = selectedPosition?.id === id
@@ -208,16 +208,16 @@ export function PortfolioPageClient() {
     setDrawerOpen(true)
   }
 
+  if (!authLoading && !userId) {
+    return null
+  }
+
   if (authLoading || loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     )
-  }
-
-  if (!user) {
-    return null
   }
 
   return (

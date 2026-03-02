@@ -5,6 +5,8 @@ import { cn } from "@/lib/utils";
 
 interface TabsProps {
   defaultValue: string;
+  value?: string;
+  onValueChange?: (value: string) => void;
   className?: string;
   children: React.ReactNode;
 }
@@ -24,11 +26,20 @@ function useTabs() {
   return context;
 }
 
-export function Tabs({ defaultValue, className, children }: TabsProps) {
-  const [value, setValue] = React.useState(defaultValue);
+export function Tabs({ defaultValue, value, onValueChange, className, children }: TabsProps) {
+  const [internalValue, setInternalValue] = React.useState(defaultValue);
+  const selectedValue = value ?? internalValue;
+
+  const handleValueChange = (nextValue: string) => {
+    if (onValueChange) {
+      onValueChange(nextValue);
+      return;
+    }
+    setInternalValue(nextValue);
+  };
 
   return (
-    <TabsContext.Provider value={{ value, onValueChange: setValue }}>
+    <TabsContext.Provider value={{ value: selectedValue, onValueChange: handleValueChange }}>
       <div className={cn("w-full", className)}>{children}</div>
     </TabsContext.Provider>
   );

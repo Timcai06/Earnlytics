@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import EarningsPageClient from "./EarningsPageClient";
+import { fetchEarningsPageInitialData, type EarningsPageInitialData } from "./earnings-data";
 
 interface Props {
   params: Promise<{ symbol: string }>;
@@ -15,6 +16,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function EarningsPage({ params, searchParams }: Props) {
+  const { symbol } = await params;
   const { earning_id } = await searchParams;
-  return <EarningsPageClient params={params} initialEarningId={earning_id} />;
+  let initialData: EarningsPageInitialData | null = null;
+  try {
+    initialData = await fetchEarningsPageInitialData(symbol, earning_id);
+  } catch {
+    initialData = null;
+  }
+
+  return (
+    <EarningsPageClient
+      symbol={symbol}
+      initialEarningId={earning_id}
+      initialData={initialData}
+    />
+  );
 }

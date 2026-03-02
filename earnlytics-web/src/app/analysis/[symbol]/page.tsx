@@ -1,6 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import {
+  getLatestStockPrice,
+  isStockPriceStale,
+  refreshStockPrice,
+} from "@/lib/stock-price-service";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -144,17 +149,65 @@ function calculateFinancialScore(roe: number | null, roa: number | null, netMarg
 
 async function fetchStockPrice(symbol: string) {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-    const response = await fetch(`${baseUrl}/api/stock-price/${symbol}`, {
-      next: { revalidate: 300 }
-    });
-
-    if (!response.ok) {
-      console.log('Stock price API error:', response.status);
+    const normalizedSymbol = symbol.trim().toUpperCase();
+    if (!normalizedSymbol) {
       return null;
     }
 
-    return await response.json();
+    const cachedData = await getLatestStockPrice(normalizedSymbol);
+    if (cachedData && !isStockPriceStale(cachedData.timestamp)) {
+      return {
+        symbol: cachedData.symbol,
+        price: cachedData.price,
+        change: cachedData.change ?? 0,
+        changePercent: cachedData.change_percent ?? 0,
+        volume: cachedData.volume ?? 0,
+        marketCap: cachedData.market_cap ?? 0,
+        peRatio: cachedData.pe_ratio ?? 0,
+        high52w: cachedData.high_52w ?? 0,
+        low52w: cachedData.low_52w ?? 0,
+        timestamp: cachedData.timestamp,
+        source: "cache" as const,
+        cached: true,
+      };
+    }
+
+    const freshData = await refreshStockPrice(normalizedSymbol);
+    if (freshData) {
+      return {
+        symbol: freshData.symbol,
+        price: freshData.price,
+        change: freshData.change ?? 0,
+        changePercent: freshData.change_percent ?? 0,
+        volume: freshData.volume ?? 0,
+        marketCap: freshData.market_cap ?? 0,
+        peRatio: freshData.pe_ratio ?? 0,
+        high52w: freshData.high_52w ?? 0,
+        low52w: freshData.low_52w ?? 0,
+        timestamp: freshData.timestamp,
+        source: "live" as const,
+        cached: false,
+      };
+    }
+
+    if (cachedData) {
+      return {
+        symbol: cachedData.symbol,
+        price: cachedData.price,
+        change: cachedData.change ?? 0,
+        changePercent: cachedData.change_percent ?? 0,
+        volume: cachedData.volume ?? 0,
+        marketCap: cachedData.market_cap ?? 0,
+        peRatio: cachedData.pe_ratio ?? 0,
+        high52w: cachedData.high_52w ?? 0,
+        low52w: cachedData.low_52w ?? 0,
+        timestamp: cachedData.timestamp,
+        source: "cache" as const,
+        cached: true,
+      };
+    }
+
+    return null;
   } catch (error) {
     console.error('Error fetching stock price:', error);
     return null;
@@ -386,7 +439,7 @@ async function getAnalysisData(symbol: string, earningsId?: string): Promise<Ana
     filingDate: latestEarning.report_date,
     dataSource,
     externalUrl: document?.source_url,
-    stockPrice: stockPrice,
+    stockPrice: stockPrice || undefined,
   };
 }
 

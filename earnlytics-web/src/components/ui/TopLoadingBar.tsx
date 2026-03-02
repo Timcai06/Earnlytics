@@ -1,13 +1,12 @@
 "use client";
 
 import React from "react";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 
 export default function TopLoadingBar() {
     const pathname = usePathname();
-    const searchParams = useSearchParams();
-    const routeKey = `${pathname}?${searchParams.toString()}`;
+    const routeKey = pathname;
 
     return (
         <motion.div

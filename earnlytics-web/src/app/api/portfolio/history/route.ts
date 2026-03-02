@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { applySessionCookies, resolveSessionFromRequest } from '@/lib/auth/session'
+import { getLatestStockPrices } from '@/lib/stock-price-service'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -109,26 +110,12 @@ export async function POST(request: Request) {
 
     const symbols = positions.map(p => p.symbol)
 
-    const { data: prices } = await supabase
-      .from('stock_prices')
-      .select('symbol, price')
-      .in('symbol', symbols)
-      .order('timestamp', { ascending: false })
-      .limit(symbols.length)
-
-    const priceMap = new Map()
-    if (prices) {
-      prices.forEach(p => {
-        if (!priceMap.has(p.symbol)) {
-          priceMap.set(p.symbol, p.price)
-        }
-      })
-    }
+    const latestPrices = await getLatestStockPrices(symbols)
 
     let totalValue = 0
     let totalCost = 0
     const positionsSnapshot = positions.map(p => {
-      const currentPrice = priceMap.get(p.symbol) || 0
+      const currentPrice = latestPrices.get(p.symbol.toUpperCase())?.price || 0
       const value = currentPrice * p.shares
       const cost = p.avg_cost_basis * p.shares
       totalValue += value

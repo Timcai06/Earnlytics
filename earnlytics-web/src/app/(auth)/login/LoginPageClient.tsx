@@ -22,6 +22,7 @@ export default function LoginPageClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, loading: authLoading } = useAuthUser();
+  const userId = user?.id ?? null;
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
@@ -31,10 +32,10 @@ export default function LoginPageClient() {
 
   useEffect(() => {
     if (authLoading) return;
-    if (!user) return;
+    if (!userId) return;
     const nextPath = resolveSafeNextPath(searchParams.get("next"), "/home");
     router.replace(nextPath);
-  }, [authLoading, router, searchParams, user]);
+  }, [authLoading, router, searchParams, userId]);
 
   const handleLogin = async () => {
     if (!email || !password) {

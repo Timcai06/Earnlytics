@@ -175,6 +175,39 @@ export async function GET(request: NextRequest) {
         success: true,
         preferences: serializePreferences((prefs as NotificationPreferencesRow | null) || null, authUserId),
       });
+    } else if (type === "all") {
+      const [rulesResult, historyResult, preferencesResult] = await Promise.all([
+        supabase
+          .from("alert_rules")
+          .select("*")
+          .eq("user_id", authUserId)
+          .order("created_at", { ascending: false }),
+        supabase
+          .from("alert_history")
+          .select("*")
+          .eq("user_id", authUserId)
+          .order("created_at", { ascending: false })
+          .limit(50),
+        supabase
+          .from("user_notification_preferences")
+          .select("*")
+          .eq("user_id", authUserId)
+          .maybeSingle(),
+      ]);
+
+      if (rulesResult.error) throw rulesResult.error;
+      if (historyResult.error) throw historyResult.error;
+      if (preferencesResult.error) throw preferencesResult.error;
+
+      response = NextResponse.json({
+        success: true,
+        rules: ((rulesResult.data || []) as AlertRuleRow[]).map(serializeRule),
+        history: ((historyResult.data || []) as AlertHistoryRow[]).map(serializeHistory),
+        preferences: serializePreferences(
+          (preferencesResult.data as NotificationPreferencesRow | null) || null,
+          authUserId
+        ),
+      });
     } else {
       response = NextResponse.json({ error: "Invalid type parameter" }, { status: 400 });
     }

@@ -17,6 +17,7 @@ interface NoteSearchResult {
 
 export default function NotesPageClient() {
   const { user, loading: authLoading } = useAuthUser();
+  const userId = user?.id ?? null;
   const [query, setQuery] = useState("");
   const [symbol, setSymbol] = useState("");
   const [loading, setLoading] = useState(false);
@@ -25,7 +26,7 @@ export default function NotesPageClient() {
 
   const fetchResults = useCallback(
     async (searchQuery: string, symbolFilter: string) => {
-      if (!user) return;
+      if (!userId) return;
       setLoading(true);
       setError(null);
 
@@ -54,20 +55,20 @@ export default function NotesPageClient() {
         setLoading(false);
       }
     },
-    [user]
+    [userId]
   );
 
   useEffect(() => {
-    if (!user) return;
+    if (!userId) return;
     fetchResults("", "");
-  }, [fetchResults, user]);
+  }, [fetchResults, userId]);
 
   const subtitle = useMemo(() => {
     if (loading) return "搜索中...";
     return `共 ${results.length} 条备忘录`;
   }, [loading, results.length]);
 
-  if (authLoading && !user) {
+  if (authLoading && !userId) {
     return (
       <div className="container mx-auto max-w-3xl px-4 py-16">
         <h1 className="mb-4 text-3xl font-bold text-white">投资备忘录</h1>
@@ -76,7 +77,7 @@ export default function NotesPageClient() {
     );
   }
 
-  if (!user) {
+  if (!userId) {
     return (
       <div className="container mx-auto max-w-3xl px-4 py-16">
         <h1 className="mb-4 text-3xl font-bold text-white">投资备忘录</h1>

@@ -11,6 +11,7 @@ import { ViewportRender } from "@/components/performance";
 import {
   HomeCalendarEvent,
   HomeEarningsWithCompany,
+  HomeTickerItem,
   HomePageDataResult,
 } from "./home-data";
 
@@ -105,6 +106,10 @@ export default function HomePageClient({ initialData }: HomePageClientProps) {
   );
   const loading = !initialData;
   const error = initialData ? null : "加载数据失败，请重试";
+  const initialTickerData: HomeTickerItem[] = useMemo(
+    () => initialData?.marketTicker ?? [],
+    [initialData]
+  );
   const displayedEarnings = latestEarnings.slice(0, visibleEarningsCount);
   const hasMoreEarnings = latestEarnings.length > visibleEarningsCount;
   const earningsCardModels = useMemo(
@@ -127,7 +132,7 @@ export default function HomePageClient({ initialData }: HomePageClientProps) {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <MarketTicker />
+      <MarketTicker initialData={initialTickerData} />
 
       <section className="relative px-4 py-12 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl flex flex-col items-center text-center">

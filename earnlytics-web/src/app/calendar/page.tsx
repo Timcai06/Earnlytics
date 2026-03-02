@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import CalendarClient from "./CalendarClient";
+import { fetchCalendarEvents, type CalendarEvent } from "./calendar-data";
 import { getSiteUrl } from "@/lib/site-url";
 
 const siteUrl = getSiteUrl();
@@ -22,10 +23,17 @@ export const metadata: Metadata = {
   },
 };
 
-export default function CalendarPage() {
+export default async function CalendarPage() {
   const now = new Date()
   const year = now.getFullYear()
   const month = now.getMonth() + 1
 
-  return <CalendarClient initialYear={year} initialMonth={month} />
+  let initialEvents: CalendarEvent[] | undefined
+  try {
+    initialEvents = await fetchCalendarEvents(year, month)
+  } catch {
+    initialEvents = undefined
+  }
+
+  return <CalendarClient initialYear={year} initialMonth={month} initialEvents={initialEvents} />
 }

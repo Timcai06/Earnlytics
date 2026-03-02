@@ -1,6 +1,11 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { applySessionCookies, resolveSessionFromRequest } from '@/lib/auth/session'
+import {
+  getLatestStockPrices,
+  isStockPriceStale,
+  refreshStockPrice,
+} from '@/lib/stock-price-service'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -8,28 +13,6 @@ const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
 const supabase = createClient(supabaseUrl, supabaseKey)
 
 const PRICE_EXPIRY_MINUTES = 15
-
-async function fetchAndUpdateStockPrice(symbol: string) {
-  try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/stock-price/${symbol}`)
-    if (response.ok) {
-      const data = await response.json()
-      return data
-    }
-  } catch (error) {
-    console.error(`Error fetching price for ${symbol}:`, error)
-  }
-  return null
-}
-
-function isPriceStale(timestamp: string | null): boolean {
-  if (!timestamp) return true
-  const priceTime = new Date(timestamp)
-  const now = new Date()
-  const diffMs = now.getTime() - priceTime.getTime()
-  const diffMinutes = diffMs / (1000 * 60)
-  return diffMinutes > PRICE_EXPIRY_MINUTES
-}
 
 export async function GET(request: Request) {
   try {
@@ -75,40 +58,23 @@ export async function GET(request: Request) {
 
     const symbols = positions.map(p => p.symbol)
 
-    const { data: prices } = await supabase
-      .from('stock_prices')
-      .select('symbol, price, change, change_percent, timestamp')
-      .in('symbol', symbols)
-      .order('timestamp', { ascending: false })
-      .limit(symbols.length)
-
-    const priceMap = new Map()
+    const priceMap = await getLatestStockPrices(symbols)
     const staleSymbols: string[] = []
-    
-    if (prices) {
-      prices.forEach(p => {
-        if (!priceMap.has(p.symbol)) {
-          priceMap.set(p.symbol, p)
-          if (isPriceStale(p.timestamp)) {
-            staleSymbols.push(p.symbol)
-          }
-        }
-      })
-    }
+
+    symbols.forEach((symbol) => {
+      const row = priceMap.get(symbol.toUpperCase())
+      if (!row || isStockPriceStale(row.timestamp, PRICE_EXPIRY_MINUTES * 60 * 1000)) {
+        staleSymbols.push(symbol.toUpperCase())
+      }
+    })
 
     if (staleSymbols.length > 0) {
       console.log(`Refreshing ${staleSymbols.length} stale prices:`, staleSymbols)
       
       await Promise.all(staleSymbols.map(async (symbol) => {
-        const freshData = await fetchAndUpdateStockPrice(symbol)
+        const freshData = await refreshStockPrice(symbol)
         if (freshData) {
-          const priceEntry = priceMap.get(symbol)
-          if (priceEntry) {
-            priceEntry.price = freshData.price
-            priceEntry.change = freshData.change
-            priceEntry.change_percent = freshData.changePercent
-            priceEntry.timestamp = freshData.timestamp
-          }
+          priceMap.set(symbol, freshData)
         }
       }))
     }
@@ -124,7 +90,7 @@ export async function GET(request: Request) {
     }
 
     const positionsWithData = positions.map(pos => {
-      const priceData = priceMap.get(pos.symbol)
+      const priceData = priceMap.get(pos.symbol.toUpperCase())
       const companyData = companyMap.get(pos.symbol)
       const currentPrice = priceData?.price || 0
       const currentValue = currentPrice * pos.shares
@@ -147,7 +113,7 @@ export async function GET(request: Request) {
         price_change: priceData?.change || 0,
         price_change_pct: priceData?.change_percent || 0,
         price_timestamp: priceData?.timestamp || null,
-        is_stale: isPriceStale(priceData?.timestamp)
+        is_stale: isStockPriceStale(priceData?.timestamp || null, PRICE_EXPIRY_MINUTES * 60 * 1000)
       }
     })
 

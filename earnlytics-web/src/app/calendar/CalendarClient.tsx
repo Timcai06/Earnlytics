@@ -27,6 +27,17 @@ interface CalendarEvent {
   fiscalQuarter: number
 }
 
+function buildEventMap(source: CalendarEvent[]) {
+  const eventMap: Record<string, CalendarEvent[]> = {}
+  source.forEach((event) => {
+    const day = event.date.split("-")[2]
+    if (!day) return
+    if (!eventMap[day]) eventMap[day] = []
+    eventMap[day].push(event)
+  })
+  return eventMap
+}
+
 const weekDays = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"]
 
 type ViewMode = "calendar" | "list"
@@ -34,19 +45,35 @@ type ViewMode = "calendar" | "list"
 export default function CalendarClient({
   initialYear,
   initialMonth,
+  initialEvents,
 }: {
   initialYear: number
   initialMonth: number
+  initialEvents?: CalendarEvent[]
 }) {
   const [year, setYear] = useState(initialYear)
   const [month, setMonth] = useState(initialMonth)
-  const [events, setEvents] = useState<Record<string, CalendarEvent[]>>({})
-  const [loading, setLoading] = useState(true)
+  const [events, setEvents] = useState<Record<string, CalendarEvent[]>>(() =>
+    initialEvents ? buildEventMap(initialEvents) : {}
+  )
+  const [loading, setLoading] = useState(() => initialEvents === undefined)
   const [viewMode, setViewMode] = useState<ViewMode>("calendar")
   const [monthDropdownOpen, setMonthDropdownOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
+  const hasInitialSnapshotRef = useRef(initialEvents !== undefined)
+  const consumedInitialSnapshotRef = useRef(false)
 
   useEffect(() => {
+    if (
+      hasInitialSnapshotRef.current &&
+      !consumedInitialSnapshotRef.current &&
+      year === initialYear &&
+      month === initialMonth
+    ) {
+      consumedInitialSnapshotRef.current = true
+      return
+    }
+
     async function fetchEvents() {
       setLoading(true)
       try {
@@ -54,13 +81,7 @@ export default function CalendarClient({
         const data = await res.json()
 
         if (data.events) {
-          const eventMap: Record<string, CalendarEvent[]> = {}
-          data.events.forEach((e: CalendarEvent) => {
-            const day = e.date.split("-")[2]
-            if (!eventMap[day]) eventMap[day] = []
-            eventMap[day].push(e)
-          })
-          setEvents(eventMap)
+          setEvents(buildEventMap(data.events as CalendarEvent[]))
         }
       } catch (error) {
         console.error("Failed to fetch calendar events:", error)
@@ -69,7 +90,7 @@ export default function CalendarClient({
     }
 
     fetchEvents()
-  }, [year, month])
+  }, [initialMonth, initialYear, month, year])
 
   // Close dropdown when clicking outside
   useEffect(() => {

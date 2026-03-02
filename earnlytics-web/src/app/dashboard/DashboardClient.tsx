@@ -1,17 +1,16 @@
 "use client";
 
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { TrendingUp, TrendingDown, AlertCircle, Target, Sparkles, Building2, Calendar } from "lucide-react";
-import { StatCardSkeleton, CardSkeleton } from "@/components/ui/skeleton";
+import { CardSkeleton } from "@/components/ui/skeleton";
 import { NoDataState } from "@/components/ui/EmptyState";
 import type { Company } from "@/types/database";
-import CompaniesList from "../companies/CompaniesList";
-import CalendarClient from "../calendar/CalendarClient";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 interface InvestmentRecommendation {
   symbol: string;
@@ -29,6 +28,14 @@ interface DashboardClientProps {
   initialRecommendations: InvestmentRecommendation[];
   companies: Company[];
 }
+
+const CompaniesList = dynamic(() => import("../companies/CompaniesList"), {
+  loading: () => <CardSkeleton />,
+});
+
+const CalendarClient = dynamic(() => import("../calendar/CalendarClient"), {
+  loading: () => <CardSkeleton className="h-[560px]" />,
+});
 
 function getRatingConfig(rating: string) {
   const configs: Record<string, { label: string; color: string; bgColor: string; borderColor: string }> = {
@@ -116,32 +123,9 @@ function StatCard({
 }
 
 function OverviewTab({ recommendations, companiesCount }: { recommendations: InvestmentRecommendation[]; companiesCount: number }) {
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 500);
-    return () => clearTimeout(timer);
-  }, []);
-
   const buyCount = recommendations.filter(r => r.rating === 'buy' || r.rating === 'strong_buy').length;
   const sellCount = recommendations.filter(r => r.rating === 'sell' || r.rating === 'strong_sell').length;
   const holdCount = recommendations.filter(r => r.rating === 'hold').length;
-
-  if (loading) {
-    return (
-      <>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          <StatCardSkeleton />
-          <StatCardSkeleton />
-          <StatCardSkeleton />
-        </div>
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-          <CardSkeleton />
-          <CardSkeleton />
-        </div>
-      </>
-    );
-  }
 
   if (recommendations.length === 0) {
     return (
@@ -294,8 +278,15 @@ function CalendarTab() {
 }
 
 export default function DashboardClient({ initialRecommendations, companies }: DashboardClientProps) {
+  const [activeTab, setActiveTab] = useState("overview");
+
   return (
-    <Tabs defaultValue="overview" className="w-full">
+    <Tabs
+      defaultValue="overview"
+      value={activeTab}
+      onValueChange={setActiveTab}
+      className="w-full"
+    >
       <TabsList className="mb-6 bg-surface-secondary border border-border">
         <TabsTrigger value="overview" className="data-[state=active]:bg-surface-secondary data-[state=active]:text-white">
           <Sparkles className="h-4 w-4 mr-2" />
@@ -312,15 +303,17 @@ export default function DashboardClient({ initialRecommendations, companies }: D
       </TabsList>
 
       <TabsContent value="overview">
-        <OverviewTab recommendations={initialRecommendations} companiesCount={companies.length} />
+        {activeTab === "overview" ? (
+          <OverviewTab recommendations={initialRecommendations} companiesCount={companies.length} />
+        ) : null}
       </TabsContent>
 
       <TabsContent value="companies">
-        <CompaniesTab companies={companies} />
+        {activeTab === "companies" ? <CompaniesTab companies={companies} /> : null}
       </TabsContent>
 
       <TabsContent value="calendar">
-        <CalendarTab />
+        {activeTab === "calendar" ? <CalendarTab /> : null}
       </TabsContent>
     </Tabs>
   );
