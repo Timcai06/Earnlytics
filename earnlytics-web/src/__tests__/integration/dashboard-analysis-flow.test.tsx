@@ -1,204 +1,95 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
-/* eslint-disable @typescript-eslint/no-require-imports */
-import { useRouter } from 'next/navigation'
+import { act, render, screen } from '@testing-library/react'
 import DashboardPage from '@/app/dashboard/page'
-import AnalysisPage from '@/app/analysis/[symbol]/page'
+import DashboardClient from '@/app/dashboard/DashboardClient'
+import { getDashboardCompanies, getInvestmentRecommendations } from '@/app/dashboard/dashboard-data'
 
-jest.mock('next/navigation', () => ({
-  useRouter: jest.fn(),
-  useParams: jest.fn(),
+jest.mock('@/app/dashboard/dashboard-data', () => ({
+  getDashboardCompanies: jest.fn(),
+  getInvestmentRecommendations: jest.fn(),
 }))
 
-const mockRouter = {
-  push: jest.fn(),
-  replace: jest.fn(),
-  prefetch: jest.fn(),
-}
+const mockedGetDashboardCompanies = getDashboardCompanies as jest.MockedFunction<typeof getDashboardCompanies>
+const mockedGetInvestmentRecommendations = getInvestmentRecommendations as jest.MockedFunction<typeof getInvestmentRecommendations>
 
-const mockFetch = jest.fn()
-global.fetch = mockFetch
+const mockRecommendations = [
+  {
+    symbol: 'AAPL',
+    name: 'Apple Inc.',
+    rating: 'buy',
+    confidence: 'high',
+    targetPriceLow: 180,
+    targetPriceHigh: 220,
+    currentPrice: 175.5,
+    keyPoints: ['服务业务增长稳定', '现金流强劲'],
+    updatedAt: '2026-03-01T00:00:00.000Z',
+  },
+]
 
-describe('Dashboard to Analysis Flow Integration', () => {
+const mockCompanies = [
+  {
+    id: 1,
+    symbol: 'AAPL',
+    name: 'Apple Inc.',
+    sector: '消费电子',
+    logo_url: null,
+    created_at: '2026-01-01T00:00:00.000Z',
+  },
+]
+
+describe('Dashboard integration', () => {
   beforeEach(() => {
+    jest.useFakeTimers()
+    mockedGetDashboardCompanies.mockResolvedValue(mockCompanies)
+    mockedGetInvestmentRecommendations.mockResolvedValue(mockRecommendations)
+  })
+
+  afterEach(() => {
+    jest.runOnlyPendingTimers()
+    jest.useRealTimers()
     jest.clearAllMocks()
-    ;(useRouter as jest.Mock).mockReturnValue(mockRouter)
-    mockFetch.mockClear()
   })
 
-  describe('Dashboard Page', () => {
-    it('renders market overview section', () => {
-      render(<DashboardPage />)
-      
-      expect(screen.getByText('投资仪表盘')).toBeInTheDocument()
-      expect(screen.getByText('市场概览')).toBeInTheDocument()
+  it('renders dashboard page with recommendations from server data', async () => {
+    const page = await DashboardPage()
+    render(page)
+    act(() => {
+      jest.advanceTimersByTime(700)
     })
 
-    it('displays AI recommendations section', () => {
-      render(<DashboardPage />)
-      
-      expect(screen.getByText('AI 投资建议')).toBeInTheDocument()
-    })
-
-    it('navigates to analysis page when company card clicked', async () => {
-      mockFetch.mockResolvedValueOnce({
-        json: async () => ({
-          symbol: 'AAPL',
-          investmentRating: 'buy',
-          confidence: 'high',
-          targetPrice: { low: 180, high: 220 },
-          currentPrice: 175.5,
-        }),
-      })
-
-      render(<DashboardPage />)
-      
-      const companyCard = await screen.findByText('AAPL')
-      fireEvent.click(companyCard)
-      
-      await waitFor(() => {
-        expect(mockRouter.push).toHaveBeenCalledWith('/analysis/AAPL')
-      })
-    })
+    expect(screen.getByText('投资仪表盘')).toBeInTheDocument()
+    expect(screen.getByText('最新投资建议')).toBeInTheDocument()
+    expect(screen.getByText('AAPL')).toBeInTheDocument()
+    expect(screen.getByText('买入')).toBeInTheDocument()
   })
 
-  describe('Analysis Page', () => {
-    const mockParams = { symbol: 'AAPL' }
-
-    beforeEach(() => {
-      ;(useRouter as jest.Mock).mockReturnValue(mockRouter)
-      jest.spyOn(require('next/navigation'), 'useParams').mockReturnValue(mockParams)
+  it('renders analysis and earnings links for recommendation card', () => {
+    render(
+      <DashboardClient
+        initialRecommendations={mockRecommendations}
+        companies={mockCompanies}
+      />
+    )
+    act(() => {
+      jest.advanceTimersByTime(700)
     })
 
-    it('fetches and displays company analysis data', async () => {
-      mockFetch
-        .mockResolvedValueOnce({
-          json: async () => ({
-            symbol: 'AAPL',
-            investmentRating: 'buy',
-            confidence: 'high',
-            targetPrice: { low: 180, high: 220 },
-            currentPrice: 175.5,
-            financialQuality: { score: 85 },
-            growth: { stage: 'maturity', revenueCAGR3Y: 8.5 },
-            moat: { strength: 'wide', porterScore: 85 },
-            valuation: { assessment: 'fair', pePercentile: 52 },
-            keyPoints: ['Leading market position'],
-            risks: ['Regulatory pressure'],
-            catalysts: ['AI features'],
-          }),
-        })
-        .mockResolvedValueOnce({
-          json: async () => ({
-            symbol: 'AAPL',
-            pe_ratio: 28.5,
-            historical_percentile: 52,
-          }),
-        })
+    const analysisLink = screen.getByRole('link', { name: '深度分析' })
+    const earningsLink = screen.getByRole('link', { name: '财报' })
 
-      render(<AnalysisPage />)
-      
-      await waitFor(() => {
-        expect(screen.getByText('AAPL')).toBeInTheDocument()
-        expect(screen.getByText('买入')).toBeInTheDocument()
-      })
-    })
-
-    it('switches between analysis tabs', async () => {
-      mockFetch.mockResolvedValue({
-        json: async () => ({
-          symbol: 'AAPL',
-          investmentRating: 'buy',
-          financialQuality: { score: 85 },
-          growth: { stage: 'maturity', revenueCAGR3Y: 8.5 },
-          moat: { strength: 'wide' },
-          valuation: { assessment: 'fair' },
-        }),
-      })
-
-      render(<AnalysisPage />)
-      
-      await waitFor(() => {
-        expect(screen.getByText('五维分析')).toBeInTheDocument()
-      })
-
-      const growthTab = screen.getByText('成长性')
-      fireEvent.click(growthTab)
-      
-      expect(screen.getByText('增长阶段')).toBeInTheDocument()
-    })
-
-    it('displays error state when API fails', async () => {
-      mockFetch.mockRejectedValue(new Error('API Error'))
-
-      render(<AnalysisPage />)
-      
-      await waitFor(() => {
-        expect(screen.getByText('加载失败，请重试')).toBeInTheDocument()
-      })
-    })
-
-    it('renders document viewer section', async () => {
-      mockFetch
-        .mockResolvedValueOnce({
-          json: async () => ({
-            symbol: 'AAPL',
-            investmentRating: 'buy',
-          }),
-        })
-        .mockResolvedValueOnce({
-          json: async () => ({
-            pe_ratio: 28.5,
-          }),
-        })
-
-      render(<AnalysisPage />)
-      
-      await waitFor(() => {
-        expect(screen.getByText('财报原文')).toBeInTheDocument()
-      })
-    })
+    expect(analysisLink).toHaveAttribute('href', '/analysis/aapl')
+    expect(earningsLink).toHaveAttribute('href', '/earnings/aapl')
   })
 
-  describe('Data Flow Integration', () => {
-    it('fetches valuation data when symbol changes', async () => {
-      mockFetch.mockResolvedValue({
-        json: async () => ({
-          symbol: 'MSFT',
-          pe_ratio: 32.1,
-          historical_percentile: 65,
-        }),
-      })
+  it('renders dashboard tab controls', () => {
+    render(
+      <DashboardClient
+        initialRecommendations={mockRecommendations}
+        companies={mockCompanies}
+      />
+    )
 
-      jest.spyOn(require('next/navigation'), 'useParams').mockReturnValue({ symbol: 'MSFT' })
-      
-      render(<AnalysisPage />)
-      
-      await waitFor(() => {
-        expect(mockFetch).toHaveBeenCalledWith(
-          expect.stringContaining('/api/valuation/MSFT')
-        )
-      })
-    })
-
-    it('caches analysis data to prevent duplicate requests', async () => {
-      const mockData = {
-        symbol: 'AAPL',
-        investmentRating: 'buy',
-      }
-
-      mockFetch.mockResolvedValue({
-        json: async () => mockData,
-      })
-
-      const { rerender } = render(<AnalysisPage />)
-      
-      await waitFor(() => {
-        expect(mockFetch).toHaveBeenCalledTimes(2)
-      })
-
-      rerender(<AnalysisPage />)
-      
-      expect(mockFetch).toHaveBeenCalledTimes(2)
-    })
+    expect(screen.getByRole('tab', { name: /概览/ })).toBeInTheDocument()
+    expect(screen.getByRole('tab', { name: /公司/ })).toBeInTheDocument()
+    expect(screen.getByRole('tab', { name: /日历/ })).toBeInTheDocument()
   })
 })

@@ -1,7 +1,7 @@
 # AGENTS.md - AI 助手操作手册
 
 **版本:** 2.0  
-**更新日期:** 2026-02-27  
+**更新日期:** 2026-03-02  
 **适用对象:** AI 编程助手 (Claude, Cursor, Kimi, etc.)  
 **必读要求:** 每次会话开始前必须完整阅读本文档
 
@@ -63,7 +63,7 @@
 1. 相关规范文档已阅读并理解
 2. 该功能在 PRD.md 中有定义
 3. 实施步骤在 IMPLEMENTATION.md 中有规划
-4. 设计在 FRONTEND_GUIDELINES.md 中有规范
+4. 设计在 FRONTED_GUIDELINES.md 中有规范
 5. 数据结构在 BACKEND_STRUCTURE.md 中有定义
 
 **文档源规则 (2026-02-27 起):**
@@ -131,7 +131,7 @@ FMP API: financialmodelingprep.com
 ### 4.5 开发工具
 ```yaml
 ESLint: 9.x
-Jest: 29.x
+Jest: 30.x
 React Testing Library: 16.x
 node-fetch: 2.x (for testing)
 ```
@@ -536,10 +536,10 @@ PGRST116 - 记录不存在 (返回 404)
 2. 阅读 APP_FLOW.md，了解用户流程
 3. 阅读 IMPLEMENTATION.md，找到实施步骤
 4. 如果需要新数据，阅读 BACKEND_STRUCTURE.md
-5. 确认设计规范在 FRONTEND_GUIDELINES.md 中
+5. 确认设计规范在 FRONTED_GUIDELINES.md 中
 
 **步骤 2: 设计阶段**
-1. 根据 FRONTEND_GUIDELINES.md 确定视觉风格
+1. 根据 FRONTED_GUIDELINES.md 确定视觉风格
 2. 确认使用的组件在 shadcn/ui 中或需要自定义
 3. 确认颜色、间距使用设计令牌
 
@@ -582,13 +582,13 @@ PGRST116 - 记录不存在 (返回 404)
 | `PRD.md` | 添加新功能前 | 确认功能需求和验收标准 |
 | `APP_FLOW.md` | 开发用户流程时 | 了解页面流转和交互 |
 | `TECH_STACK.md` | 需要技术细节时 | 查看确切版本和技术选型 |
-| `FRONTEND_GUIDELINES.md` | 开发 UI 时 | 查看设计系统和组件示例 |
+| `FRONTED_GUIDELINES.md` | 开发 UI 时 | 查看设计系统和组件示例 |
 | `BACKEND_STRUCTURE.md` | 开发 API/数据库时 | 查看数据模型和 API 合约 |
 | `IMPLEMENTATION.md` | 实施功能时 | 查看详细步骤和故障排除 |
 
 **引用格式示例：**
 - "根据 PRD.md 第 2.1.3 节，投资分析工具需要..."
-- "按照 FRONTEND_GUIDELINES.md 的颜色系统，使用 primary: '#6366f1'"
+- "按照 FRONTED_GUIDELINES.md 的颜色系统，使用 primary: '#6366f1'"
 - "参考 BACKEND_STRUCTURE.md 的 API 响应格式..."
 
 ---

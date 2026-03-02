@@ -18,6 +18,9 @@ const config: Config = {
     '**/__tests__/**/*.test.[jt]s?(x)',
     '**/?(*.)+(spec|test).[jt]s?(x)',
   ],
+  testPathIgnorePatterns: [
+    '<rootDir>/e2e/',
+  ],
   collectCoverageFrom: [
     'src/**/*.{js,jsx,ts,tsx}',
     '!src/**/*.d.ts',

@@ -53,31 +53,36 @@ async function getCompaniesWithEarnings(): Promise<CompanyWithEarnings[]> {
     return [];
   }
 
-  const companiesWithEarnings: CompanyWithEarnings[] = [];
+  const companyIds = companies.map((company) => company.id);
+  const { data: earningsRows, error: earningsError } = await supabase
+    .from("earnings")
+    .select("company_id, fiscal_year, fiscal_quarter, report_date, eps, eps_surprise, is_analyzed")
+    .in("company_id", companyIds)
+    .not("revenue", "is", null)
+    .order("report_date", { ascending: false });
 
-  for (const company of companies) {
-    const { data: latestEarning, error: earningsError } = await supabase
-      .from("earnings")
-      .select("fiscal_year, fiscal_quarter, report_date, eps, eps_surprise, is_analyzed")
-      .eq("company_id", company.id)
-      .not("revenue", "is", null)
-      .order("report_date", { ascending: false })
-      .limit(1)
-      .single();
-
-    if (earningsError && earningsError.code !== "PGRST116") {
-      if (process.env.NODE_ENV === "development") {
-        console.error(`Error fetching earnings for ${company.symbol}:`, earningsError);
-      }
-    }
-
-    companiesWithEarnings.push({
-      ...company,
-      latestEarning: latestEarning || null,
-    });
+  if (earningsError && process.env.NODE_ENV === "development") {
+    console.error("Error fetching latest earnings in bulk:", earningsError);
   }
 
-  return companiesWithEarnings;
+  const latestEarningsMap = new Map<number, CompanyWithEarnings["latestEarning"]>();
+  (earningsRows || []).forEach((row) => {
+    if (!latestEarningsMap.has(row.company_id)) {
+      latestEarningsMap.set(row.company_id, {
+        fiscal_year: row.fiscal_year,
+        fiscal_quarter: row.fiscal_quarter,
+        report_date: row.report_date,
+        eps: row.eps,
+        eps_surprise: row.eps_surprise,
+        is_analyzed: row.is_analyzed,
+      });
+    }
+  });
+
+  return companies.map((company) => ({
+    ...company,
+    latestEarning: latestEarningsMap.get(company.id) || null,
+  }));
 }
 
 export default async function CompaniesPage() {

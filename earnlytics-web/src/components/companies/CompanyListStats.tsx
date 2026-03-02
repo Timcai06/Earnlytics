@@ -1,7 +1,7 @@
 "use client";
 
-import { motion, useSpring, useInView } from "framer-motion";
-import { useEffect, useRef } from "react";
+import { motion, useSpring } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
 import { Building2Icon, BrainCircuitIcon, PieChartIcon } from "lucide-react";
 
 interface CompanyListStatsProps {
@@ -12,8 +12,27 @@ interface CompanyListStatsProps {
 
 function Counter({ value }: { value: number }) {
     const ref = useRef<HTMLSpanElement>(null);
-    const inView = useInView(ref, { once: true, margin: "-20px" });
+    const [inView, setInView] = useState(false);
     const spring = useSpring(0, { mass: 0.8, stiffness: 75, damping: 15 });
+
+    useEffect(() => {
+        const node = ref.current;
+        if (!node || inView) return;
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                const entry = entries[0];
+                if (entry?.isIntersecting) {
+                    setInView(true);
+                    observer.disconnect();
+                }
+            },
+            { rootMargin: "-20px", threshold: 0.1 }
+        );
+
+        observer.observe(node);
+        return () => observer.disconnect();
+    }, [inView]);
 
     useEffect(() => {
         if (inView) {

@@ -1,6 +1,6 @@
 # 后端架构规范
 
-**更新日期:** 2026-02-27  
+**更新日期:** 2026-03-02  
 **适用范围:** earnlytics-web 后端系统
 
 ---
@@ -40,7 +40,10 @@ src/app/api/
 ├── analysis/[symbol]/route.ts  # AI 分析
 ├── subscribe/route.ts          # 邮件订阅
 ├── alerts/route.ts             # 警报管理
+├── stock-price/[symbol]/route.ts # 单股价格（缓存 + 实时兜底）
 ├── calendar/route.ts           # 财报日历
+├── market-ticker/route.ts      # 首页行情条
+├── web-vitals/route.ts         # Web Vitals 指标
 ├── health/route.ts             # 健康检查
 └── ...
 ```
@@ -256,6 +259,7 @@ CREATE INDEX idx_companies_sector ON companies(sector);
 |------|------|------|
 | `/api/calendar` | GET | 获取财报日历 |
 | `/api/health` | GET | 健康检查 |
+| `/api/stock-price/[symbol]` | GET | 获取单股价格（数据库缓存 + 外部行情兜底） |
 | `/api/market-ticker` | GET | 获取市场行情（含短缓存 + ETag/304） |
 | `/api/web-vitals` | POST | 接收前端 Web Vitals 指标 |
 | `/api/web-vitals` | GET | 返回按 path+metric 聚合的指标摘要 |

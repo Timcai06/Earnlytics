@@ -1,7 +1,7 @@
 # Earnlytics 项目进度跟踪
 # AI 助手必读文件 - 获取当前进度上下文
-# 最后更新: 2026-02-27
-# 当前会话: 首页性能优化 Phase 1-4 完成（含 API 缓存与 Web Vitals）
+# 最后更新: 2026-03-02
+# 当前会话: for_AGENTS 文档一致性校对（命令/链接/API 清单）
 
 ================================================================================
 项目状态: 生产就绪 - 所有核心功能已完成并上线
@@ -102,6 +102,13 @@ RAG 对话功能进度 (AI 投资助手) - 🚀 生产就绪
 [✅] 观测能力 - 新增 `WebVitalsReporter` 与 `/api/web-vitals` 聚合接口
 [✅] 图片优化策略 - 新增 `src/lib/image-optimization.ts`，按域名决定是否跳过 Next Image 优化
 [✅] 文档迁移约定 - 根目录 `earnlytics-web-architecture.md` 下线，统一以 `for_AGENTS` 为准
+
+[2026-03-02]
+[✅] for_AGENTS 文档校对 - 修正无效命令：`check:data` / `test:ai` / `analyze`
+[✅] AGENTS.md - 同步 `Jest 30.x` 版本信息与 `FRONTED_GUIDELINES.md` 引用
+[✅] IMPLEMENTATION.md - 故障排查命令改为当前可执行命令
+[✅] TECH_STACK.md - dev server 说明改为当前 `npm run dev` 实际配置
+[✅] BACKEND_STRUCTURE.md - 补充 `/api/stock-price/[symbol]` 路由说明
 
 ================================================================================
 文档体系 (7份文档相互引用)

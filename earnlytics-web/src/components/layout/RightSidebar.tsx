@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useCallback } from "react";
-import { Home, Building2, Calendar, LayoutDashboard, ArrowRight, Sparkles } from "lucide-react";
+import { Home, Bell, Building2, Calendar, LayoutDashboard, ArrowRight, Sparkles } from "lucide-react";
 
 interface RightSidebarProps {
   isOpen: boolean;
@@ -19,6 +19,7 @@ export default function RightSidebar({ isOpen, onClose }: RightSidebarProps) {
     { label: "工作台", href: "/home", icon: LayoutDashboard, description: "金融指挥中心" },
     { label: "公司", href: "/companies", icon: Building2, description: "浏览公司列表" },
     { label: "日历", href: "/calendar", icon: Calendar, description: "财报日历" },
+    { label: "预警", href: "/alerts", icon: Bell, description: "规则与通知偏好" },
     { label: "仪表盘", href: "/dashboard", icon: LayoutDashboard, description: "数据概览" },
   ];
 

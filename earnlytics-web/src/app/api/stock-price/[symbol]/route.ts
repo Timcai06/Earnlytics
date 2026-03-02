@@ -17,6 +17,7 @@ interface MockStockData {
   peRatio: number
   high52w: number
   low52w: number
+  timestamp?: string
 }
 
 /**
@@ -94,7 +95,7 @@ async function getCachedStockPrice(symbol: string) {
 }
 
 export async function GET(
-  request: Request,
+  _request: Request,
   { params }: { params: Promise<{ symbol: string }> }
 ) {
   try {
@@ -119,7 +120,7 @@ export async function GET(
         high52w: freshData.high52w,
         low52w: freshData.low52w,
         timestamp: freshData.timestamp,
-        source: 'yahoo_finance',
+        source: 'live',
         cached: false
       })
     }
@@ -139,16 +140,19 @@ export async function GET(
         high52w: cachedData.high_52w,
         low52w: cachedData.low_52w,
         timestamp: cachedData.timestamp,
-        source: 'database',
+        source: 'cache',
         cached: true
       })
     }
 
-    // 3. 如果都没有数据，尝试使用备用数据（演示用）
-    const mockData = getMockStockData(normalizedSymbol)
-    
-    if (mockData) {
-      console.log(`Using mock data for ${normalizedSymbol}`)
+    // 3. 开发环境允许显式开启 mock 数据回退
+    const allowMockFallback =
+      process.env.NODE_ENV !== 'production' &&
+      process.env.ENABLE_STOCK_MOCK_DATA === 'true'
+    const mockData = allowMockFallback ? getMockStockData(normalizedSymbol) : null
+
+    if (mockData && mockData.timestamp) {
+      console.warn(`Using mock data for ${normalizedSymbol}`)
       return NextResponse.json({
         symbol: mockData.symbol,
         price: mockData.price,
@@ -160,14 +164,14 @@ export async function GET(
         high52w: mockData.high52w,
         low52w: mockData.low52w,
         timestamp: mockData.timestamp,
-        source: 'mock_data',
+        source: 'cache',
         cached: false
       })
     }
 
-    // 4. 如果都没有数据，返回 404
+    // 4. 如果都没有数据，返回 unavailable
     return NextResponse.json(
-      { error: 'Stock price data not found' },
+      { error: 'Stock price data not found', source: 'unavailable', cached: false },
       { status: 404 }
     )
   } catch (error) {

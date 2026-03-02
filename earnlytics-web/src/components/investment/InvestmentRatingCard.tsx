@@ -511,7 +511,19 @@ export function InvestmentRatingCard({
         <KeyPointsSection points={keyPoints} />
 
         <DataSourceAttribution
-          source={dataSource === 'fmp' ? 'FMP API' : dataSource === 'sec' ? 'SEC EDGAR' : dataSource === 'sample' ? '样本数据' : 'AI分析'}
+          source={
+            dataSource === "fmp"
+              ? "FMP API"
+              : dataSource === "sec"
+                ? "SEC EDGAR"
+                : dataSource === "sample"
+                  ? "样本数据"
+                  : dataSource === "live"
+                    ? "实时行情"
+                    : dataSource === "cache"
+                      ? "缓存行情"
+                      : "AI分析"
+          }
           lastUpdated={lastUpdated}
           analystCount={analystCount}
         />

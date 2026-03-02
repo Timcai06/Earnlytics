@@ -138,7 +138,7 @@ export function NotificationPreferences({
           {[
             { key: 'rating_change', label: '评级变化', desc: '分析师评级上调或下调' },
             { key: 'target_price', label: '目标价调整', desc: '目标价大幅变化（>10%）' },
-            { key: 'valuation_anomaly', desc: '估值突破历史区间' },
+            { key: 'valuation_anomaly', label: '估值异常', desc: '估值突破历史区间' },
             { key: 'earnings_date', label: '财报提醒', desc: '财报发布前提醒' },
             { key: 'price_threshold', label: '价格阈值', desc: '股价达到设定值' },
           ].map(type => (

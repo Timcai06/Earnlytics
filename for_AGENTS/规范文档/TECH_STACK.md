@@ -1,7 +1,7 @@
 # 技术栈文档 (TECH STACK)
 
-**文档版本:** 2.0  
-**更新日期:** 2026-02-27  
+**文档版本:** 2.2  
+**更新日期:** 2026-03-02  
 **适用范围:** Earnlytics 全栈技术架构  
 **状态:** LOCKED - 未经许可不得更改
 
@@ -238,7 +238,7 @@ const FMP_BASE_URL = "https://financialmodelingprep.com/api/v3"
 | 工具 | 锁定版本 | 用途 |
 |------|---------|------|
 | **Next.js Compiler** | 内置 | 代码编译 (SWC) |
-| **Turbopack** | 内置 | 开发服务器 (Next.js 16 默认) |
+| **Webpack Dev Server** | 内置 | 开发服务器（当前 `npm run dev` 配置） |
 
 ### 4.2 代码质量
 
@@ -511,6 +511,7 @@ FMP API → GitHub Actions → Supabase → Next.js → 用户
 | 1.0 | 2026-02-17 | 初始版本 |
 | 2.0 | 2026-02-18 | 锁定确切版本号，添加架构图 |
 | 2.1 | 2026-02-26 | 同步当前依赖版本并校正文档示例 |
+| 2.2 | 2026-03-02 | 同步 dev server 说明与文档引用文件名 |
 
 ---
 
@@ -518,6 +519,6 @@ FMP API → GitHub Actions → Supabase → Next.js → 用户
 - [AGENTS.md](../AGENTS.md) - AI 操作手册
 - [PRD.md](./PRD.md) - 产品需求
 - [APP_FLOW.md](./APP_FLOW.md) - 应用流程
-- [FRONTEND_GUIDELINES.md](./FRONTEND_GUIDELINES.md) - 前端规范
+- [FRONTED_GUIDELINES.md](./FRONTED_GUIDELINES.md) - 前端规范
 - [BACKEND_STRUCTURE.md](./BACKEND_STRUCTURE.md) - 后端架构
 - [IMPLEMENTATION.md](./IMPLEMENTATION.md) - 实施指南

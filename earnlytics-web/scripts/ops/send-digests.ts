@@ -55,17 +55,14 @@ async function sendDigests(period: 'daily' | 'weekly') {
         continue
       }
 
-      // Get user email
-      const { data: user } = await supabase
-        .from('users')
-        .select('email, raw_user_meta_data')
-        .eq('id', pref.user_id)
-        .single()
+      // Get auth user email (alert rules are tied to auth.users UUID)
+      const { data: authUserResult, error: authUserError } = await supabase.auth.admin.getUserById(pref.user_id)
+      const email = authUserError ? null : authUserResult?.user?.email
 
-      if (user?.email) {
-        await sendDigestEmail(pref.user_id, user.email, period)
+      if (email) {
+        await sendDigestEmail(pref.user_id, email, period)
         sentCount++
-        console.log(`  ✅ Digest sent to ${user.email}`)
+        console.log(`  ✅ Digest sent to ${email}`)
       }
     }
 

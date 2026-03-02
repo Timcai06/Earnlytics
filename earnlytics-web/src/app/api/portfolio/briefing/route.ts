@@ -156,13 +156,33 @@ export async function POST(request: Request) {
     const totalGain = totalValue - totalCost
     const totalGainPct = totalCost > 0 ? (totalGain / totalCost) * 100 : 0
 
-    const { data: upcomingEarnings } = await supabase
-      .from('earnings')
-      .select('symbol, report_date')
+    const { data: companyRows } = await supabase
+      .from('companies')
+      .select('id, symbol')
       .in('symbol', symbols)
-      .gte('report_date', new Date().toISOString().split('T')[0])
-      .order('report_date', { ascending: true })
-      .limit(5)
+
+    const companyIdToSymbol = new Map<number, string>()
+    ;(companyRows || []).forEach((row: { id: number; symbol: string }) => {
+      companyIdToSymbol.set(row.id, row.symbol)
+    })
+
+    const companyIds = Array.from(companyIdToSymbol.keys())
+    const { data: upcomingRows } = companyIds.length
+      ? await supabase
+          .from('earnings')
+          .select('company_id, report_date')
+          .in('company_id', companyIds)
+          .gte('report_date', new Date().toISOString().split('T')[0])
+          .order('report_date', { ascending: true })
+          .limit(5)
+      : { data: [] as Array<{ company_id: number; report_date: string }> }
+
+    const upcomingEarnings = (upcomingRows || [])
+      .map((row) => ({
+        symbol: companyIdToSymbol.get(row.company_id) || '',
+        report_date: row.report_date,
+      }))
+      .filter((row) => Boolean(row.symbol))
 
     const deepseekApiKey = process.env.DEEPSEEK_API_KEY
 

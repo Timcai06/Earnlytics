@@ -22,6 +22,46 @@ export interface EvaluationContext {
   earningsDate?: string
 }
 
+function normalizeRuleRow(rule: Record<string, unknown>): AlertRule {
+  const notificationChannelsRaw = Array.isArray(rule.notification_channels)
+    ? rule.notification_channels
+    : Array.isArray(rule.notificationChannels)
+      ? rule.notificationChannels
+      : ['email']
+
+  return {
+    id: String(rule.id || ''),
+    userId: String(rule.user_id || rule.userId || ''),
+    symbol: typeof rule.symbol === 'string' ? rule.symbol : undefined,
+    ruleType: String(rule.rule_type || rule.ruleType || 'rating_change') as AlertRule['ruleType'],
+    conditions:
+      (typeof rule.conditions === 'object' && rule.conditions
+        ? (rule.conditions as AlertConditions)
+        : {}) || {},
+    notificationChannels: notificationChannelsRaw as ('email' | 'push')[],
+    name: typeof rule.name === 'string' ? rule.name : undefined,
+    description: typeof rule.description === 'string' ? rule.description : undefined,
+    isActive: rule.is_active === undefined ? Boolean(rule.isActive ?? true) : Boolean(rule.is_active),
+    createdAt: String(rule.created_at || rule.createdAt || ''),
+    updatedAt: typeof rule.updated_at === 'string'
+      ? rule.updated_at
+      : typeof rule.updatedAt === 'string'
+        ? rule.updatedAt
+        : undefined,
+    lastTriggeredAt: typeof rule.last_triggered_at === 'string'
+      ? rule.last_triggered_at
+      : typeof rule.lastTriggeredAt === 'string'
+        ? rule.lastTriggeredAt
+        : undefined,
+    triggerCount:
+      typeof rule.trigger_count === 'number'
+        ? rule.trigger_count
+        : typeof rule.triggerCount === 'number'
+          ? rule.triggerCount
+          : 0,
+  }
+}
+
 /**
  * Evaluate all active alert rules for a symbol
  */
@@ -46,7 +86,8 @@ export async function evaluateRulesForSymbol(
 
   const results: Array<{ rule: AlertRule; result: RuleEvaluationResult }> = []
 
-  for (const rule of (rules || []) as AlertRule[]) {
+  for (const rawRule of (rules || []) as Record<string, unknown>[]) {
+    const rule = normalizeRuleRow(rawRule)
     const result = await evaluateRule(rule, context)
     if (result.triggered) {
       results.push({ rule, result })

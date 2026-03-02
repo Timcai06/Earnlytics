@@ -1,7 +1,7 @@
 # 实施指南
 
-**更新日期:** 2026-02-27  
-**版本:** 1.2
+**更新日期:** 2026-03-02  
+**版本:** 1.3
 
 ---
 
@@ -347,8 +347,8 @@ npm run dev
 # 检查环境变量
 cat .env.local | grep SUPABASE
 
-# 验证连接
-npm run check:data
+# 验证连接（项目当前未配置 check:data script）
+npx tsx scripts/dev/check-data.ts
 ```
 
 #### AI 分析失败
@@ -356,8 +356,8 @@ npm run check:data
 # 检查 DeepSeek API Key
 cat .env.local | grep DEEPSEEK
 
-# 测试 API 连接
-npm run test:ai
+# 测试 AI 分析链路（项目当前未配置 test:ai script）
+npm run analyze:batch
 ```
 
 ### 测试问题
@@ -380,7 +380,7 @@ npm run test -- --verbose
 |------|----------|----------|
 | `Request is not defined` | Jest 环境缺少 Web API | 检查 jest.setup.ts 中的 polyfill |
 | `Cannot find module` | 路径别名配置错误 | 检查 tsconfig.json 和 jest.config.ts |
-| `params is not iterable` | Next.js 15 params 是 Promise | 使用 `React.use()` 或 `await params` |
+| `params is not iterable` | Next.js App Router 下 params 为 Promise | 使用 `React.use()` 或 `await params` |
 | `useSearchParams returns null` | Suspense 边界问题 | 使用动态路由替代 query params |
 | `Module not found` | 依赖未安装 | 运行 `npm install` |
 | `Type error` | 类型定义不完整 | 添加完整的 interface/type 定义 |
@@ -407,7 +407,7 @@ npx eslint --print-config src/app/page.tsx
 ```bash
 # 分析包大小
 npm run build
-npm run analyze
+# 当前未配置 analyze script，可先通过 build 输出观察体积变化
 ```
 
 #### 优化图片
@@ -521,7 +521,7 @@ npm run build
 **步骤 2.1: 阅读规范文档 (5分钟)**
 1. 阅读 PRD.md 确认功能需求
 2. 阅读 APP_FLOW.md 了解用户流程
-3. 阅读 FRONTEND_GUIDELINES.md 确认设计规范
+3. 阅读 FRONTED_GUIDELINES.md 确认设计规范
 4. 阅读 BACKEND_STRUCTURE.md 确认数据需求
 
 **步骤 2.2: 创建页面文件**

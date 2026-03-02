@@ -2,8 +2,9 @@
 
 import { useEffect } from "react"
 import Image from "next/image"
+import Link from "next/link"
 import { motion, AnimatePresence } from "framer-motion"
-import { X, TrendingUp, TrendingDown, Calendar, Bot, ExternalLink, ChevronRight } from "lucide-react"
+import { X, Bell, TrendingUp, TrendingDown, Calendar, Bot, ExternalLink, ChevronRight } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { shouldBypassNextImageOptimization } from "@/lib/image-optimization"
 import { Button } from "@/components/ui/button"
@@ -222,6 +223,16 @@ export function PositionDrawerContent({ position, earnings }: PositionDrawerCont
             查看财报分析
             <ChevronRight className="h-4 w-4" />
           </a>
+        </Button>
+        <Button
+          asChild
+          variant="outline"
+          className="w-full"
+        >
+          <Link href={`/alerts?symbol=${position.symbol}&create=1`} className="flex items-center justify-center gap-2">
+            创建该股票预警
+            <Bell className="h-4 w-4" />
+          </Link>
         </Button>
       </div>
     </div>

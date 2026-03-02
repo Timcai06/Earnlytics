@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { InvestmentRatingCard, FinancialHealthScorecard, DocumentViewer } from "@/components/investment";
-import { ArrowLeft, TrendingUp, Shield, Target, AlertTriangle, Sparkles } from "lucide-react";
+import { ArrowLeft, Bell, TrendingUp, Shield, Target, AlertTriangle, Sparkles } from "lucide-react";
 import AnalysisMemoSectionClient from "./AnalysisMemoSectionClient";
 
 export async function generateMetadata({ params }: { params: Promise<{ symbol: string }> }): Promise<Metadata> {
@@ -66,7 +66,7 @@ interface AnalysisData {
     high52w: number;
     low52w: number;
     timestamp: string;
-    source: string;
+    source: "live" | "cache" | "unavailable";
     cached: boolean;
   };
 }
@@ -337,10 +337,13 @@ async function getAnalysisData(symbol: string, earningsId?: string): Promise<Ana
   const porterScore = Math.min(100, Math.round(financialScore * 0.8));
 
   // Determine data source based on what we actually have
-  const dataSource = stockPrice?.source === 'yahoo_finance' ? 'fmp'
-    : stockPrice ? 'sec'
-      : analysis ? 'ai'
-        : 'unknown';
+  const dataSource = stockPrice?.source === "live"
+    ? "live"
+    : stockPrice?.source === "cache"
+      ? "cache"
+      : analysis
+        ? "ai"
+        : "unknown";
 
   return {
     symbol: company.symbol,
@@ -452,9 +455,11 @@ export default async function AnalysisPage({ params, searchParams }: { params: P
                 <div className="text-sm text-muted-foreground">
                   {data.stockPrice.change > 0 ? '+' : ''}{data.stockPrice.change?.toFixed(2)} ({data.stockPrice.changePercent?.toFixed(2)}%)
                 </div>
-                {data.stockPrice.source === 'yahoo_finance' && (
+                {data.stockPrice.source === 'live' ? (
                   <div className="text-xs text-muted-foreground">实时数据</div>
-                )}
+                ) : data.stockPrice.source === 'cache' ? (
+                  <div className="text-xs text-muted-foreground">缓存数据</div>
+                ) : null}
               </>
             ) : (
               <>
@@ -462,6 +467,12 @@ export default async function AnalysisPage({ params, searchParams }: { params: P
                 <div className="text-sm text-muted-foreground">股价数据暂不可用</div>
               </>
             )}
+            <Button variant="outline" asChild className="mt-3">
+              <Link href={`/alerts?symbol=${data.symbol}&create=1`}>
+                <Bell className="h-4 w-4 mr-2" />
+                创建预警
+              </Link>
+            </Button>
           </div>
         </div>
       </div>

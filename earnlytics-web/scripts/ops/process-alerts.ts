@@ -1,8 +1,8 @@
 /**
  * Process Alert Rules Script
- * 
+ *
  * This script evaluates all active alert rules against current market data
-n * and creates alerts when conditions are met.
+ * and creates alerts when conditions are met.
  */
 
 import { config } from 'dotenv'
@@ -27,39 +27,135 @@ const supabase = createClient(supabaseUrl, supabaseKey)
 interface CompanyData {
   symbol: string
   currentPrice: number
+  previousPrice: number
   peRatio: number
   pePercentile: number
   rating: string
+  previousRating: string
   targetPrice: number
+  previousTargetPrice: number
+  earningsDate?: string
+}
+
+function mapSentimentToRating(sentiment: string | null | undefined): string {
+  if (sentiment === 'positive') return 'buy'
+  if (sentiment === 'negative') return 'sell'
+  return 'hold'
+}
+
+function pickSentimentFromEarning(
+  earning: { ai_analyses?: unknown } | undefined
+): string | undefined {
+  const analyses = earning?.ai_analyses
+  if (Array.isArray(analyses)) {
+    const first = analyses[0] as { sentiment?: string | null } | undefined
+    return first?.sentiment || undefined
+  }
+  if (analyses && typeof analyses === 'object') {
+    return (analyses as { sentiment?: string | null }).sentiment || undefined
+  }
+  return undefined
 }
 
 async function fetchCompanyData(symbol: string): Promise<CompanyData | null> {
-  // Fetch current data from database
-  const { data: valuation } = await supabase
-    .from('company_valuation')
-    .select('*')
+  const { data: company } = await supabase
+    .from('companies')
+    .select('id, symbol')
     .eq('symbol', symbol)
-    .single()
+    .maybeSingle()
 
-  const { data: analysis } = await supabase
-    .from('ai_analyses')
-    .select('investment_rating, target_price_low, target_price_high')
-    .eq('symbol', symbol)
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .single()
+  if (!company) {
+    return null
+  }
 
-  if (!valuation) {
+  const today = new Date().toISOString().split('T')[0]
+
+  const [{ data: valuation }, { data: priceRows }, { data: latestEarnings }, { data: upcomingEarning }] =
+    await Promise.all([
+      supabase
+        .from('company_valuation')
+        .select('pe_ratio')
+        .eq('company_id', company.id)
+        .maybeSingle(),
+      supabase
+        .from('stock_prices')
+        .select('price')
+        .eq('symbol', symbol)
+        .order('timestamp', { ascending: false })
+        .limit(2),
+      supabase
+        .from('earnings')
+        .select('id, ai_analyses(sentiment)')
+        .eq('company_id', company.id)
+        .order('report_date', { ascending: false })
+        .limit(2),
+      supabase
+        .from('earnings')
+        .select('report_date')
+        .eq('company_id', company.id)
+        .gte('report_date', today)
+        .order('report_date', { ascending: true })
+        .limit(1)
+        .maybeSingle(),
+    ])
+
+  const currentPrice = priceRows?.[0]?.price || 0
+  const previousPrice = priceRows?.[1]?.price || currentPrice
+
+  const latestSentiment = pickSentimentFromEarning(latestEarnings?.[0])
+  const previousSentiment = pickSentimentFromEarning(latestEarnings?.[1])
+
+  // If no price and valuation data, skip this symbol.
+  if (!currentPrice && !valuation?.pe_ratio) {
     return null
   }
 
   return {
     symbol,
-    currentPrice: valuation.current_price || 0,
-    peRatio: valuation.pe_ratio || 0,
-    pePercentile: valuation.pe_percentile || 50,
-    rating: analysis?.investment_rating || 'hold',
-    targetPrice: analysis ? (analysis.target_price_low + analysis.target_price_high) / 2 : 0,
+    currentPrice,
+    previousPrice,
+    peRatio: valuation?.pe_ratio || 0,
+    pePercentile: 50,
+    rating: mapSentimentToRating(latestSentiment),
+    previousRating: mapSentimentToRating(previousSentiment),
+    targetPrice: currentPrice,
+    previousTargetPrice: previousPrice,
+    earningsDate: upcomingEarning?.report_date || undefined,
+  }
+}
+
+async function incrementRuleCounter(ruleId: string) {
+  const { data: currentRule } = await supabase
+    .from('alert_rules')
+    .select('trigger_count')
+    .eq('id', ruleId)
+    .maybeSingle()
+
+  const nextCount = (currentRule?.trigger_count || 0) + 1
+  await supabase
+    .from('alert_rules')
+    .update({
+      last_triggered_at: new Date().toISOString(),
+      trigger_count: nextCount,
+    })
+    .eq('id', ruleId)
+}
+
+async function resolveAuthEmail(authUserId: string): Promise<{ email: string; name?: string } | null> {
+  try {
+    const { data, error } = await supabase.auth.admin.getUserById(authUserId)
+    if (error || !data?.user?.email) {
+      return null
+    }
+    return {
+      email: data.user.email,
+      name:
+        (typeof data.user.user_metadata?.name === 'string' ? data.user.user_metadata.name : undefined) ||
+        (typeof data.user.user_metadata?.full_name === 'string' ? data.user.user_metadata.full_name : undefined),
+    }
+  } catch (error) {
+    console.error(`Failed to resolve auth email for ${authUserId}:`, error)
+    return null
   }
 }
 
@@ -75,7 +171,7 @@ async function processAlerts() {
       .eq('is_active', true)
       .not('symbol', 'is', null)
 
-    const symbols = [...new Set((rules || []).map(r => r.symbol))]
+    const symbols = [...new Set((rules || []).map((r) => r.symbol).filter(Boolean))]
     console.log(`📊 Processing alerts for ${symbols.length} symbols`)
 
     let totalAlertsCreated = 0
@@ -85,7 +181,7 @@ async function processAlerts() {
       console.log(`\n🔍 Processing ${symbol}...`)
 
       // Fetch current company data
-      const companyData = await fetchCompanyData(symbol)
+      const companyData = await fetchCompanyData(symbol as string)
       if (!companyData) {
         console.log(`  ⚠️ No data found for ${symbol}`)
         continue
@@ -93,19 +189,28 @@ async function processAlerts() {
 
       // Evaluate rules for this symbol
       const context = {
-        symbol,
+        symbol: companyData.symbol,
         currentPrice: companyData.currentPrice,
+        previousPrice: companyData.previousPrice,
         peRatio: companyData.peRatio,
         pePercentile: companyData.pePercentile,
         currentRating: companyData.rating,
+        previousRating: companyData.previousRating,
         targetPrice: companyData.targetPrice,
+        previousTargetPrice: companyData.previousTargetPrice,
+        earningsDate: companyData.earningsDate,
       }
 
-      const triggeredRules = await evaluateRulesForSymbol(symbol, context)
+      const triggeredRules = await evaluateRulesForSymbol(companyData.symbol, context)
       console.log(`  ✅ ${triggeredRules.length} rules triggered`)
 
       for (const { rule, result } of triggeredRules) {
         if (!result.triggered || !result.title || !result.message) {
+          continue
+        }
+
+        if (!rule.userId) {
+          console.warn(`  ⚠️ Skip alert ${rule.id}: missing userId`)
           continue
         }
 
@@ -115,7 +220,7 @@ async function processAlerts() {
           .insert({
             rule_id: rule.id,
             user_id: rule.userId,
-            symbol,
+            symbol: companyData.symbol,
             alert_type: rule.ruleType,
             title: result.title,
             message: result.message,
@@ -133,52 +238,42 @@ async function processAlerts() {
         totalAlertsCreated++
         console.log(`  🔔 Alert created: ${alert.id}`)
 
-        // Update rule trigger count
-        await supabase
-          .from('alert_rules')
-          .update({
-            last_triggered_at: new Date().toISOString(),
-            trigger_count: supabase.rpc('increment_trigger_count', { rule_id: rule.id }),
+        await incrementRuleCounter(rule.id)
+
+        const userIdentity = await resolveAuthEmail(rule.userId)
+        if (!userIdentity?.email) {
+          console.warn(`  ⚠️ Missing email for auth user ${rule.userId}`)
+          continue
+        }
+
+        // Send notification immediately for high priority
+        if (result.priority === 'high') {
+          await sendAlertNotification(
+            rule,
+            alert,
+            userIdentity.email,
+            userIdentity.name
+          )
+          totalNotificationsSent++
+          console.log(`  📧 Notification sent to ${userIdentity.email}`)
+        } else {
+          // Queue for batch processing
+          await supabase.from('email_queue').insert({
+            user_id: rule.userId,
+            email: userIdentity.email,
+            subject: result.title,
+            html_content: result.message,
+            text_content: result.message,
+            alert_id: alert.id,
+            status: 'pending',
           })
-          .eq('id', rule.id)
-
-        // Get user email
-        const { data: user } = await supabase
-          .from('users')
-          .select('email, raw_user_meta_data')
-          .eq('id', rule.userId)
-          .single()
-
-        if (user?.email) {
-          // Send notification immediately for high priority
-          if (result.priority === 'high') {
-            await sendAlertNotification(
-              rule,
-              alert,
-              user.email,
-              user.raw_user_meta_data?.name
-            )
-            totalNotificationsSent++
-            console.log(`  📧 Notification sent to ${user.email}`)
-          } else {
-            // Queue for batch processing
-            await supabase.from('email_queue').insert({
-              user_id: rule.userId,
-              email: user.email,
-              subject: result.title,
-              html_content: result.message,
-              text_content: result.message,
-              alert_id: alert.id,
-              status: 'pending',
-            })
-            console.log(`  📨 Notification queued for batch processing`)
-          }
+          console.log('  📨 Notification queued for batch processing')
         }
       }
     }
 
     const duration = Date.now() - startTime
-    console.log(`\n✅ Alert processing complete!`)
+    console.log('\n✅ Alert processing complete!')
     console.log(`   Duration: ${(duration / 1000).toFixed(2)}s`)
     console.log(`   Alerts created: ${totalAlertsCreated}`)
     console.log(`   Notifications sent: ${totalNotificationsSent}`)

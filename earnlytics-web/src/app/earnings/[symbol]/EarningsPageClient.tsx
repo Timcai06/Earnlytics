@@ -290,12 +290,20 @@ export default function EarningsPageClient({ params, initialEarningId }: Props) 
             <span className={`w-fit rounded-2xl ${sentimentStyle.bg} px-4 py-1.5 text-sm font-semibold ${sentimentStyle.text}`}>
               {sentimentStyle.label}
             </span>
-            <Link
-              href={`/analysis/${company.symbol}?earnings_id=${earnings.id}`}
-              className="rounded-xl border border-primary bg-primary-light px-4 py-1.5 text-sm font-semibold text-primary-hover hover:bg-primary-light transition-colors"
-            >
-              深度分析 →
-            </Link>
+            <div className="flex items-center gap-2">
+              <Link
+                href={`/analysis/${company.symbol}?earnings_id=${earnings.id}`}
+                className="rounded-xl border border-primary bg-primary-light px-4 py-1.5 text-sm font-semibold text-primary-hover hover:bg-primary-light transition-colors"
+              >
+                深度分析 →
+              </Link>
+              <Link
+                href={`/alerts?symbol=${company.symbol}&create=1`}
+                className="rounded-xl border border-border bg-surface px-4 py-1.5 text-sm font-semibold text-text-secondary transition-colors hover:border-primary/40 hover:text-white"
+              >
+                创建预警
+              </Link>
+            </div>
           </div>
         </div>
       </section>
