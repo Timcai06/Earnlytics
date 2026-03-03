@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { motion, type Variants } from "framer-motion"
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts"
 import { TrendingUp, TrendingDown, Calendar } from "lucide-react"
@@ -13,8 +13,19 @@ interface HistoryData {
   gainPct: number
 }
 
+interface HistorySummary {
+  startValue: number
+  endValue: number
+  change: number
+  changePct: number
+}
+
 interface PortfolioHistoryChartProps {
   className?: string
+  initialRange?: number
+  initialData?: HistoryData[]
+  initialSummary?: HistorySummary | null
+  skipInitialFetch?: boolean
 }
 
 const itemVariants: Variants = {
@@ -36,16 +47,18 @@ const timeRanges = [
   { label: '90天', days: 90 }
 ]
 
-export function PortfolioHistoryChart({ className }: PortfolioHistoryChartProps) {
-  const [loading, setLoading] = useState(true)
-  const [data, setData] = useState<HistoryData[]>([])
-  const [range, setRange] = useState(30)
-  const [summary, setSummary] = useState<{
-    startValue: number
-    endValue: number
-    change: number
-    changePct: number
-  } | null>(null)
+export function PortfolioHistoryChart({
+  className,
+  initialRange = 30,
+  initialData = [],
+  initialSummary = null,
+  skipInitialFetch = false,
+}: PortfolioHistoryChartProps) {
+  const [loading, setLoading] = useState(() => (skipInitialFetch ? false : true))
+  const [data, setData] = useState<HistoryData[]>(initialData)
+  const [range, setRange] = useState(initialRange)
+  const [summary, setSummary] = useState<HistorySummary | null>(initialSummary)
+  const consumedInitialSnapshotRef = useRef(false)
 
   const fetchHistory = useCallback(async () => {
     setLoading(true)
@@ -64,8 +77,25 @@ export function PortfolioHistoryChart({ className }: PortfolioHistoryChartProps)
   }, [range])
 
   useEffect(() => {
+    if (
+      skipInitialFetch &&
+      !consumedInitialSnapshotRef.current &&
+      range === initialRange
+    ) {
+      consumedInitialSnapshotRef.current = true
+      return
+    }
+
     fetchHistory()
-  }, [fetchHistory])
+  }, [fetchHistory, initialRange, range, skipInitialFetch])
+
+  useEffect(() => {
+    if (!skipInitialFetch) return
+    if (range !== initialRange) return
+    setData(initialData)
+    setSummary(initialSummary)
+    setLoading(false)
+  }, [initialData, initialRange, initialSummary, range, skipInitialFetch])
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr)

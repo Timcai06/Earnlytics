@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils"
 
 interface PortfolioBriefingProps {
   className?: string
+  initialBriefing?: Briefing | null
 }
 
 interface Briefing {
@@ -31,10 +32,11 @@ const itemVariants: Variants = {
   }
 }
 
-export function PortfolioBriefing({ className }: PortfolioBriefingProps) {
-  const [loading, setLoading] = useState(true)
+export function PortfolioBriefing({ className, initialBriefing }: PortfolioBriefingProps) {
+  const hasInitialBriefing = initialBriefing !== undefined
+  const [loading, setLoading] = useState(() => hasInitialBriefing ? false : true)
   const [generating, setGenerating] = useState(false)
-  const [briefing, setBriefing] = useState<Briefing | null>(null)
+  const [briefing, setBriefing] = useState<Briefing | null>(initialBriefing ?? null)
 
   const fetchBriefing = useCallback(async () => {
     setLoading(true)
@@ -52,8 +54,15 @@ export function PortfolioBriefing({ className }: PortfolioBriefingProps) {
   }, [])
 
   useEffect(() => {
+    if (hasInitialBriefing) return
     fetchBriefing()
-  }, [fetchBriefing])
+  }, [fetchBriefing, hasInitialBriefing])
+
+  useEffect(() => {
+    if (!hasInitialBriefing) return
+    setBriefing(initialBriefing)
+    setLoading(false)
+  }, [hasInitialBriefing, initialBriefing])
 
   const generateBriefing = async () => {
     setGenerating(true)

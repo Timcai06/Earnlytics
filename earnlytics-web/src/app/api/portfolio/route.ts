@@ -4,7 +4,7 @@ import { applySessionCookies, resolveSessionFromRequest } from '@/lib/auth/sessi
 import {
   getLatestStockPrices,
   isStockPriceStale,
-  refreshStockPrice,
+  refreshStockPricesBatch,
 } from '@/lib/stock-price-service'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
@@ -59,24 +59,23 @@ export async function GET(request: Request) {
     const symbols = positions.map(p => p.symbol)
 
     const priceMap = await getLatestStockPrices(symbols)
-    const staleSymbols: string[] = []
+    const staleSymbols = new Set<string>()
 
     symbols.forEach((symbol) => {
       const row = priceMap.get(symbol.toUpperCase())
       if (!row || isStockPriceStale(row.timestamp, PRICE_EXPIRY_MINUTES * 60 * 1000)) {
-        staleSymbols.push(symbol.toUpperCase())
+        staleSymbols.add(symbol.toUpperCase())
       }
     })
 
-    if (staleSymbols.length > 0) {
-      console.log(`Refreshing ${staleSymbols.length} stale prices:`, staleSymbols)
-      
-      await Promise.all(staleSymbols.map(async (symbol) => {
-        const freshData = await refreshStockPrice(symbol)
-        if (freshData) {
-          priceMap.set(symbol, freshData)
-        }
-      }))
+    if (staleSymbols.size > 0) {
+      const staleList = Array.from(staleSymbols)
+      console.log(`Refreshing ${staleList.length} stale prices:`, staleList)
+
+      const freshMap = await refreshStockPricesBatch(staleList)
+      freshMap.forEach((value, key) => {
+        priceMap.set(key, value)
+      })
     }
 
     const { data: companies } = await supabase

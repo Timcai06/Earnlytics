@@ -3,7 +3,7 @@ import { createHash } from 'node:crypto'
 import {
     getLatestStockPrices,
     isStockPriceStale,
-    refreshStockPrice,
+    refreshStockPricesBatch,
 } from '@/lib/stock-price-service'
 
 // Symbols to show in the ticker
@@ -89,23 +89,19 @@ export async function GET(request: Request) {
             return isStale || hasNoChangeData
         })
 
-        // 3. Fetch missing data in parallel
+        // 3. Fetch missing data in one batch
         if (missingSymbols.length > 0) {
             console.log(`Fetching fresh data for: ${missingSymbols.join(', ')}`)
-            const freshResults = await Promise.all(
-                missingSymbols.map((symbol) => refreshStockPrice(symbol))
-            )
+            const freshMap = await refreshStockPricesBatch(missingSymbols)
 
-            freshResults.forEach(data => {
-                if (data) {
-                    priceMap.set(data.symbol, {
-                        symbol: data.symbol,
-                        price: data.price,
-                        change: data.change,
-                        change_percent: data.change_percent,
-                        timestamp: data.timestamp
-                    })
-                }
+            freshMap.forEach((data) => {
+                priceMap.set(data.symbol, {
+                    symbol: data.symbol,
+                    price: data.price,
+                    change: data.change,
+                    change_percent: data.change_percent,
+                    timestamp: data.timestamp
+                })
             })
         }
 

@@ -16,6 +16,41 @@ interface EarningsInfo {
   days_until: number
 }
 
+interface HistoryPoint {
+  date: string
+  value: number
+  gain: number
+  gainPct: number
+}
+
+interface HistorySummarySnapshot {
+  startValue: number
+  endValue: number
+  change: number
+  changePct: number
+}
+
+interface BriefingSnapshot {
+  content: string
+  sentiment: 'positive' | 'neutral' | 'negative'
+  highlights: string[]
+  concerns: string[]
+  createdAt?: string
+}
+
+interface PortfolioOverviewResponse {
+  positions: PortfolioPosition[]
+  summary: PortfolioSummaryType
+  earnings?: {
+    upcoming: EarningsInfo[]
+  }
+  history?: {
+    points: HistoryPoint[]
+    summary: HistorySummarySnapshot | null
+  }
+  briefing?: BriefingSnapshot | null
+}
+
 const AUTO_REFRESH_INTERVAL = 5 * 60 * 1000
 
 export function PortfolioPageClient() {
@@ -38,6 +73,9 @@ export function PortfolioPageClient() {
   const [selectedPosition, setSelectedPosition] = useState<PortfolioPosition | null>(null)
   const [earningsData, setEarningsData] = useState<Record<string, { daysUntil: number; reportDate: string }>>({})
   const [upcomingEarnings, setUpcomingEarnings] = useState<EarningsInfo[]>([])
+  const [historyPoints, setHistoryPoints] = useState<HistoryPoint[]>([])
+  const [historySummary, setHistorySummary] = useState<HistorySummarySnapshot | null>(null)
+  const [briefingSnapshot, setBriefingSnapshot] = useState<BriefingSnapshot | null>(null)
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
   const [refreshing, setRefreshing] = useState(false)
   const redirectToLogin = useCallback(() => {
@@ -50,76 +88,64 @@ export function PortfolioPageClient() {
     }
   }, [authLoading, redirectToLogin, userId])
 
-  const fetchPortfolio = useCallback(async () => {
+  const fetchOverview = useCallback(async () => {
     if (!userId) return
 
     try {
-      const res = await fetch('/api/portfolio')
+      const res = await fetch('/api/portfolio/overview')
       if (res.status === 401) {
         redirectToLogin()
         return
       }
-      const data = await res.json()
+      const data = (await res.json()) as PortfolioOverviewResponse
       if (data.positions) {
         setPositions(data.positions)
-        setSummary(data.summary)
-        setLastUpdated(new Date())
       }
+      if (data.summary) {
+        setSummary(data.summary)
+      }
+
+      const upcoming = data.earnings?.upcoming || []
+      setUpcomingEarnings(upcoming)
+
+      const earningsMap: Record<string, { daysUntil: number; reportDate: string }> = {}
+      upcoming.forEach((e) => {
+        earningsMap[e.symbol] = {
+          daysUntil: e.days_until,
+          reportDate: e.report_date
+        }
+      })
+      setEarningsData(earningsMap)
+
+      setHistoryPoints(data.history?.points || [])
+      setHistorySummary(data.history?.summary || null)
+      setBriefingSnapshot(data.briefing ?? null)
+      setLastUpdated(new Date())
     } catch (error) {
-      console.error('Error fetching portfolio:', error)
+      console.error('Error fetching portfolio overview:', error)
     } finally {
       setLoading(false)
       setRefreshing(false)
     }
   }, [redirectToLogin, userId])
 
-  const fetchEarnings = useCallback(async () => {
-    if (!userId) return
-
-    try {
-      const res = await fetch('/api/portfolio/earnings')
-      if (res.status === 401) {
-        redirectToLogin()
-        return
-      }
-      const data = await res.json()
-      
-      if (data.upcoming) {
-        setUpcomingEarnings(data.upcoming)
-        
-        const earningsMap: Record<string, { daysUntil: number; reportDate: string }> = {}
-        data.upcoming.forEach((e: EarningsInfo) => {
-          earningsMap[e.symbol] = {
-            daysUntil: e.days_until,
-            reportDate: e.report_date
-          }
-        })
-        setEarningsData(earningsMap)
-      }
-    } catch (error) {
-      console.error('Error fetching earnings:', error)
-    }
-  }, [redirectToLogin, userId])
-
   useEffect(() => {
     if (userId) {
       setLoading(true)
-      fetchPortfolio()
-      fetchEarnings()
+      void fetchOverview()
     }
-  }, [userId, fetchPortfolio, fetchEarnings])
+  }, [userId, fetchOverview])
 
   useEffect(() => {
     if (!userId || positions.length === 0) return
 
     const interval = setInterval(() => {
       setRefreshing(true)
-      fetchPortfolio()
-      fetchEarnings()
+      void fetchOverview()
     }, AUTO_REFRESH_INTERVAL)
 
     return () => clearInterval(interval)
-  }, [userId, positions.length, fetchPortfolio, fetchEarnings])
+  }, [userId, positions.length, fetchOverview])
 
   const handleAddPosition = async (data: { symbol: string; shares: number; cost_basis: number }) => {
     if (!userId) return
@@ -138,13 +164,11 @@ export function PortfolioPageClient() {
         return
       }
       const result = await res.json()
-      
+
       if (result.success) {
         setDialogOpen(false)
-        
-        setLoading(true)
-        await fetchPortfolio()
-        await fetchEarnings()
+        setRefreshing(true)
+        await fetchOverview()
       } else {
         alert(result.error || '添加失败')
       }
@@ -173,13 +197,15 @@ export function PortfolioPageClient() {
       }
       const result = await res.json()
       if (result.success) {
+        const deletedPosition = positions.find((p) => p.id === id)
+
         if (isDeletingCurrentDrawerPosition) {
           setDrawerOpen(false)
           setSelectedPosition(null)
         }
-        
+
         setPositions(prev => prev.filter(p => p.id !== id))
-        
+
         const remainingPositions = positions.filter(p => p.id !== id)
         const totalValue = remainingPositions.reduce((sum, p) => sum + p.current_value, 0)
         const totalCost = remainingPositions.reduce((sum, p) => sum + p.total_cost, 0)
@@ -192,6 +218,18 @@ export function PortfolioPageClient() {
           total_gain_pct: totalGainPct,
           position_count: remainingPositions.length
         })
+
+        setUpcomingEarnings(prev => prev.filter((earning) => earning.symbol !== deletedPosition?.symbol))
+        setEarningsData(prev => {
+          const next = { ...prev }
+          if (deletedPosition) {
+            delete next[deletedPosition.symbol]
+          }
+          return next
+        })
+
+        setRefreshing(true)
+        void fetchOverview()
       } else {
         alert(result.error || '删除失败')
       }
@@ -248,8 +286,7 @@ export function PortfolioPageClient() {
                 size="sm"
                 onClick={() => {
                   setRefreshing(true)
-                  fetchPortfolio()
-                  fetchEarnings()
+                  void fetchOverview()
                 }}
                 disabled={refreshing}
                 className="gap-1.5"
@@ -280,7 +317,12 @@ export function PortfolioPageClient() {
 
           {positions.length > 0 && (
             <div className="grid grid-cols-1 gap-6">
-              <PortfolioHistoryChart />
+              <PortfolioHistoryChart
+                initialRange={30}
+                initialData={historyPoints}
+                initialSummary={historySummary}
+                skipInitialFetch
+              />
               
               <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
                 <Card className="bg-surface border-border">
@@ -314,7 +356,7 @@ export function PortfolioPageClient() {
                   </div>
                 </Card>
 
-                <PortfolioBriefing />
+                <PortfolioBriefing initialBriefing={briefingSnapshot} />
               </div>
             </div>
           )}

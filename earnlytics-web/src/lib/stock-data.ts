@@ -5,6 +5,16 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
+const YAHOO_HEADERS = {
+    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    'Accept': 'application/json',
+    'Accept-Language': 'en-US,en;q=0.9',
+    'Accept-Encoding': 'gzip, deflate, br',
+    'Referer': 'https://finance.yahoo.com',
+    'Origin': 'https://finance.yahoo.com',
+    'Connection': 'keep-alive',
+}
+
 export interface StockData {
     symbol: string
     price: number
@@ -18,6 +28,64 @@ export interface StockData {
     timestamp: string
 }
 
+interface YahooQuoteItem {
+    symbol?: string
+    regularMarketPrice?: number | null
+    regularMarketChange?: number | null
+    regularMarketChangePercent?: number | null
+    regularMarketPreviousClose?: number | null
+    regularMarketVolume?: number | null
+    marketCap?: number | null
+    trailingPE?: number | null
+    fiftyTwoWeekHigh?: number | null
+    fiftyTwoWeekLow?: number | null
+}
+
+interface YahooQuoteResponse {
+    quoteResponse?: {
+        result?: YahooQuoteItem[]
+    }
+}
+
+function asFiniteNumber(value: unknown): number | null {
+    if (typeof value !== 'number') return null
+    if (!Number.isFinite(value)) return null
+    return value
+}
+
+function toStockDataFromQuote(item: YahooQuoteItem, timestamp: string): StockData | null {
+    const symbol = typeof item.symbol === 'string' ? item.symbol.toUpperCase() : ''
+    const price = asFiniteNumber(item.regularMarketPrice)
+    if (!symbol || !price || price <= 0) {
+        return null
+    }
+
+    const previousClose = asFiniteNumber(item.regularMarketPreviousClose)
+    const explicitChange = asFiniteNumber(item.regularMarketChange)
+    const explicitChangePercent = asFiniteNumber(item.regularMarketChangePercent)
+
+    const change =
+        explicitChange ??
+        (previousClose && previousClose !== 0 ? price - previousClose : 0)
+
+    const changePercent =
+        explicitChangePercent ??
+        (previousClose && previousClose !== 0 ? ((price - previousClose) / previousClose) * 100 : 0)
+
+    return {
+        symbol,
+        price,
+        change,
+        changePercent,
+        volume: asFiniteNumber(item.regularMarketVolume) ?? 0,
+        marketCap: asFiniteNumber(item.marketCap),
+        peRatio: asFiniteNumber(item.trailingPE),
+        high52w: asFiniteNumber(item.fiftyTwoWeekHigh),
+        low52w: asFiniteNumber(item.fiftyTwoWeekLow),
+        timestamp,
+    }
+}
+
 /**
  * Fetch real stock price from Yahoo Finance with improved headers
  */
@@ -26,19 +94,8 @@ export async function fetchStockPriceFromYahoo(symbol: string): Promise<StockDat
         // Use quote endpoint with proper headers to avoid 401
         const url = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1d&range=1d`
 
-        // More complete headers to mimic browser request
-        const headers = {
-            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            'Accept': 'application/json',
-            'Accept-Language': 'en-US,en;q=0.9',
-            'Accept-Encoding': 'gzip, deflate, br',
-            'Referer': 'https://finance.yahoo.com',
-            'Origin': 'https://finance.yahoo.com',
-            'Connection': 'keep-alive',
-        }
-
         const response = await fetch(url, {
-            headers,
+            headers: YAHOO_HEADERS,
             next: { revalidate: 60 }
         })
 
@@ -85,6 +142,40 @@ export async function fetchStockPriceFromYahoo(symbol: string): Promise<StockDat
     }
 }
 
+export async function fetchStockPricesFromYahooBatch(symbols: string[]): Promise<StockData[]> {
+    try {
+        const normalizedSymbols = [...new Set(symbols.map((symbol) => symbol.trim().toUpperCase()).filter(Boolean))]
+        if (normalizedSymbols.length === 0) {
+            return []
+        }
+
+        const url = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${encodeURIComponent(normalizedSymbols.join(','))}`
+        const response = await fetch(url, {
+            headers: YAHOO_HEADERS,
+            next: { revalidate: 60 }
+        })
+
+        if (!response.ok) {
+            console.warn(`Yahoo batch API returned ${response.status} for ${normalizedSymbols.length} symbols`)
+            return []
+        }
+
+        const data = await response.json() as YahooQuoteResponse
+        const quoteItems = data.quoteResponse?.result || []
+        if (quoteItems.length === 0) {
+            return []
+        }
+
+        const timestamp = new Date().toISOString()
+        return quoteItems
+            .map((item) => toStockDataFromQuote(item, timestamp))
+            .filter((item): item is StockData => item !== null)
+    } catch (error) {
+        console.error('Error fetching stock prices batch from Yahoo:', error)
+        return []
+    }
+}
+
 /**
  * Save stock price to Supabase
  */
@@ -110,4 +201,38 @@ export async function saveStockPrice(priceData: StockData) {
     } catch (error) {
         console.error('Error saving stock price:', error)
     }
+}
+
+export async function saveStockPricesBatch(priceDataList: StockData[]) {
+    if (priceDataList.length === 0) {
+        return
+    }
+
+    const rows = priceDataList.map((priceData) => ({
+        symbol: priceData.symbol,
+        price: priceData.price,
+        change: priceData.change,
+        change_percent: priceData.changePercent,
+        volume: priceData.volume,
+        market_cap: priceData.marketCap,
+        pe_ratio: priceData.peRatio,
+        high_52w: priceData.high52w,
+        low_52w: priceData.low52w
+    }))
+
+    try {
+        const { error } = await supabase
+            .from('stock_prices')
+            .insert(rows)
+
+        if (!error) {
+            return
+        }
+
+        console.error('Error saving stock price batch:', error)
+    } catch (error) {
+        console.error('Error saving stock price batch:', error)
+    }
+
+    await Promise.all(priceDataList.map((priceData) => saveStockPrice(priceData)))
 }

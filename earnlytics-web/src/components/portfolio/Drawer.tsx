@@ -209,20 +209,20 @@ export function PositionDrawerContent({ position, earnings }: PositionDrawerCont
           className="w-full"
           variant={isPositive ? "default" : "destructive"}
         >
-          <a href={`/companies/${position.symbol}`} className="flex items-center justify-center gap-2">
+          <Link href={`/companies/${position.symbol}`} className="flex items-center justify-center gap-2">
             查看公司详情
             <ExternalLink className="h-4 w-4" />
-          </a>
+          </Link>
         </Button>
         <Button
           asChild
           variant="outline"
           className="w-full"
         >
-          <a href={`/earnings/${position.symbol}`} className="flex items-center justify-center gap-2">
+          <Link href={`/earnings/${position.symbol}`} className="flex items-center justify-center gap-2">
             查看财报分析
             <ChevronRight className="h-4 w-4" />
-          </a>
+          </Link>
         </Button>
         <Button
           asChild
