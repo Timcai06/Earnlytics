@@ -42,6 +42,12 @@ interface AlertHistoryView {
   readAt?: string;
 }
 
+interface AlertsPageInitialData {
+  rules: AlertRuleView[];
+  history: AlertHistoryView[];
+  preferences: UserNotificationPreferences;
+}
+
 const defaultPreferences: UserNotificationPreferences = {
   userId: "",
   emailEnabled: true,
@@ -59,16 +65,21 @@ const defaultPreferences: UserNotificationPreferences = {
   updatedAt: "",
 };
 
-export default function AlertsPageClient() {
+interface AlertsPageClientProps {
+  initialData?: AlertsPageInitialData | null;
+}
+
+export default function AlertsPageClient({ initialData = null }: AlertsPageClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, loading: authLoading } = useAuthUser();
   const userId = user?.id ?? null;
-  const [loading, setLoading] = useState(true);
+  const hasInitialData = initialData !== null;
+  const [loading, setLoading] = useState(() => !hasInitialData);
   const [saving, setSaving] = useState(false);
-  const [rules, setRules] = useState<AlertRuleView[]>([]);
-  const [history, setHistory] = useState<AlertHistoryView[]>([]);
-  const [preferences, setPreferences] = useState<UserNotificationPreferences>(defaultPreferences);
+  const [rules, setRules] = useState<AlertRuleView[]>(() => initialData?.rules || []);
+  const [history, setHistory] = useState<AlertHistoryView[]>(() => initialData?.history || []);
+  const [preferences, setPreferences] = useState<UserNotificationPreferences>(() => initialData?.preferences || defaultPreferences);
   const [error, setError] = useState<string | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
 
@@ -81,9 +92,12 @@ export default function AlertsPageClient() {
     redirectToLoginOnce(router, "/alerts");
   }, [router]);
 
-  const fetchAll = useCallback(async () => {
+  const fetchAll = useCallback(async (options?: { silent?: boolean }) => {
     if (!userId) return;
-    setLoading(true);
+    const silent = options?.silent ?? false;
+    if (!silent) {
+      setLoading(true);
+    }
     setError(null);
     try {
       const response = await fetch("/api/alerts?type=all");
@@ -105,7 +119,9 @@ export default function AlertsPageClient() {
       console.error("alerts fetch error:", err);
       setError(err instanceof Error ? err.message : "加载失败，请稍后重试");
     } finally {
-      setLoading(false);
+      if (!silent) {
+        setLoading(false);
+      }
     }
   }, [redirectToLogin, userId]);
 
@@ -117,9 +133,15 @@ export default function AlertsPageClient() {
 
   useEffect(() => {
     if (userId) {
-      fetchAll();
+      if (hasInitialData) {
+        const timer = setTimeout(() => {
+          void fetchAll({ silent: true });
+        }, 1500);
+        return () => clearTimeout(timer);
+      }
+      void fetchAll();
     }
-  }, [fetchAll, userId]);
+  }, [fetchAll, hasInitialData, userId]);
 
   useEffect(() => {
     if (searchParams.get("create") === "1") {
@@ -258,7 +280,7 @@ export default function AlertsPageClient() {
     }
   };
 
-  if (authLoading || loading) {
+  if ((authLoading && !hasInitialData) || loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -266,7 +288,7 @@ export default function AlertsPageClient() {
     );
   }
 
-  if (!userId) {
+  if (!userId && !hasInitialData) {
     return (
       <div className="container mx-auto max-w-4xl px-4 py-16">
         <h1 className="mb-4 text-3xl font-bold text-white">预警中心</h1>

@@ -4,8 +4,8 @@ import { applySessionCookies, resolveSessionFromRequest } from '@/lib/auth/sessi
 import {
   getLatestStockPrices,
   isStockPriceStale,
-  refreshStockPricesBatch,
 } from '@/lib/stock-price-service'
+import { getPortfolioOverviewCache, setPortfolioOverviewCache } from '@/lib/portfolio-overview-cache'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -77,6 +77,10 @@ export async function GET(request: Request) {
     const userIdNum = resolvedSession.appUser.id
     const { searchParams } = new URL(request.url)
     const historyDays = parseHistoryDays(searchParams.get('days'))
+    const cached = getPortfolioOverviewCache(userIdNum, historyDays)
+    if (cached) {
+      return respond(cached)
+    }
 
     const { data: positions, error: positionsError } = await supabase
       .from('user_portfolios')
@@ -133,7 +137,7 @@ export async function GET(request: Request) {
     }
 
     if (!positions || positions.length === 0) {
-      return respond({
+      const payload = {
         positions: [],
         summary: {
           total_value: 0,
@@ -165,7 +169,9 @@ export async function GET(request: Request) {
           stalePositions: 0,
           priceExpiryMinutes: PRICE_EXPIRY_MINUTES,
         },
-      })
+      }
+      setPortfolioOverviewCache(userIdNum, historyDays, payload)
+      return respond(payload)
     }
 
     const positionRows = positions as PositionRow[]
@@ -177,13 +183,6 @@ export async function GET(request: Request) {
       const row = priceMap.get(symbol)
       return !row || isStockPriceStale(row.timestamp, PRICE_EXPIRY_MINUTES * 60 * 1000)
     })
-
-    if (staleSymbols.length > 0) {
-      const freshMap = await refreshStockPricesBatch(staleSymbols)
-      freshMap.forEach((value, key) => {
-        priceMap.set(key, value)
-      })
-    }
 
     const { data: companyRows, error: companiesError } = await supabase
       .from('companies')
@@ -295,7 +294,7 @@ export async function GET(request: Request) {
       })
       .filter((item): item is NonNullable<typeof item> => item !== null)
 
-    return respond({
+    const payload = {
       positions: positionsWithData,
       summary: {
         total_value: totalValue,
@@ -324,10 +323,12 @@ export async function GET(request: Request) {
         : null,
       metadata: {
         lastUpdated: new Date().toISOString(),
-        stalePositions: positionsWithData.filter((position) => position.is_stale).length,
+        stalePositions: staleSymbols.length,
         priceExpiryMinutes: PRICE_EXPIRY_MINUTES,
       },
-    })
+    }
+    setPortfolioOverviewCache(userIdNum, historyDays, payload)
+    return respond(payload)
   } catch (error) {
     console.error('Portfolio overview API error:', error)
     return NextResponse.json(

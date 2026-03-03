@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthUser } from "@/hooks/use-auth-user";
 import { writeLocalUser } from "@/lib/auth/client";
+import type { AuthUser } from "@/lib/auth/client";
 import { redirectToLoginOnce } from "@/lib/auth/guard";
 
 function ProfileCompletionRing({ percent }: { percent: number }) {
@@ -38,15 +39,26 @@ function ProfileCompletionRing({ percent }: { percent: number }) {
   );
 }
 
-export default function ProfilePageClient() {
+interface ProfilePageClientProps {
+  initialUser?: AuthUser | null;
+}
+
+export default function ProfilePageClient({ initialUser = null }: ProfilePageClientProps) {
   const router = useRouter();
   const { user, loading: authLoading } = useAuthUser();
-  const userId = user?.id ?? null;
+  const effectiveUser = user ?? initialUser;
+  const userId = effectiveUser?.id ?? null;
   const [activeTab, setActiveTab] = useState(0);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [editNameDraft, setEditNameDraft] = useState<string | null>(null);
-  const editName = editNameDraft ?? user?.name ?? "";
+  const editName = editNameDraft ?? effectiveUser?.name ?? "";
+
+  useEffect(() => {
+    if (!user && initialUser) {
+      writeLocalUser(initialUser, { emitEvent: false });
+    }
+  }, [initialUser, user]);
 
   useEffect(() => {
     if (!authLoading && !userId) {
@@ -67,8 +79,8 @@ export default function ProfilePageClient() {
 
   const handleSave = async () => {
     setSaving(true);
-    if (user) {
-      const updated = { ...user, name: editName };
+    if (effectiveUser) {
+      const updated = { ...effectiveUser, name: editName };
       writeLocalUser(updated);
       setEditNameDraft(null);
     }
@@ -79,9 +91,9 @@ export default function ProfilePageClient() {
 
   const tabs = ["个人信息", "订阅管理", "通知偏好"];
 
-  const completionPercent = user ? (user.name && user.email ? 75 : user.email ? 50 : 25) : 0;
+  const completionPercent = effectiveUser ? (effectiveUser.name && effectiveUser.email ? 75 : effectiveUser.email ? 50 : 25) : 0;
 
-  if (authLoading && !userId) {
+  if (authLoading && !initialUser && !userId) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center text-sm text-text-secondary">
         正在验证登录状态...
@@ -107,14 +119,14 @@ export default function ProfilePageClient() {
               <div className="relative h-20 w-20 sm:h-24 sm:w-24">
                 <ProfileCompletionRing percent={completionPercent} />
                 <div className="absolute inset-2 flex items-center justify-center rounded-full border-2 border-primary/30 bg-surface-secondary text-2xl font-bold text-primary-hover sm:text-3xl">
-                  {user?.name?.[0]?.toUpperCase() || "U"}
+                  {effectiveUser?.name?.[0]?.toUpperCase() || "U"}
                 </div>
               </div>
               <div>
                 <h1 className="mb-1 text-2xl font-bold text-white sm:text-3xl">
-                  {user?.name || "用户"}
+                  {effectiveUser?.name || "用户"}
                 </h1>
-                <p className="mb-2 text-sm text-text-secondary">{user?.email || ""}</p>
+                <p className="mb-2 text-sm text-text-secondary">{effectiveUser?.email || ""}</p>
                 <div className="flex items-center gap-3">
                   <span className="inline-flex items-center gap-1.5 rounded-full border border-success/30 bg-success-light px-3 py-1 text-xs font-medium text-success">
                     <span className="h-1.5 w-1.5 rounded-full bg-success" />
@@ -191,7 +203,7 @@ export default function ProfilePageClient() {
                         <Input
                           id="email"
                           type="email"
-                          value={user?.email || ""}
+                          value={effectiveUser?.email || ""}
                           readOnly
                           disabled
                           className="h-12 border-border bg-surface-secondary/50 px-4 text-text-tertiary"

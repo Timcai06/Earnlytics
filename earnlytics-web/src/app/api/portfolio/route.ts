@@ -4,8 +4,8 @@ import { applySessionCookies, resolveSessionFromRequest } from '@/lib/auth/sessi
 import {
   getLatestStockPrices,
   isStockPriceStale,
-  refreshStockPricesBatch,
 } from '@/lib/stock-price-service'
+import { invalidatePortfolioOverviewCache } from '@/lib/portfolio-overview-cache'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -67,16 +67,6 @@ export async function GET(request: Request) {
         staleSymbols.add(symbol.toUpperCase())
       }
     })
-
-    if (staleSymbols.size > 0) {
-      const staleList = Array.from(staleSymbols)
-      console.log(`Refreshing ${staleList.length} stale prices:`, staleList)
-
-      const freshMap = await refreshStockPricesBatch(staleList)
-      freshMap.forEach((value, key) => {
-        priceMap.set(key, value)
-      })
-    }
 
     const { data: companies } = await supabase
       .from('companies')
@@ -218,6 +208,7 @@ export async function POST(request: Request) {
         console.error('Error logging transaction:', transactionError)
       }
 
+      invalidatePortfolioOverviewCache(userIdNum)
       return respond({
         success: true,
         message: '持仓已更新'
@@ -253,6 +244,7 @@ export async function POST(request: Request) {
       console.error('Error logging transaction:', transactionError)
     }
 
+    invalidatePortfolioOverviewCache(userIdNum)
     return respond({
       success: true,
       message: '持仓已添加'
@@ -303,6 +295,7 @@ export async function DELETE(request: Request) {
       return respond({ error: '删除持仓失败' }, 500)
     }
 
+    invalidatePortfolioOverviewCache(resolvedSession.appUser.id)
     return respond({
       success: true,
       message: '持仓已删除'

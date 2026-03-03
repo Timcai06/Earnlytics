@@ -134,6 +134,15 @@ export async function resolveSessionFromRequest(request: Request): Promise<Resol
   return { appUser, authUserId, session, refreshed, error: null };
 }
 
+export async function resolveSessionFromCookieHeader(cookieHeader: string | null): Promise<ResolvedSession> {
+  const headers = new Headers();
+  if (cookieHeader) {
+    headers.set("cookie", cookieHeader);
+  }
+  const request = new Request("http://localhost/internal-session", { headers });
+  return resolveSessionFromRequest(request);
+}
+
 export function applySessionCookies(response: Response, session: Session) {
   const isSecure = process.env.NODE_ENV === "production";
   const maxAge = Math.max(session.expires_in || 3600, 3600);

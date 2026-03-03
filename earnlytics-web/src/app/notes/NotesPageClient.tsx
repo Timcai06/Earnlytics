@@ -15,19 +15,27 @@ interface NoteSearchResult {
   snippet: string;
 }
 
-export default function NotesPageClient() {
+interface NotesPageClientProps {
+  initialResults?: NoteSearchResult[];
+}
+
+export default function NotesPageClient({ initialResults }: NotesPageClientProps) {
   const { user, loading: authLoading } = useAuthUser();
   const userId = user?.id ?? null;
+  const hasInitialResults = initialResults !== undefined;
   const [query, setQuery] = useState("");
   const [symbol, setSymbol] = useState("");
   const [loading, setLoading] = useState(false);
-  const [results, setResults] = useState<NoteSearchResult[]>([]);
+  const [results, setResults] = useState<NoteSearchResult[]>(() => initialResults || []);
   const [error, setError] = useState<string | null>(null);
 
   const fetchResults = useCallback(
-    async (searchQuery: string, symbolFilter: string) => {
+    async (searchQuery: string, symbolFilter: string, options?: { silent?: boolean }) => {
       if (!userId) return;
-      setLoading(true);
+      const silent = options?.silent ?? false;
+      if (!silent) {
+        setLoading(true);
+      }
       setError(null);
 
       try {
@@ -52,7 +60,9 @@ export default function NotesPageClient() {
         console.error("fetchResults error:", err);
         setError("搜索失败，请稍后重试");
       } finally {
-        setLoading(false);
+        if (!silent) {
+          setLoading(false);
+        }
       }
     },
     [userId]
@@ -60,15 +70,21 @@ export default function NotesPageClient() {
 
   useEffect(() => {
     if (!userId) return;
-    fetchResults("", "");
-  }, [fetchResults, userId]);
+    if (hasInitialResults) {
+      const timer = setTimeout(() => {
+        void fetchResults("", "", { silent: true });
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+    void fetchResults("", "");
+  }, [fetchResults, hasInitialResults, userId]);
 
   const subtitle = useMemo(() => {
     if (loading) return "搜索中...";
     return `共 ${results.length} 条备忘录`;
   }, [loading, results.length]);
 
-  if (authLoading && !userId) {
+  if (authLoading && !userId && !hasInitialResults) {
     return (
       <div className="container mx-auto max-w-3xl px-4 py-16">
         <h1 className="mb-4 text-3xl font-bold text-white">投资备忘录</h1>
@@ -77,7 +93,7 @@ export default function NotesPageClient() {
     );
   }
 
-  if (!userId) {
+  if (!userId && !hasInitialResults) {
     return (
       <div className="container mx-auto max-w-3xl px-4 py-16">
         <h1 className="mb-4 text-3xl font-bold text-white">投资备忘录</h1>

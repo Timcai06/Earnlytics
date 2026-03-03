@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { applySessionCookies, resolveSessionFromRequest } from '@/lib/auth/session'
 import { getLatestStockPrices } from '@/lib/stock-price-service'
+import { invalidatePortfolioOverviewCache } from '@/lib/portfolio-overview-cache'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -249,6 +250,7 @@ ${upcomingEarnings && upcomingEarnings.length > 0 ? `即将发布财报：${upco
       console.error('Error saving briefing:', upsertError)
     }
 
+    invalidatePortfolioOverviewCache(userIdNum)
     return respond({
       success: true,
       briefing: {
