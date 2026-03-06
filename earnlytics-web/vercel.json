@@ -1,9 +1,1 @@
-{
-  "crons": [
-    {
-      "path": "/api/cron/refresh-stock-prices",
-      "schedule": "*/10 * * * *"
-    }
-  ]
-}
-
+{}
