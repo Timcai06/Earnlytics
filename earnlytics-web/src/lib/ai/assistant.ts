@@ -26,6 +26,31 @@ export interface StreamCallbacks {
   onError?: (error: string) => void
 }
 
+interface SearchContextResult {
+  context: string
+  sources: { title: string; sourceType: string; symbol: string }[]
+}
+
+async function getSearchContext(
+  message: string,
+  symbol: string | undefined
+): Promise<SearchContextResult> {
+  try {
+    const { context, sources } = await searchWithContext(message, {
+      symbol,
+      matchCount: 10,
+      matchThreshold: 0.3,
+    })
+
+    console.log('[Assistant] Found sources:', sources.length)
+    return { context, sources }
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    console.error('[Assistant] RAG search failed, falling back to direct DeepSeek response:', errorMessage)
+    return { context: '', sources: [] }
+  }
+}
+
 /**
  * Process a user message and generate AI response with RAG
  */
@@ -39,13 +64,7 @@ export async function processChatMessage(
   try {
     console.log('[Assistant] Processing message:', message)
 
-    // Search for relevant context
-    const { context, sources } = await searchWithContext(message, {
-      symbol,
-      matchCount: 10,
-      matchThreshold: 0.3,
-    })
-    console.log('[Assistant] Found sources:', sources.length)
+    const { context, sources } = await getSearchContext(message, symbol)
 
     // Build system prompt with context
     const hasResults = sources.length > 0
@@ -118,13 +137,7 @@ export async function processChatMessageStream(
   try {
     console.log('[Assistant Stream] Processing message:', message)
 
-    // Search for relevant context
-    const { context, sources } = await searchWithContext(message, {
-      symbol,
-      matchCount: 10,
-      matchThreshold: 0.3,
-    })
-    console.log('[Assistant Stream] Found sources:', sources.length)
+    const { context, sources } = await getSearchContext(message, symbol)
     if (sources.length > 0) {
       console.log('[Assistant Stream] Source symbols:', sources.map(s => s.symbol).join(', '))
     }
