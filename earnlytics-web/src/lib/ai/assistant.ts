@@ -1,4 +1,4 @@
-import { openai } from './openai-client'
+import { getOpenAIClient } from './openai-client'
 import { searchWithContext, buildRAGSystemPrompt } from './rag'
 import { supabase } from '@/lib/supabase'
 import { getSupabaseAdmin } from '@/lib/supabase-admin'
@@ -61,7 +61,7 @@ export async function processChatMessage(
     console.log('[Assistant] Calling DeepSeek API...')
 
     // Call AI API
-    const response = await openai.chat.completions.create({
+    const response = await getOpenAIClient().chat.completions.create({
       model: CHAT_MODEL,
       messages,
       temperature: 0.7,
@@ -148,7 +148,7 @@ export async function processChatMessageStream(
     console.log('[Assistant Stream] Calling DeepSeek API with streaming...')
 
     // Call AI API with streaming
-    const stream = await openai.chat.completions.create({
+    const stream = await getOpenAIClient().chat.completions.create({
       model: CHAT_MODEL,
       messages,
       temperature: 0.7,

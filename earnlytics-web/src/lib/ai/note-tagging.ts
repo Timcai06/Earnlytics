@@ -1,4 +1,4 @@
-import { openai } from "@/lib/ai/openai-client";
+import { getOpenAIClient } from "@/lib/ai/openai-client";
 
 const MAX_TAG_COUNT = 5;
 const MAX_TAG_LENGTH = 12;
@@ -38,7 +38,7 @@ export async function generateNoteTags(content: string): Promise<string[]> {
   }
 
   try {
-    const response = await openai.chat.completions.create({
+    const response = await getOpenAIClient().chat.completions.create({
       model: "deepseek-chat",
       temperature: 0.2,
       max_tokens: 300,

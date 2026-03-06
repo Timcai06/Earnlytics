@@ -1,10 +1,25 @@
 import OpenAI from 'openai'
 
-const deepseekApiKey = process.env.DEEPSEEK_API_KEY
-const deepseekApiUrl = process.env.DEEPSEEK_API_URL || 'https://api.deepseek.com/v1/chat/completions'
+const DEFAULT_DEEPSEEK_API_URL = 'https://api.deepseek.com/v1/chat/completions'
 
-// Create OpenAI client configured for DeepSeek
-export const openai = new OpenAI({
-  apiKey: deepseekApiKey,
-  baseURL: deepseekApiUrl?.replace('/chat/completions', ''),
-})
+let cachedClient: OpenAI | null = null
+
+export function getOpenAIClient(): OpenAI {
+  if (cachedClient) {
+    return cachedClient
+  }
+
+  const deepseekApiKey = process.env.DEEPSEEK_API_KEY
+  if (!deepseekApiKey) {
+    throw new Error('DEEPSEEK_API_KEY not configured')
+  }
+
+  const deepseekApiUrl = process.env.DEEPSEEK_API_URL || DEFAULT_DEEPSEEK_API_URL
+
+  cachedClient = new OpenAI({
+    apiKey: deepseekApiKey,
+    baseURL: deepseekApiUrl.replace('/chat/completions', ''),
+  })
+
+  return cachedClient
+}
