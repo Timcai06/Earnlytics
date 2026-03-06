@@ -121,20 +121,27 @@ export function ChatInterface({
       const decoder = new TextDecoder()
       let accumulatedContent = ''
       let currentSources: RAGSource[] = []
+      let buffer = ''
 
       while (true) {
         const { done, value } = await reader.read()
 
         if (done) break
 
-        const chunk = decoder.decode(value, { stream: true })
-        const lines = chunk.split('\n')
+        buffer += decoder.decode(value, { stream: true })
+        const events = buffer.split('\n\n')
+        buffer = events.pop() ?? ''
 
-        for (const line of lines) {
-          if (!line.trim() || !line.startsWith('data: ')) continue
+        for (const event of events) {
+          const dataLines = event
+            .split('\n')
+            .filter(line => line.startsWith('data: '))
+            .map(line => line.slice(6))
+
+          if (dataLines.length === 0) continue
 
           try {
-            const data = JSON.parse(line.slice(6))
+            const data = JSON.parse(dataLines.join('\n'))
 
             if (data.type === 'conversation') {
               setConversationId(data.id)
@@ -148,11 +155,11 @@ export function ChatInterface({
               setMessages(prev =>
                 prev.map(m =>
                   m.id === loadingMessageId
-                    ? { 
-                        ...m, 
-                        content: accumulatedContent || '...', 
+                    ? {
+                        ...m,
+                        content: accumulatedContent || '',
                         sources: currentSources,
-                        isLoading: !data.isFinal 
+                        isLoading: !data.isFinal,
                       }
                     : m
                 )
@@ -172,6 +179,17 @@ export function ChatInterface({
           } catch {
             // Skip invalid JSON
           }
+        }
+      }
+
+      if (buffer.trim().startsWith('data: ')) {
+        try {
+          const data = JSON.parse(buffer.trim().slice(6))
+          if (data.type === 'content' && data.content) {
+            accumulatedContent += data.content
+          }
+        } catch {
+          // Ignore trailing partial payload
         }
       }
 
@@ -313,7 +331,7 @@ export function ChatInterface({
                       : 'bg-muted'
                   )}
                 >
-                  {message.isLoading ? (
+                  {message.isLoading && !message.content ? (
                     <div className="flex items-center gap-1 py-1">
                       <span className="w-1.5 h-1.5 bg-primary/60 rounded-full animate-pulse" style={{ animationDelay: '0ms' }} />
                       <span className="w-1.5 h-1.5 bg-primary/60 rounded-full animate-pulse" style={{ animationDelay: '150ms' }} />
@@ -323,6 +341,13 @@ export function ChatInterface({
                   ) : (
                     <>
                       <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                      {message.isLoading && (
+                        <div className="mt-2 flex items-center gap-1 text-xs text-muted-foreground">
+                          <span className="w-1.5 h-1.5 bg-primary/60 rounded-full animate-pulse" />
+                          <span className="w-1.5 h-1.5 bg-primary/60 rounded-full animate-pulse" style={{ animationDelay: '150ms' }} />
+                          <span className="w-1.5 h-1.5 bg-primary/60 rounded-full animate-pulse" style={{ animationDelay: '300ms' }} />
+                        </div>
+                      )}
                       {message.sources && message.sources.length > 0 && (
                         <div className="mt-2 pt-2 border-t border-border/50">
                           <p className="text-xs text-muted-foreground mb-1">
